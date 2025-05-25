@@ -1,5 +1,6 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { RadarMap } from '@/components/weather/RadarMap'; // Re-using the simple radar map for now
+import { RadarMap } from '@/components/weather/RadarMap'; // Re-using the simple radar map
 
 export default function RadarPage() {
   return (
@@ -11,11 +12,13 @@ export default function RadarPage() {
           <CardTitle>Canlı Yağış ve Bulut Takibi</CardTitle>
           <CardDescription>
             RainViewer ile anlık ve gelecek 2 saate kadar bulut hareketlerini ve yağış yoğunluğunu takip edin.
+            Harita üzerinde fare tekerleği ile yakınlaşıp uzaklaşabilir, sürükleyerek farklı bölgeleri görüntüleyebilirsiniz.
+            Sağ alttaki kontroller ile animasyonu başlatabilir, durdurabilir ve katmanları değiştirebilirsiniz.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {/* The RadarMap component already includes the iframe */}
-          <RadarMap zoom={5} /> 
+          {/* The RadarMap component already includes the iframe, height increased */}
+          <RadarMap zoom={5} mapHeight={650} /> 
           <div className="mt-4 text-sm text-muted-foreground space-y-2">
             <p><strong>Özellikler (Entegrasyon Geliştirildikçe Eklenecektir):</strong></p>
             <ul className="list-disc list-inside pl-4">
@@ -26,18 +29,6 @@ export default function RadarPage() {
           </div>
         </CardContent>
       </Card>
-       <Card className="shadow-lg rounded-xl">
-        <CardHeader>
-            <CardTitle>Harita Kullanımı</CardTitle>
-        </CardHeader>
-        <CardContent>
-            <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                <li>Harita üzerinde fare tekerleği ile yakınlaşıp uzaklaşabilirsiniz.</li>
-                <li>Haritayı sürükleyerek farklı bölgeleri görüntüleyebilirsiniz.</li>
-                <li>Sağ alttaki kontroller ile animasyonu başlatabilir, durdurabilir ve katmanları değiştirebilirsiniz.</li>
-            </ul>
-        </CardContent>
-       </Card>
     </div>
   );
 }
