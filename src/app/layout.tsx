@@ -12,10 +12,11 @@ import {
   SidebarMenu, 
   SidebarMenuItem, 
   SidebarMenuButton,
-  SidebarInset
+  SidebarInset,
+  SidebarFooter // Added SidebarFooter for the "Ana Sayfaya Dön" button
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
-import { CloudSun } from 'lucide-react';
+import { CloudSun, Search, Map, Radar, Heart, Settings, Info, Mail, Home } from 'lucide-react'; // Added new icons
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
@@ -46,24 +47,57 @@ export default function RootLayout({
                   <span className="text-lg font-semibold text-sidebar-foreground">HavaDurumuX</span>
                 </Link>
               </SidebarHeader>
-              <SidebarContent className="p-2">
-                <SidebarMenu>
+              <SidebarContent className="p-2 flex flex-col justify-between">
+                <SidebarMenu className="flex-grow">
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild className="w-full justify-start text-base py-2.5">
-                      <Link href="/">Keşfet</Link>
+                      <Link href="/"><Search className="mr-2 h-5 w-5" />Keşfet</Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild className="w-full justify-start text-base py-2.5">
-                      <Link href="/favoriler">Favorilerim</Link>
+                      {/* TODO: Create this page and update link if necessary */}
+                      <Link href="/haritalar/sicaklik-ruzgar"><Map className="mr-2 h-5 w-5" />Sıcaklık ve Rüzgar Haritası</Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild className="w-full justify-start text-base py-2.5">
-                      <Link href="/radar">Radar Haritası</Link>
+                      <Link href="/radar"><Radar className="mr-2 h-5 w-5" />Radar Görüntüleri Haritası</Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild className="w-full justify-start text-base py-2.5">
+                      <Link href="/favoriler"><Heart className="mr-2 h-5 w-5" />Kayıtlı Konumlar</Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild className="w-full justify-start text-base py-2.5">
+                      {/* TODO: Create this page and update link if necessary */}
+                      <Link href="/ayarlar"><Settings className="mr-2 h-5 w-5" />Ayarlar</Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild className="w-full justify-start text-base py-2.5">
+                      {/* TODO: Create this page and update link if necessary */}
+                      <Link href="/hakkimizda"><Info className="mr-2 h-5 w-5" />Hakkımızda</Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild className="w-full justify-start text-base py-2.5">
+                      {/* TODO: Create this page and update link if necessary */}
+                      <Link href="/iletisim"><Mail className="mr-2 h-5 w-5" />İletişim</Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 </SidebarMenu>
+                <SidebarFooter className="p-2 border-t border-sidebar-border mt-auto">
+                  <SidebarMenu>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton asChild className="w-full justify-start text-base py-2.5">
+                        <Link href="/"><Home className="mr-2 h-5 w-5" />Ana Sayfaya Dön</Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  </SidebarMenu>
+                </SidebarFooter>
               </SidebarContent>
             </Sidebar>
             <SidebarInset>
