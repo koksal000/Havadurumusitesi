@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { getWeatherData } from '@/lib/weatherApi';
 import { findDistrict } from '@/lib/locationData';
-import type { WeatherData, FavoriteLocation } from '@/types/weather';
+import type { WeatherData, FavoriteLocation, HourlyWeather } from '@/types/weather';
 import { CurrentWeatherCard } from '@/components/weather/CurrentWeatherCard';
 import { HourlyForecastChart } from '@/components/weather/HourlyForecastChart';
 import { DailyForecastItem } from '@/components/weather/DailyForecastItem';
@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { AlertTriangle, ArrowLeft, Loader2, Thermometer, Wind, Droplets, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { format, parseISO, isSameDay } from 'date-fns';
+import { tr } from 'date-fns/locale';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function DistrictWeatherPage() {
@@ -51,29 +52,42 @@ export default function DistrictWeatherPage() {
 
       try {
         setLoading(true);
+        const cachedData = localStorage.getItem(`weather-${districtData.lat}-${districtData.lon}`);
+        if (cachedData) {
+           const parsedCache = JSON.parse(cachedData);
+           if (new Date().getTime() - new Date(parsedCache.timestamp).getTime() < 3600 * 1000) { // 1 hour cache
+              setWeatherData(parsedCache.data);
+              setLoading(false); // Set loading false if using cache
+              // No early return, still fetch fresh data in background, but UI updates with cache first
+           }
+        }
+        
         const data = await getWeatherData(districtData.lat, districtData.lon);
         if (data) {
           setWeatherData(data);
-          const cachedData = localStorage.getItem(`weather-${districtData.lat}-${districtData.lon}`);
-          if (cachedData) {
-             const parsedCache = JSON.parse(cachedData);
-             if (new Date().getTime() - new Date(parsedCache.timestamp).getTime() < 3600 * 1000) {
-                setWeatherData(parsedCache.data);
-             }
-          }
         } else {
-          setError("Hava durumu verileri alınamadı.");
+          if (!weatherData) { // Only set error if no cached data is already displayed
+            setError("Hava durumu verileri alınamadı.");
+          }
         }
       } catch (e) {
         console.error(e);
-        setError("Hava durumu verileri yüklenirken bir hata oluştu.");
+        if (!weatherData) { // Only set error if no cached data is already displayed
+            setError("Hava durumu verileri yüklenirken bir hata oluştu.");
+        }
       } finally {
-        setLoading(false);
+        // Only set loading to false if we didn't already set it due to cache
+        if (!localStorage.getItem(`weather-${districtData.lat}-${districtData.lon}`) || 
+            (localStorage.getItem(`weather-${districtData.lat}-${districtData.lon}`) && 
+             new Date().getTime() - new Date(JSON.parse(localStorage.getItem(`weather-${districtData.lat}-${districtData.lon}`)!).timestamp).getTime() >= 3600 * 1000)
+           ) {
+          setLoading(false);
+        }
       }
     }
 
     fetchData();
-  }, [province, district]);
+  }, [province, district, weatherData]); // Added weatherData to dependencies to avoid issues if cache logic changes
   
   useEffect(() => {
     if (weatherData && favoriteLocationData) {
@@ -82,7 +96,7 @@ export default function DistrictWeatherPage() {
   }, [weatherData, favoriteLocationData]);
 
 
-  if (loading) {
+  if (loading && !weatherData) { // Show loading only if no weatherData (neither fresh nor cached)
     return (
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)]">
         <Loader2 className="h-16 w-16 animate-spin text-primary mb-4" />
@@ -91,7 +105,7 @@ export default function DistrictWeatherPage() {
     );
   }
 
-  if (error) {
+  if (error && !weatherData) { // Show error only if no weatherData
     return (
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)] text-center">
         <AlertTriangle className="h-16 w-16 text-destructive mb-4" />
@@ -105,6 +119,7 @@ export default function DistrictWeatherPage() {
   }
 
   if (!weatherData) {
+    // This case should ideally be covered by loading or error states if fetchData doesn't populate weatherData
     return (
       <div className="text-center py-10">
         <p>Hava durumu verisi bulunamadı.</p>
@@ -116,7 +131,7 @@ export default function DistrictWeatherPage() {
   }
   
   const getHourlyDataForDay = (targetDate: string): HourlyWeather | null => {
-    if (!weatherData || !weatherData.hourly || !weatherData.hourly.time) return null;
+    if (!weatherData?.hourly?.time) return null;
     
     const indices: number[] = [];
     weatherData.hourly.time.forEach((timeStr, index) => {
@@ -127,7 +142,6 @@ export default function DistrictWeatherPage() {
 
     if (indices.length === 0) return null;
 
-    // Map all available hourly fields
     const hourlyDataForDay: Partial<HourlyWeather> = {};
     for (const key in weatherData.hourly) {
         if (Array.isArray((weatherData.hourly as any)[key])) {
@@ -152,10 +166,10 @@ export default function DistrictWeatherPage() {
           <CurrentWeatherCard
             currentWeather={weatherData.current}
             dailyWeather={{ 
-              sunrise: weatherData.daily.sunrise[0], 
-              sunset: weatherData.daily.sunset[0],
-              uv_index_max: weatherData.daily.uv_index_max?.[0],
-              precipitation_sum: weatherData.daily.precipitation_sum[0]
+              sunrise: weatherData.daily?.sunrise?.[0] as string, // Ensure string type or handle undefined in card
+              sunset: weatherData.daily?.sunset?.[0] as string, // Ensure string type or handle undefined in card
+              uv_index_max: weatherData.daily?.uv_index_max?.[0],
+              precipitation_sum: weatherData.daily?.precipitation_sum?.[0]
             }}
             locationName={locationName}
           />
@@ -211,19 +225,19 @@ export default function DistrictWeatherPage() {
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="p-4 bg-muted/30 rounded-lg shadow-sm">
                 <h4 className="font-semibold text-sm flex items-center"><Thermometer className="w-4 h-4 mr-2 text-primary" />Toprak Sıcaklığı (0cm)</h4>
-                <p className="text-xs">{weatherData.hourly.soil_temperature_0cm[0]?.toFixed(1) ?? 'N/A'} °C (İlk saat)</p>
+                <p className="text-xs">{weatherData.hourly?.soil_temperature_0cm?.[0]?.toFixed(1) ?? 'N/A'} °C (İlk saat)</p>
               </div>
               <div className="p-4 bg-muted/30 rounded-lg shadow-sm">
                 <h4 className="font-semibold text-sm flex items-center"><Droplets className="w-4 h-4 mr-2 text-primary" />Toprak Nemi (0-1cm)</h4>
-                <p className="text-xs">{weatherData.hourly.soil_moisture_0_1cm[0]?.toFixed(2) ?? 'N/A'} m³/m³ (İlk saat)</p>
+                <p className="text-xs">{weatherData.hourly?.soil_moisture_0_1cm?.[0]?.toFixed(2) ?? 'N/A'} m³/m³ (İlk saat)</p>
               </div>
                <div className="p-4 bg-muted/30 rounded-lg shadow-sm">
                 <h4 className="font-semibold text-sm flex items-center"><Zap className="w-4 h-4 mr-2 text-primary" />Evapotranspirasyon (Günlük)</h4>
-                <p className="text-xs">{weatherData.daily.et0_fao_evapotranspiration[0]?.toFixed(2) ?? 'N/A'} mm</p>
+                <p className="text-xs">{weatherData.daily?.et0_fao_evapotranspiration?.[0]?.toFixed(2) ?? 'N/A'} mm</p>
               </div>
               <div className="p-4 bg-muted/30 rounded-lg shadow-sm">
                 <h4 className="font-semibold text-sm flex items-center"><Wind className="w-4 h-4 mr-2 text-primary" />Dominant Rüzgar Yönü (Günlük)</h4>
-                <p className="text-xs">{weatherData.daily.wind_direction_10m_dominant[0] ?? 'N/A'}°</p>
+                <p className="text-xs">{weatherData.daily?.wind_direction_10m_dominant?.[0] ?? 'N/A'}°</p>
               </div>
               <p className="text-xs text-muted-foreground md:col-span-2">Not: Bazı veriler anlık veya ilk saatlik/günlük değerleri temsil etmektedir.</p>
             </CardContent>
