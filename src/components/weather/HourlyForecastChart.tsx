@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { HourlyWeather } from '@/types/weather';
@@ -50,18 +51,20 @@ export function HourlyForecastChart({ hourlyWeather }: HourlyForecastChartProps)
         <CardTitle>Saatlik Tahmin (24 Saat)</CardTitle>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={400}>
-          <LineChart data={chartData} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.3} />
-            <XAxis dataKey="time" tick={{ fontSize: 12 }} />
-            <YAxis yAxisId="left" orientation="left" stroke="hsl(var(--primary))" tick={{ fontSize: 12 }} unit="°C" />
-            <YAxis yAxisId="right" orientation="right" stroke="hsl(var(--chart-2))" tick={{ fontSize: 12 }} unit="%" />
-            <Tooltip content={<CustomTooltip />} />
-            <Legend wrapperStyle={{fontSize: "12px"}}/>
-            <Line yAxisId="left" type="monotone" dataKey="Sıcaklık" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 2 }} activeDot={{ r: 5 }} />
-            <Line yAxisId="right" type="monotone" dataKey="Yağış İhtimali" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={{ r: 2 }} activeDot={{ r: 5 }} name="Yağış İhtimali (%)" />
-          </LineChart>
-        </ResponsiveContainer>
+        <div className="aspect-video w-full"> {/* Added aspect-video and w-full */}
+          <ResponsiveContainer width="100%" height="100%"> {/* Changed height to 100% */}
+            <LineChart data={chartData} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.3} />
+              <XAxis dataKey="time" tick={{ fontSize: 10 }} interval="preserveStartEnd" /> {/* Adjusted tick size and interval */}
+              <YAxis yAxisId="left" orientation="left" stroke="hsl(var(--primary))" tick={{ fontSize: 10 }} unit="°C" />
+              <YAxis yAxisId="right" orientation="right" stroke="hsl(var(--chart-2))" tick={{ fontSize: 10 }} unit="%" />
+              <Tooltip content={<CustomTooltip />} />
+              <Legend wrapperStyle={{fontSize: "10px"}}/>
+              <Line yAxisId="left" type="monotone" dataKey="Sıcaklık" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 2 }} activeDot={{ r: 5 }} />
+              <Line yAxisId="right" type="monotone" dataKey="Yağış İhtimali" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={{ r: 2 }} activeDot={{ r: 5 }} name="Yağış İhtimali (%)" />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
       </CardContent>
     </Card>
   );

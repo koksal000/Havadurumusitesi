@@ -17,7 +17,7 @@ import {
   SidebarFooter
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
-import { CloudSun, Search, Map, Radar, Heart, Settings, Info, Mail, Home } from 'lucide-react';
+import { CloudSun, Search, Map, Radar, Heart, Settings, Info, Mail, Home, Zap } from 'lucide-react';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
@@ -63,6 +63,11 @@ export default function RootLayout({
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild className="w-full justify-start text-base py-2.5">
                       <Link href="/radar"><Radar className="mr-2 h-5 w-5" />Radar Görüntüleri Haritası</Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild className="w-full justify-start text-base py-2.5">
+                      <Link href="/haritalar/simsek-radar"><Zap className="mr-2 h-5 w-5" />Şimşek Radar Haritası</Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                   <SidebarMenuItem>
