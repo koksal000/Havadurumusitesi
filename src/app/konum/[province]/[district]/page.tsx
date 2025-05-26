@@ -50,53 +50,50 @@ export default function DistrictWeatherPage() {
       
       setFavoriteLocationData({ province, district, lat: districtData.lat, lon: districtData.lon });
 
+      let usedCache = false;
       try {
-        setLoading(true);
-        const cachedData = localStorage.getItem(`weather-${districtData.lat}-${districtData.lon}`);
-        if (cachedData) {
-           const parsedCache = JSON.parse(cachedData);
+        setLoading(true); // Start loading
+        const cachedDataString = localStorage.getItem(`weather-${districtData.lat}-${districtData.lon}`);
+        if (cachedDataString) {
+           const parsedCache = JSON.parse(cachedDataString);
            if (new Date().getTime() - new Date(parsedCache.timestamp).getTime() < 3600 * 1000) { // 1 hour cache
               setWeatherData(parsedCache.data);
               setLoading(false); // Set loading false if using cache
-              // No early return, still fetch fresh data in background, but UI updates with cache first
+              usedCache = true; 
+              // UI updates with cache first, fresh data can be fetched in background if needed
            }
         }
         
-        const data = await getWeatherData(districtData.lat, districtData.lon);
-        if (data) {
-          setWeatherData(data);
-        } else {
-          if (!weatherData) { // Only set error if no cached data is already displayed
-            setError("Hava durumu verileri alınamadı.");
-          }
+        // Fetch fresh data regardless of cache, unless cache was just used and is recent
+        if (!usedCache || (usedCache && new Date().getTime() - new Date(JSON.parse(cachedDataString!).timestamp).getTime() >= 3600 * 1000) ) {
+            const data = await getWeatherData(districtData.lat, districtData.lon);
+            if (data) {
+              setWeatherData(data);
+              localStorage.setItem(`weather-${districtData.lat}-${districtData.lon}`, JSON.stringify({data: data, timestamp: new Date().toISOString()}));
+            } else {
+              if (!weatherData) { // Only set error if no cached data is already displayed
+                setError("Hava durumu verileri alınamadı.");
+              }
+            }
         }
+
       } catch (e) {
         console.error(e);
         if (!weatherData) { // Only set error if no cached data is already displayed
             setError("Hava durumu verileri yüklenirken bir hata oluştu.");
         }
       } finally {
-        // Only set loading to false if we didn't already set it due to cache
-        if (!localStorage.getItem(`weather-${districtData.lat}-${districtData.lon}`) || 
-            (localStorage.getItem(`weather-${districtData.lat}-${districtData.lon}`) && 
-             new Date().getTime() - new Date(JSON.parse(localStorage.getItem(`weather-${districtData.lat}-${districtData.lon}`)!).timestamp).getTime() >= 3600 * 1000)
-           ) {
-          setLoading(false);
+        // Set loading to false only if we didn't use a recent cache
+        if (!usedCache) {
+             setLoading(false);
         }
       }
     }
 
     fetchData();
-  }, [province, district, weatherData]); // Added weatherData to dependencies to avoid issues if cache logic changes
+  }, [province, district]); 
   
-  useEffect(() => {
-    if (weatherData && favoriteLocationData) {
-      localStorage.setItem(`weather-${favoriteLocationData.lat}-${favoriteLocationData.lon}`, JSON.stringify({data: weatherData, timestamp: new Date().toISOString()}));
-    }
-  }, [weatherData, favoriteLocationData]);
-
-
-  if (loading && !weatherData) { // Show loading only if no weatherData (neither fresh nor cached)
+  if (loading && !weatherData) { 
     return (
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)]">
         <Loader2 className="h-16 w-16 animate-spin text-primary mb-4" />
@@ -105,7 +102,7 @@ export default function DistrictWeatherPage() {
     );
   }
 
-  if (error && !weatherData) { // Show error only if no weatherData
+  if (error && !weatherData) { 
     return (
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)] text-center">
         <AlertTriangle className="h-16 w-16 text-destructive mb-4" />
@@ -119,7 +116,6 @@ export default function DistrictWeatherPage() {
   }
 
   if (!weatherData) {
-    // This case should ideally be covered by loading or error states if fetchData doesn't populate weatherData
     return (
       <div className="text-center py-10">
         <p>Hava durumu verisi bulunamadı.</p>
@@ -166,8 +162,8 @@ export default function DistrictWeatherPage() {
           <CurrentWeatherCard
             currentWeather={weatherData.current}
             dailyWeather={{ 
-              sunrise: weatherData.daily?.sunrise?.[0] as string, // Ensure string type or handle undefined in card
-              sunset: weatherData.daily?.sunset?.[0] as string, // Ensure string type or handle undefined in card
+              sunrise: weatherData.daily?.sunrise?.[0] as string,
+              sunset: weatherData.daily?.sunset?.[0] as string,
               uv_index_max: weatherData.daily?.uv_index_max?.[0],
               precipitation_sum: weatherData.daily?.precipitation_sum?.[0]
             }}
@@ -189,25 +185,25 @@ export default function DistrictWeatherPage() {
                     key={time}
                     dayData={{
                       time,
-                      weather_code: weatherData.daily.weather_code[index],
-                      temperature_2m_max: weatherData.daily.temperature_2m_max[index],
-                      temperature_2m_min: weatherData.daily.temperature_2m_min[index],
-                      apparent_temperature_max: weatherData.daily.apparent_temperature_max[index],
-                      apparent_temperature_min: weatherData.daily.apparent_temperature_min[index],
-                      sunrise: weatherData.daily.sunrise[index],
-                      sunset: weatherData.daily.sunset[index],
-                      precipitation_sum: weatherData.daily.precipitation_sum[index],
-                      rain_sum: weatherData.daily.rain_sum[index],
-                      showers_sum: weatherData.daily.showers_sum[index],
-                      snowfall_sum: weatherData.daily.snowfall_sum[index],
-                      precipitation_hours: weatherData.daily.precipitation_hours[index],
-                      precipitation_probability_max: weatherData.daily.precipitation_probability_max?.[index],
-                      wind_speed_10m_max: weatherData.daily.wind_speed_10m_max[index],
-                      wind_gusts_10m_max: weatherData.daily.wind_gusts_10m_max[index],
-                      wind_direction_10m_dominant: weatherData.daily.wind_direction_10m_dominant[index],
-                      uv_index_max: weatherData.daily.uv_index_max?.[index],
-                      shortwave_radiation_sum: weatherData.daily.shortwave_radiation_sum[index],
-                      et0_fao_evapotranspiration: weatherData.daily.et0_fao_evapotranspiration[index],
+                      weather_code: weatherData.daily.weather_code?.[index] ?? 0,
+                      temperature_2m_max: weatherData.daily.temperature_2m_max?.[index] ?? 0,
+                      temperature_2m_min: weatherData.daily.temperature_2m_min?.[index] ?? 0,
+                      apparent_temperature_max: weatherData.daily.apparent_temperature_max?.[index] ?? 0,
+                      apparent_temperature_min: weatherData.daily.apparent_temperature_min?.[index] ?? 0,
+                      sunrise: weatherData.daily.sunrise?.[index] ?? new Date().toISOString(),
+                      sunset: weatherData.daily.sunset?.[index] ?? new Date().toISOString(),
+                      precipitation_sum: weatherData.daily.precipitation_sum?.[index] ?? 0,
+                      rain_sum: weatherData.daily.rain_sum?.[index] ?? 0,
+                      showers_sum: weatherData.daily.showers_sum?.[index] ?? 0,
+                      snowfall_sum: weatherData.daily.snowfall_sum?.[index] ?? 0,
+                      precipitation_hours: weatherData.daily.precipitation_hours?.[index] ?? 0,
+                      precipitation_probability_max: weatherData.daily.precipitation_probability_max?.[index] ?? 0,
+                      wind_speed_10m_max: weatherData.daily.wind_speed_10m_max?.[index] ?? 0,
+                      wind_gusts_10m_max: weatherData.daily.wind_gusts_10m_max?.[index] ?? 0,
+                      wind_direction_10m_dominant: weatherData.daily.wind_direction_10m_dominant?.[index] ?? 0,
+                      uv_index_max: weatherData.daily.uv_index_max?.[index] ?? 0,
+                      shortwave_radiation_sum: weatherData.daily.shortwave_radiation_sum?.[index] ?? 0,
+                      et0_fao_evapotranspiration: weatherData.daily.et0_fao_evapotranspiration?.[index] ?? 0,
                     }}
                     hourlyDataForDay={getHourlyDataForDay(time)}
                     isToday={isSameDay(parseISO(time), new Date())}
