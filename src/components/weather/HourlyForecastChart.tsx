@@ -51,11 +51,11 @@ export function HourlyForecastChart({ hourlyWeather }: HourlyForecastChartProps)
         <CardTitle>Saatlik Tahmin (24 Saat)</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="aspect-video w-full"> {/* Added aspect-video and w-full */}
-          <ResponsiveContainer width="100%" height="100%"> {/* Changed height to 100% */}
+        <div className="aspect-square md:aspect-video w-full"> {/* Changed aspect ratio for mobile */}
+          <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.3} />
-              <XAxis dataKey="time" tick={{ fontSize: 10 }} interval="preserveStartEnd" /> {/* Adjusted tick size and interval */}
+              <XAxis dataKey="time" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
               <YAxis yAxisId="left" orientation="left" stroke="hsl(var(--primary))" tick={{ fontSize: 10 }} unit="°C" />
               <YAxis yAxisId="right" orientation="right" stroke="hsl(var(--chart-2))" tick={{ fontSize: 10 }} unit="%" />
               <Tooltip content={<CustomTooltip />} />
