@@ -17,14 +17,14 @@ interface HourlyForecastChartProps {
 const SLICE_HOURS = 24;
 
 export function HourlyForecastChart({ hourlyWeather }: HourlyForecastChartProps) {
-  const chartData = hourlyWeather.time.slice(0, SLICE_HOURS).map((time, index) => ({
+  const chartData = (hourlyWeather?.time || []).slice(0, SLICE_HOURS).map((time, index) => ({
     time: format(parseISO(time), 'HH:mm'),
     date: parseISO(time), // For tooltip
-    Sıcaklık: hourlyWeather.temperature_2m[index],
-    'Yağış İhtimali': hourlyWeather.precipitation_probability[index],
-    Rüzgar: hourlyWeather.windspeed_10m[index],
-    Nem: hourlyWeather.relative_humidity_2m[index],
-    weatherCode: hourlyWeather.weathercode[index],
+    Sıcaklık: hourlyWeather?.temperature_2m?.[index] ?? 0,
+    'Yağış İhtimali': hourlyWeather?.precipitation_probability?.[index] ?? 0,
+    Rüzgar: hourlyWeather?.wind_speed_10m?.[index] ?? 0, // Corrected property name from windspeed_10m to wind_speed_10m
+    Nem: hourlyWeather?.relative_humidity_2m?.[index] ?? 0,
+    weatherCode: hourlyWeather?.weather_code?.[index] ?? 0, // Corrected property name from weathercode to weather_code
   }));
 
   const CustomTooltip = ({ active, payload, label }: any) => {
@@ -34,10 +34,10 @@ export function HourlyForecastChart({ hourlyWeather }: HourlyForecastChartProps)
         <div className="bg-card p-3 border rounded-md shadow-lg">
           <p className="font-semibold">{format(data.date, "eeee, HH:mm", { locale: tr })}</p>
           <WeatherIconDisplay code={data.weatherCode} isDay={new Date(data.date).getHours() > 6 && new Date(data.date).getHours() < 20} iconClassName="w-8 h-8 mx-auto" showDescription={false}/>
-          <p className="text-sm text-primary">{`Sıcaklık: ${data.Sıcaklık.toFixed(1)}°C`}</p>
-          <p className="text-sm text-blue-500">{`Yağış: %${data['Yağış İhtimali']}`}</p>
-          <p className="text-sm text-green-500">{`Rüzgar: ${data.Rüzgar.toFixed(1)} km/s`}</p>
-          <p className="text-sm text-indigo-500">{`Nem: %${data.Nem}`}</p>
+          <p className="text-sm text-primary">{`Sıcaklık: ${data.Sıcaklık?.toFixed(1) ?? 'N/A'}°C`}</p>
+          <p className="text-sm text-blue-500">{`Yağış: %${data['Yağış İhtimali'] ?? 'N/A'}`}</p>
+          <p className="text-sm text-green-500">{`Rüzgar: ${data.Rüzgar?.toFixed(1) ?? 'N/A'} km/s`}</p>
+          <p className="text-sm text-indigo-500">{`Nem: %${data.Nem ?? 'N/A'}`}</p>
         </div>
       );
     }
