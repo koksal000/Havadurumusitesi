@@ -1,5 +1,6 @@
+
 import type {Metadata} from 'next';
-import { Inter } from 'next/font/google'; // Using Inter as a modern sans-serif font
+import { Inter } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { Navbar } from '@/components/layout/Navbar';
@@ -13,10 +14,10 @@ import {
   SidebarMenuItem, 
   SidebarMenuButton,
   SidebarInset,
-  SidebarFooter // Added SidebarFooter for the "Ana Sayfaya Dön" button
+  SidebarFooter
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
-import { CloudSun, Search, Map, Radar, Heart, Settings, Info, Mail, Home } from 'lucide-react'; // Added new icons
+import { CloudSun, Search, Map, Radar, Heart, Settings, Info, Mail, Home } from 'lucide-react';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
@@ -51,12 +52,11 @@ export default function RootLayout({
                 <SidebarMenu className="flex-grow">
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild className="w-full justify-start text-base py-2.5">
-                      <Link href="/"><Search className="mr-2 h-5 w-5" />Keşfet</Link>
+                      <Link href="/kesfet"><Search className="mr-2 h-5 w-5" />Keşfet</Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild className="w-full justify-start text-base py-2.5">
-                      {/* TODO: Create this page and update link if necessary */}
                       <Link href="/haritalar/sicaklik-ruzgar"><Map className="mr-2 h-5 w-5" />Sıcaklık ve Rüzgar Haritası</Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -72,19 +72,16 @@ export default function RootLayout({
                   </SidebarMenuItem>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild className="w-full justify-start text-base py-2.5">
-                      {/* TODO: Create this page and update link if necessary */}
                       <Link href="/ayarlar"><Settings className="mr-2 h-5 w-5" />Ayarlar</Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild className="w-full justify-start text-base py-2.5">
-                      {/* TODO: Create this page and update link if necessary */}
                       <Link href="/hakkimizda"><Info className="mr-2 h-5 w-5" />Hakkımızda</Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild className="w-full justify-start text-base py-2.5">
-                      {/* TODO: Create this page and update link if necessary */}
                       <Link href="/iletisim"><Mail className="mr-2 h-5 w-5" />İletişim</Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

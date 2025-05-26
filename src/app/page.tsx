@@ -1,166 +1,135 @@
 
 'use client';
 
-import { useState, useEffect, useMemo, useRef } from 'react';
-import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { getProvinces, getDistricts } from '@/lib/locationData';
-import { MapPin, Search } from 'lucide-react';
+import { CloudSun, MapPin, Radar, Compass, Info, Mail, BarChart3, Thermometer, WindIcon } from 'lucide-react';
+import Link from 'next/link';
+import Image from 'next/image';
 
-interface SearchableLocation {
-  province: string;
-  district: string;
-  lat: number;
-  lon: number;
-  displayText: string;
-}
-
-export default function HomePage() {
-  const router = useRouter();
-  const [allLocations, setAllLocations] = useState<SearchableLocation[]>([]);
-  const [searchTerm, setSearchTerm] = useState<string>('');
-  // selectedLocationInfo is used to confirm if a user has clicked a suggestion,
-  // but the primary driver for enabling the button and navigating is the searchTerm matching a displayText.
-  const [selectedLocationInfo, setSelectedLocationInfo] = useState<SearchableLocation | null>(null);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const searchContainerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const provincesData = getProvinces();
-    const locations: SearchableLocation[] = [];
-    provincesData.forEach(province => {
-      const districtsData = getDistricts(province);
-      districtsData.forEach(district => {
-        locations.push({
-          province,
-          district: district.name,
-          lat: district.lat,
-          lon: district.lon,
-          displayText: `${province} / ${district.name}`
-        });
-      });
-    });
-    setAllLocations(locations);
-  }, []);
-
-  const filteredResults = useMemo(() => {
-    if (!searchTerm.trim()) return [];
-    const lowerSearchTerm = searchTerm.toLowerCase().trim();
-    // Do not show suggestions if the current search term exactly matches a selected location
-    if (selectedLocationInfo && selectedLocationInfo.displayText.toLowerCase() === lowerSearchTerm) {
-        return [];
-    }
-    return allLocations.filter(location =>
-      location.displayText.toLowerCase().includes(lowerSearchTerm)
-    ).slice(0, 10); // Limit results for performance/UI
-  }, [searchTerm, allLocations, selectedLocationInfo]);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newSearchTerm = e.target.value;
-    setSearchTerm(newSearchTerm);
-    // If user types something different than the selected item, clear selection
-    if (selectedLocationInfo && selectedLocationInfo.displayText !== newSearchTerm) {
-        setSelectedLocationInfo(null);
-    }
-    setShowSuggestions(newSearchTerm.trim() !== "");
-  };
-
-  const handleSuggestionClick = (location: SearchableLocation) => {
-    setSelectedLocationInfo(location);
-    setSearchTerm(location.displayText);
-    setShowSuggestions(false);
-  };
-
-  const handleInputFocus = () => {
-    // Show suggestions if there's text and results, and no exact match is already selected.
-    if (searchTerm.trim() && filteredResults.length > 0 && (!selectedLocationInfo || selectedLocationInfo.displayText !== searchTerm)) {
-        setShowSuggestions(true);
-    }
-  };
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
-        setShowSuggestions(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [searchContainerRef]);
-
-  const canShowWeather = useMemo(() => {
-    const term = searchTerm.trim().toLowerCase();
-    if (!term) return false;
-    return allLocations.some(loc => loc.displayText.toLowerCase() === term);
-  }, [searchTerm, allLocations]);
-
-  const handleShowWeather = () => {
-    const term = searchTerm.trim().toLowerCase();
-    const locationToNavigate = allLocations.find(loc => loc.displayText.toLowerCase() === term);
-
-    if (locationToNavigate) {
-      router.push(`/konum/${encodeURIComponent(locationToNavigate.province)}/${encodeURIComponent(locationToNavigate.district)}`);
-    } else {
-      alert("Lütfen geçerli bir konum seçin veya tam adını girin (örn: İstanbul / Kadıköy).");
-    }
-  };
-
+export default function LandingPage() {
   return (
     <div className="space-y-12">
-      <Card className="shadow-lg rounded-xl">
-        <CardHeader>
-          <CardTitle className="text-2xl font-semibold text-center">Hava Durumunu Keşfet</CardTitle>
-          <CardDescription className="text-center">
-            Türkiye'deki tüm il ve ilçelerin anlık hava durumu bilgilerine ulaşın.
-            Konum adını (örn: Ankara / Çankaya veya sadece Çankaya) yazarak arama yapabilirsiniz.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6 p-6">
-          <div ref={searchContainerRef} className="relative">
-            <label htmlFor="location-search" className="block text-sm font-medium mb-1">Konum Ara</label>
-            <div className="relative">
-              <Input
-                id="location-search"
-                type="text"
-                placeholder="İl / İlçe adı yazın..."
-                value={searchTerm}
-                onChange={handleInputChange}
-                onFocus={handleInputFocus}
-                className="pr-10"
-                autoComplete="off"
-              />
-              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-            </div>
-            {showSuggestions && filteredResults.length > 0 && (
-              <div className="absolute z-10 mt-1 w-full bg-card border rounded-md shadow-lg max-h-60 overflow-y-auto">
-                {filteredResults.map(location => (
-                  <Button
-                    key={`${location.province}-${location.district}`}
-                    variant="ghost"
-                    className="w-full justify-start p-2 hover:bg-accent text-left h-auto" // Added h-auto for multi-line
-                    onClick={() => handleSuggestionClick(location)}
-                  >
-                    {location.displayText}
-                  </Button>
-                ))}
-              </div>
-            )}
+      <Card className="shadow-xl rounded-xl overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-primary/10 to-accent/10 p-8">
+          <div className="flex flex-col items-center text-center">
+            <CloudSun className="w-24 h-24 text-primary mb-4" />
+            <CardTitle className="text-4xl font-bold tracking-tight">HavaDurumuX</CardTitle>
+            <CardDescription className="text-xl text-muted-foreground mt-2">
+              Türkiye'nin En Kapsamlı Hava Durumu Platformu
+            </CardDescription>
           </div>
-          <Button
-            onClick={handleShowWeather}
-            className="w-full text-lg py-3 mt-4"
-            size="lg"
-            disabled={!canShowWeather}
-          >
-            <MapPin className="mr-2 h-5 w-5" />
-            Hava Durumunu Göster
-          </Button>
+        </CardHeader>
+        <CardContent className="p-6 md:p-10 space-y-8">
+          <section className="text-center">
+            <h2 className="text-2xl font-semibold mb-3">Hava Durumu Parmaklarınızın Ucunda!</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              HavaDurumuX ile Türkiye'nin 81 il ve 973 ilçesi için en güncel ve detaylı hava durumu bilgilerine,
+              saatlik ve günlük tahminlere, canlı radar ve uydu görüntülerine kolayca ulaşın.
+              Favori konumlarınızı kaydedin, seyahatlerinizi planlayın ve hava koşullarına her zaman hazırlıklı olun.
+            </p>
+          </section>
+
+          <div className="grid md:grid-cols-3 gap-6 text-center">
+            <FeatureCard
+              Icon={MapPin}
+              title="Detaylı Konum Bilgisi"
+              description="Her ilçe için sıcaklık, hissedilen sıcaklık, nem, basınç, rüzgar yönü/hızı, görüş mesafesi ve UV indeksi gibi ayrıntılı verilere erişin."
+            />
+            <FeatureCard
+              Icon={BarChart3}
+              title="Grafiksel Tahminler"
+              description="Saatlik ve 7 günlük hava durumu tahminlerini anlaşılır grafikler ve ikonlarla inceleyin. Yağış ihtimali, gündoğumu/günbatımı saatleri ve daha fazlası."
+            />
+            <FeatureCard
+              Icon={Radar}
+              title="Canlı Radar ve Haritalar"
+              description="Gelişmiş radar görüntüleri ile yağış takibi yapın. Sıcaklık ve rüzgar haritaları ile genel durumu gözlemleyin."
+            />
+          </div>
+          
+          <div className="text-center mt-10">
+            <Button asChild size="lg" className="text-lg py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition-shadow">
+              <Link href="/kesfet">
+                <Compass className="mr-2 h-6 w-6" />
+                Hava Durumunu Keşfetmeye Başla
+              </Link>
+            </Button>
+          </div>
         </CardContent>
       </Card>
+
+      <div className="grid md:grid-cols-2 gap-6">
+        <InfoCard
+          Icon={Info}
+          title="Hakkımızda"
+          description="HavaDurumuX'in misyonu ve vizyonu hakkında daha fazla bilgi edinin."
+          link="/hakkimizda"
+          linkLabel="Daha Fazla Bilgi"
+        />
+        <InfoCard
+          Icon={Mail}
+          title="İletişim"
+          description="Öneri, şikayet veya işbirliği için bizimle iletişime geçin."
+          link="/iletisim"
+          linkLabel="İletişime Geç"
+        />
+      </div>
+       <div className="py-6 text-center">
+          <Image 
+            src="https://placehold.co/1200x300.png" 
+            alt="Türkiye haritası üzerinde hava durumu ikonları" 
+            width={1200} 
+            height={300} 
+            className="rounded-lg shadow-md mx-auto"
+            data-ai-hint="weather map turkey"
+            />
+            <p className="text-xs text-muted-foreground mt-2">Görsel temsilidir.</p>
+       </div>
     </div>
   );
 }
+
+interface FeatureCardProps {
+  Icon: React.ElementType;
+  title: string;
+  description: string;
+}
+
+function FeatureCard({ Icon, title, description }: FeatureCardProps) {
+  return (
+    <div className="p-6 bg-card rounded-lg shadow-md border border-border/50 hover:shadow-lg transition-shadow">
+      <Icon className="w-12 h-12 text-primary mx-auto mb-4" />
+      <h3 className="text-xl font-semibold mb-2">{title}</h3>
+      <p className="text-sm text-muted-foreground">{description}</p>
+    </div>
+  );
+}
+
+interface InfoCardProps {
+  Icon: React.ElementType;
+  title: string;
+  description: string;
+  link: string;
+  linkLabel: string;
+}
+
+function InfoCard({ Icon, title, description, link, linkLabel }: InfoCardProps) {
+  return (
+    <Card className="shadow-lg rounded-xl hover:shadow-xl transition-shadow">
+      <CardHeader className="flex flex-row items-center gap-4">
+        <Icon className="w-10 h-10 text-primary" />
+        <div>
+          <CardTitle className="text-xl">{title}</CardTitle>
+          <CardDescription>{description}</CardDescription>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <Button asChild variant="outline" className="w-full">
+          <Link href={link}>{linkLabel}</Link>
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
