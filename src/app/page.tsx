@@ -1,61 +1,111 @@
 
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { getProvinces, getDistricts, findDistrict } from '@/lib/locationData';
-import type { District } from '@/types/location';
+import { getProvinces, getDistricts } from '@/lib/locationData';
 import { MapPin, Search } from 'lucide-react';
+
+interface SearchableLocation {
+  province: string;
+  district: string;
+  lat: number;
+  lon: number;
+  displayText: string;
+}
 
 export default function HomePage() {
   const router = useRouter();
-  const [provinces, setProvinces] = useState<string[]>([]);
-  const [selectedProvince, setSelectedProvince] = useState<string>('');
-  const [districts, setDistricts] = useState<District[]>([]);
+  const [allLocations, setAllLocations] = useState<SearchableLocation[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const [selectedDistrict, setSelectedDistrict] = useState<string>('');
+  // selectedLocationInfo is used to confirm if a user has clicked a suggestion,
+  // but the primary driver for enabling the button and navigating is the searchTerm matching a displayText.
+  const [selectedLocationInfo, setSelectedLocationInfo] = useState<SearchableLocation | null>(null);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setProvinces(getProvinces());
+    const provincesData = getProvinces();
+    const locations: SearchableLocation[] = [];
+    provincesData.forEach(province => {
+      const districtsData = getDistricts(province);
+      districtsData.forEach(district => {
+        locations.push({
+          province,
+          district: district.name,
+          lat: district.lat,
+          lon: district.lon,
+          displayText: `${province} / ${district.name}`
+        });
+      });
+    });
+    setAllLocations(locations);
   }, []);
 
-  useEffect(() => {
-    if (selectedProvince) {
-      setDistricts(getDistricts(selectedProvince));
-      setSearchTerm(''); // Reset search term when province changes
-      setSelectedDistrict(''); // Reset selected district
-    } else {
-      setDistricts([]);
+  const filteredResults = useMemo(() => {
+    if (!searchTerm.trim()) return [];
+    const lowerSearchTerm = searchTerm.toLowerCase().trim();
+    // Do not show suggestions if the current search term exactly matches a selected location
+    if (selectedLocationInfo && selectedLocationInfo.displayText.toLowerCase() === lowerSearchTerm) {
+        return [];
     }
-  }, [selectedProvince]);
+    return allLocations.filter(location =>
+      location.displayText.toLowerCase().includes(lowerSearchTerm)
+    ).slice(0, 10); // Limit results for performance/UI
+  }, [searchTerm, allLocations, selectedLocationInfo]);
 
-  const filteredDistricts = useMemo(() => {
-    if (!searchTerm) return districts;
-    return districts.filter(district =>
-      district.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [searchTerm, districts]);
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newSearchTerm = e.target.value;
+    setSearchTerm(newSearchTerm);
+    // If user types something different than the selected item, clear selection
+    if (selectedLocationInfo && selectedLocationInfo.displayText !== newSearchTerm) {
+        setSelectedLocationInfo(null);
+    }
+    setShowSuggestions(newSearchTerm.trim() !== "");
+  };
+
+  const handleSuggestionClick = (location: SearchableLocation) => {
+    setSelectedLocationInfo(location);
+    setSearchTerm(location.displayText);
+    setShowSuggestions(false);
+  };
+
+  const handleInputFocus = () => {
+    // Show suggestions if there's text and results, and no exact match is already selected.
+    if (searchTerm.trim() && filteredResults.length > 0 && (!selectedLocationInfo || selectedLocationInfo.displayText !== searchTerm)) {
+        setShowSuggestions(true);
+    }
+  };
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [searchContainerRef]);
+
+  const canShowWeather = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    if (!term) return false;
+    return allLocations.some(loc => loc.displayText.toLowerCase() === term);
+  }, [searchTerm, allLocations]);
 
   const handleShowWeather = () => {
-    if (selectedProvince && selectedDistrict) {
-       const districtData = findDistrict(selectedProvince, selectedDistrict);
-       if (districtData) {
-        router.push(`/konum/${encodeURIComponent(selectedProvince)}/${encodeURIComponent(selectedDistrict)}`);
-       } else {
-        // Handle case where district is selected but not found (e.g. typed manually and invalid)
-        alert("Lütfen geçerli bir ilçe seçin.");
-       }
-    } else if (selectedProvince && searchTerm && filteredDistricts.length === 1) {
-      // If only one district matches search, auto-select it
-      const districtToNavigate = filteredDistricts[0].name;
-      router.push(`/konum/${encodeURIComponent(selectedProvince)}/${encodeURIComponent(districtToNavigate)}`);
+    const term = searchTerm.trim().toLowerCase();
+    const locationToNavigate = allLocations.find(loc => loc.displayText.toLowerCase() === term);
+
+    if (locationToNavigate) {
+      router.push(`/konum/${encodeURIComponent(locationToNavigate.province)}/${encodeURIComponent(locationToNavigate.district)}`);
     } else {
-      alert("Lütfen bir il ve ilçe seçin veya arayın.");
+      alert("Lütfen geçerli bir konum seçin veya tam adını girin (örn: İstanbul / Kadıköy).");
     }
   };
 
@@ -66,68 +116,48 @@ export default function HomePage() {
           <CardTitle className="text-2xl font-semibold text-center">Hava Durumunu Keşfet</CardTitle>
           <CardDescription className="text-center">
             Türkiye'deki tüm il ve ilçelerin anlık hava durumu bilgilerine ulaşın.
+            Konum adını (örn: Ankara / Çankaya veya sadece Çankaya) yazarak arama yapabilirsiniz.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6 p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
-            <div>
-              <label htmlFor="province-select" className="block text-sm font-medium mb-1">İl Seçin</label>
-              <Select value={selectedProvince} onValueChange={setSelectedProvince}>
-                <SelectTrigger id="province-select" aria-label="İl Seçimi">
-                  <SelectValue placeholder="Bir il seçin..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {provinces.map(province => (
-                    <SelectItem key={province} value={province}>{province}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          <div ref={searchContainerRef} className="relative">
+            <label htmlFor="location-search" className="block text-sm font-medium mb-1">Konum Ara</label>
+            <div className="relative">
+              <Input
+                id="location-search"
+                type="text"
+                placeholder="İl / İlçe adı yazın..."
+                value={searchTerm}
+                onChange={handleInputChange}
+                onFocus={handleInputFocus}
+                className="pr-10"
+                autoComplete="off"
+              />
+              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             </div>
-            <div>
-              <label htmlFor="district-search" className="block text-sm font-medium mb-1">İlçe Ara veya Seç</label>
-              <div className="relative">
-                <Input
-                  id="district-search"
-                  type="text"
-                  placeholder={selectedProvince ? "İlçe adı yazın veya listeden seçin..." : "Önce il seçin..."}
-                  value={searchTerm}
-                  onChange={(e) => {
-                    setSearchTerm(e.target.value);
-                    const matchedDistrict = districts.find(d => d.name.toLowerCase() === e.target.value.toLowerCase());
-                    if (matchedDistrict) setSelectedDistrict(matchedDistrict.name); else setSelectedDistrict('');
-                  }}
-                  disabled={!selectedProvince}
-                  className="pr-10"
-                />
-                <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            {showSuggestions && filteredResults.length > 0 && (
+              <div className="absolute z-10 mt-1 w-full bg-card border rounded-md shadow-lg max-h-60 overflow-y-auto">
+                {filteredResults.map(location => (
+                  <Button
+                    key={`${location.province}-${location.district}`}
+                    variant="ghost"
+                    className="w-full justify-start p-2 hover:bg-accent text-left h-auto" // Added h-auto for multi-line
+                    onClick={() => handleSuggestionClick(location)}
+                  >
+                    {location.displayText}
+                  </Button>
+                ))}
               </div>
-              {selectedProvince && searchTerm && filteredDistricts.length > 0 && (
-                 <div className="absolute z-10 mt-1 w-full bg-card border rounded-md shadow-lg max-h-60 overflow-y-auto">
-                   {filteredDistricts.map(district => (
-                     <Button
-                       key={district.name}
-                       variant="ghost"
-                       className="w-full justify-start p-2 hover:bg-accent"
-                       onClick={() => {
-                         setSearchTerm(district.name);
-                         setSelectedDistrict(district.name);
-                       }}
-                     >
-                       {district.name}
-                     </Button>
-                   ))}
-                 </div>
-              )}
-            </div>
+            )}
           </div>
-          <Button 
-            onClick={handleShowWeather} 
-            className="w-full text-lg py-3 mt-4" 
-            size="lg" 
-            disabled={!selectedProvince || (!selectedDistrict && !searchTerm) || (searchTerm && filteredDistricts.length === 0 && !selectedDistrict) || (searchTerm && filteredDistricts.length > 1 && !selectedDistrict && !districts.find(d => d.name.toLowerCase() === searchTerm.toLowerCase()))}
+          <Button
+            onClick={handleShowWeather}
+            className="w-full text-lg py-3 mt-4"
+            size="lg"
+            disabled={!canShowWeather}
           >
             <MapPin className="mr-2 h-5 w-5" />
-            İlçeyi Göster
+            Hava Durumunu Göster
           </Button>
         </CardContent>
       </Card>
