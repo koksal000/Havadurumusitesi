@@ -4,8 +4,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useFavorites } from './useFavorites';
 import { getWeatherData } from '@/lib/weatherApi';
-import type { WeatherData, DailyWeather } from '@/types/weather';
-import { useToast } from '@/components/ui/use-toast';
+import type { StoredNotification } from '@/types/notifications';
+import { useStoredNotifications } from './useStoredNotifications';
 import { getWeatherInfo } from '@/lib/weatherIcons';
 
 const NOTIFICATION_ENABLED_KEY = 'havadurumux-notifications-enabled';
@@ -14,25 +14,27 @@ const POLLING_INTERVAL = 10 * 60 * 1000; // 10 minutes
 
 // Define thresholds for severe weather
 const SEVERE_WEATHER_THRESHOLDS = {
-  HEAVY_RAIN_MM: 20, // mm in 24h for daily precipitation_sum
-  STRONG_WIND_KMH: 60, // km/h for daily wind_speed_10m_max
-  STRONG_GUST_KMH: 80, // km/h for daily wind_gusts_10m_max
-  HEAVY_SNOW_CM: 10, // cm in 24h for daily snowfall_sum
-  // Weather codes for immediate alerts
-  STORM_CODES: [95, 96, 99], // Thunderstorm, Thunderstorm with slight/heavy hail
+  HEAVY_RAIN_MM: 15, // mm in 24h for daily precipitation_sum
+  STRONG_WIND_KMH: 50, // km/h for daily wind_speed_10m_max
+  STRONG_GUST_KMH: 75, // km/h for daily wind_gusts_10m_max
+  HEAVY_SNOW_CM: 5,  // cm in 24h for daily snowfall_sum
+  STORM_CODES: [95, 96, 99], 
   HAIL_CODES: [96, 99],
-  // Consider other specific weather codes if needed, e.g. freezing rain, heavy drizzle
+  FOG_CODES: [45, 48],
+  FREEZING_RAIN_CODES: [56, 57, 66, 67],
 };
 
-interface SevereWeatherAlert {
+interface WeatherEvent {
   locationName: string;
   condition: string;
   details: string;
+  type: StoredNotification['type'];
+  link: string;
 }
 
 export function useWeatherNotificationManager() {
   const { favorites } = useFavorites();
-  const { toast } = useToast();
+  const { addNotification } = useStoredNotifications();
   const [isManagerActive, setIsManagerActive] = useState(false);
 
   const checkAndNotify = useCallback(async () => {
@@ -47,57 +49,85 @@ export function useWeatherNotificationManager() {
 
     console.log('Checking weather for notifications for favorites:', favorites);
 
-    const alerts: SevereWeatherAlert[] = [];
+    const events: WeatherEvent[] = [];
 
     for (const fav of favorites) {
       try {
         const weather = await getWeatherData(fav.lat, fav.lon);
-        if (weather && weather.daily && weather.current) {
-          const locationName = `${fav.province} / ${fav.district}`;
-          const dailyToday = weather.daily;
-          const currentToday = weather.current;
+        if (!weather || !weather.daily || !weather.current) continue;
 
-          // Check based on daily summaries (for today)
-          if (dailyToday.time && dailyToday.time.length > 0) {
-            const todayIndex = 0; // Assuming first entry is today
+        const locationName = `${fav.province} / ${fav.district}`;
+        const link = `/konum/${encodeURIComponent(fav.province)}/${encodeURIComponent(fav.district)}`;
+        const dailyToday = weather.daily;
+        const currentToday = weather.current;
+        const todayIndex = 0; // Assuming first entry is today
+        
+        const currentCodeInfo = getWeatherInfo(currentToday.weather_code, currentToday.is_day === 1);
 
-            if ((dailyToday.precipitation_sum?.[todayIndex] ?? 0) >= SEVERE_WEATHER_THRESHOLDS.HEAVY_RAIN_MM) {
-              alerts.push({ locationName, condition: "Şiddetli Yağmur", details: `Beklenen Yağış: ${dailyToday.precipitation_sum?.[todayIndex]}mm` });
-            }
-            if ((dailyToday.snowfall_sum?.[todayIndex] ?? 0) >= SEVERE_WEATHER_THRESHOLDS.HEAVY_SNOW_CM) {
-              alerts.push({ locationName, condition: "Yoğun Kar Yağışı", details: `Beklenen Kar: ${dailyToday.snowfall_sum?.[todayIndex]}cm` });
-            }
-            if ((dailyToday.wind_speed_10m_max?.[todayIndex] ?? 0) >= SEVERE_WEATHER_THRESHOLDS.STRONG_WIND_KMH) {
-              alerts.push({ locationName, condition: "Şiddetli Rüzgar", details: `Max Rüzgar: ${dailyToday.wind_speed_10m_max?.[todayIndex]}km/s` });
-            }
-             if ((dailyToday.wind_gusts_10m_max?.[todayIndex] ?? 0) >= SEVERE_WEATHER_THRESHOLDS.STRONG_GUST_KMH) {
-              alerts.push({ locationName, condition: "Çok Şiddetli Rüzgar Hamlesi", details: `Max Hamle: ${dailyToday.wind_gusts_10m_max?.[todayIndex]}km/s` });
-            }
-             // Check current weather_code for immediate severe events
-            if (SEVERE_WEATHER_THRESHOLDS.STORM_CODES.includes(currentToday.weather_code)) {
-                 alerts.push({ locationName, condition: "Fırtına Riski", details: `${getWeatherInfo(currentToday.weather_code, currentToday.is_day === 1).description}` });
-            } else if (SEVERE_WEATHER_THRESHOLDS.HAIL_CODES.includes(currentToday.weather_code)) {
-                 alerts.push({ locationName, condition: "Dolu Riski", details: `${getWeatherInfo(currentToday.weather_code, currentToday.is_day === 1).description}` });
-            }
-          }
+        // Current Severe Events
+        if (SEVERE_WEATHER_THRESHOLDS.STORM_CODES.includes(currentToday.weather_code)) {
+          events.push({ locationName, condition: "Fırtına Uyarısı", details: currentCodeInfo.description, type: 'alert', link });
+        } else if (SEVERE_WEATHER_THRESHOLDS.HAIL_CODES.includes(currentToday.weather_code)) {
+          events.push({ locationName, condition: "Dolu Uyarısı", details: currentCodeInfo.description, type: 'alert', link });
+        } else if (SEVERE_WEATHER_THRESHOLDS.FREEZING_RAIN_CODES.includes(currentToday.weather_code)) {
+          events.push({ locationName, condition: "Donan Yağmur Uyarısı", details: currentCodeInfo.description, type: 'alert', link });
         }
+
+        // Daily Summaries for Alerts
+        if ((dailyToday.precipitation_sum?.[todayIndex] ?? 0) >= SEVERE_WEATHER_THRESHOLDS.HEAVY_RAIN_MM) {
+          events.push({ locationName, condition: "Şiddetli Yağmur Bekleniyor", details: `Günlük Toplam: ${dailyToday.precipitation_sum?.[todayIndex]?.toFixed(1)}mm`, type: 'alert', link });
+        }
+        if ((dailyToday.snowfall_sum?.[todayIndex] ?? 0) >= SEVERE_WEATHER_THRESHOLDS.HEAVY_SNOW_CM) {
+          events.push({ locationName, condition: "Yoğun Kar Yağışı Bekleniyor", details: `Günlük Toplam: ${dailyToday.snowfall_sum?.[todayIndex]?.toFixed(1)}cm`, type: 'alert', link });
+        }
+        if ((dailyToday.wind_speed_10m_max?.[todayIndex] ?? 0) >= SEVERE_WEATHER_THRESHOLDS.STRONG_WIND_KMH) {
+          events.push({ locationName, condition: "Şiddetli Rüzgar Bekleniyor", details: `Max Hız: ${dailyToday.wind_speed_10m_max?.[todayIndex]?.toFixed(1)}km/s`, type: 'alert', link });
+        }
+        if ((dailyToday.wind_gusts_10m_max?.[todayIndex] ?? 0) >= SEVERE_WEATHER_THRESHOLDS.STRONG_GUST_KMH) {
+          events.push({ locationName, condition: "Çok Şiddetli Rüzgar Hamlesi Bekleniyor", details: `Max Hamle: ${dailyToday.wind_gusts_10m_max?.[todayIndex]?.toFixed(1)}km/s`, type: 'alert', link });
+        }
+        
+        // Informational Notifications (less severe but noteworthy)
+        const dailyWeatherCodeInfo = getWeatherInfo(dailyToday.weather_code?.[todayIndex] ?? 0, true); // Assume day for daily summary icon
+        
+        if ((dailyToday.precipitation_probability_max?.[todayIndex] ?? 0) >= 50 && (dailyToday.precipitation_sum?.[todayIndex] ?? 0) < SEVERE_WEATHER_THRESHOLDS.HEAVY_RAIN_MM) {
+            if (!events.some(e => e.locationName === locationName && e.condition.includes("Yağmur"))) { // Avoid duplicate rain info
+                 events.push({ locationName, condition: "Yağmur Beklentisi", details: `Olasılık: %${dailyToday.precipitation_probability_max?.[todayIndex]}, Beklenen Miktar: ${dailyToday.precipitation_sum?.[todayIndex]?.toFixed(1)}mm. ${dailyWeatherCodeInfo.description}`, type: 'info', link });
+            }
+        }
+        if ((dailyToday.snowfall_sum?.[todayIndex] ?? 0) > 0 && (dailyToday.snowfall_sum?.[todayIndex] ?? 0) < SEVERE_WEATHER_THRESHOLDS.HEAVY_SNOW_CM) {
+             if (!events.some(e => e.locationName === locationName && e.condition.includes("Kar"))) {
+                events.push({ locationName, condition: "Kar Yağışı Beklentisi", details: `Beklenen Miktar: ${dailyToday.snowfall_sum?.[todayIndex]?.toFixed(1)}cm. ${dailyWeatherCodeInfo.description}`, type: 'info', link });
+            }
+        }
+         if (SEVERE_WEATHER_THRESHOLDS.FOG_CODES.includes(currentToday.weather_code) || SEVERE_WEATHER_THRESHOLDS.FOG_CODES.includes(dailyToday.weather_code?.[todayIndex] ?? -1)) {
+            if (!events.some(e => e.locationName === locationName && e.condition.includes("Sis"))) {
+                events.push({ locationName, condition: "Sis Beklentisi", details: `${currentCodeInfo.description} / ${dailyWeatherCodeInfo.description}`, type: 'info', link });
+            }
+        }
+
+
       } catch (error) {
         console.error(`Error fetching weather data for ${fav.district}:`, error);
       }
     }
 
-    alerts.forEach(alert => {
-      new Notification(`Hava Durumu Uyarısı: ${alert.locationName}`, {
-        body: `${alert.condition} bekleniyor. Detay: ${alert.details}`,
-        icon: '/logo.png', // Replace with your app's logo path
+    events.forEach(event => {
+      // Show system notification
+      new Notification(`Hava Durumu: ${event.locationName}`, {
+        body: `${event.condition}. ${event.details}`,
+        icon: '/logo.png', 
       });
-      toast({
-        title: `Hava Durumu Uyarısı: ${alert.locationName}`,
-        description: `${alert.condition} bekleniyor. ${alert.details}`,
-        duration: 10000, // Show toast longer
+      // Store notification
+      addNotification({
+        type: event.type,
+        title: `${event.type === 'alert' ? '⚠️ Uyarı' : 'ℹ️ Bilgi'}: ${event.locationName} - ${event.condition}`,
+        body: event.details,
+        locationName: event.locationName,
+        link: event.link,
       });
     });
-  }, [favorites, toast]);
+  }, [favorites, addNotification]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -108,9 +138,8 @@ export function useWeatherNotificationManager() {
         setIsManagerActive(enabled && permission === 'granted');
     }
     
-    checkInitialStatus(); // Check on mount
+    checkInitialStatus();
 
-    // Listen for changes in localStorage from other tabs/windows or settings page
     const handleStorageChange = (event: StorageEvent) => {
       if (event.key === NOTIFICATION_ENABLED_KEY || event.key === NOTIFICATION_PERMISSION_KEY) {
         checkInitialStatus();
@@ -118,10 +147,9 @@ export function useWeatherNotificationManager() {
     };
     window.addEventListener('storage', handleStorageChange);
 
-
     let intervalId: NodeJS.Timeout | null = null;
     if (isManagerActive && favorites.length > 0) {
-      checkAndNotify(); // Initial check
+      checkAndNotify(); 
       intervalId = setInterval(checkAndNotify, POLLING_INTERVAL);
       console.log('Weather notification manager started polling.');
     } else {
@@ -138,12 +166,10 @@ export function useWeatherNotificationManager() {
     };
   }, [isManagerActive, favorites, checkAndNotify]);
 
-  // This hook doesn't render anything itself, it just manages the background process.
   return null; 
 }
 
-// Helper component to mount the hook
 export function WeatherNotificationInitializer() {
   useWeatherNotificationManager();
-  return null; // This component does not render anything
+  return null;
 }
