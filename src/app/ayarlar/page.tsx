@@ -68,9 +68,11 @@ export default function AyarlarPage() {
     if (typeof window !== 'undefined') {
       const savedNotificationsEnabled = localStorage.getItem(NOTIFICATION_ENABLED_KEY);
       setNotificationsEnabledSetting(savedNotificationsEnabled === 'true');
+      console.log("Initial notificationsEnabledSetting from localStorage:", savedNotificationsEnabled === 'true');
       
       if (typeof Notification !== 'undefined') {
         setCurrentNotificationPermission(Notification.permission);
+        console.log("Initial currentNotificationPermission:", Notification.permission);
       } else {
         console.warn("Tarayıcı Notification API'sini desteklemiyor.");
       }
@@ -86,14 +88,14 @@ export default function AyarlarPage() {
       
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistration().then(registration => {
-          console.log('Initial SW registration check:', registration);
+          console.log('Initial SW registration check from useEffect:', registration);
           setIsSWRegistered(!!registration);
         });
       }
     }
   }, []);
 
-  const registerServiceWorkerAndSubscribe = async () => {
+  const registerServiceWorkerAndSubscribe = async (): Promise<{ swRegistered: boolean, pushSubscribed: boolean }> => {
     if (!('serviceWorker' in navigator) || !('PushManager' in window) || typeof Notification === 'undefined') {
       toast({ title: "Push Bildirimleri Desteklenmiyor", description: "Tarayıcınız Service Worker veya Push API'sini desteklemiyor.", variant: "destructive" });
       return { swRegistered: false, pushSubscribed: false };
@@ -102,7 +104,6 @@ export default function AyarlarPage() {
     try {
       console.log('Registering service worker...');
       const registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
-      setIsSWRegistered(true); // Update state here
       console.log('Service Worker başarıyla kaydedildi.', registration);
       
       try {
@@ -119,16 +120,15 @@ export default function AyarlarPage() {
         let subErrorMessage = subError.message || 'Bilinmeyen abonelik hatası.';
         if (subError.name === 'NotAllowedError') {
             subErrorMessage = "Push abonelik izni verilmedi veya reddedildi.";
-        } else if (!VAPID_PUBLIC_KEY || VAPID_PUBLIC_KEY.includes("PLACEHOLDER")) {
+        } else if (!VAPID_PUBLIC_KEY || VAPID_PUBLIC_KEY.includes("PLACEHOLDER") || VAPID_PUBLIC_KEY.length < 50) { // Basic check for placeholder or too short key
             subErrorMessage = "Push aboneliği için VAPID public key eksik veya hatalı. Lütfen geliştirici ile iletişime geçin.";
         }
         toast({ title: "Push Aboneliği Başarısız", description: `Abonelik hatası: ${subErrorMessage}`, variant: "destructive", duration: 7000 });
-        return { swRegistered: true, pushSubscribed: false };
+        return { swRegistered: true, pushSubscribed: false }; // SW might be registered even if push fails
       }
     } catch (error: any) {
       console.error('Service Worker kaydedilirken hata:', error);
       toast({ title: "Service Worker Kayıt Hatası", description: `Bir hata oluştu: ${error.message || 'Bilinmeyen SW kayıt hatası.'}`, variant: "destructive" });
-      setIsSWRegistered(false); // Update state here
       return { swRegistered: false, pushSubscribed: false };
     }
   };
@@ -138,11 +138,12 @@ export default function AyarlarPage() {
     playClickSound();
     localStorage.setItem(NOTIFICATION_ENABLED_KEY, JSON.stringify(checked));
     setNotificationsEnabledSetting(checked); 
+    console.log("handleNotificationToggle - checked:", checked, "notificationsEnabledSetting set to:", checked);
 
     if (checked) {
       if (typeof Notification === 'undefined') {
          toast({ title: "Bildirimler Desteklenmiyor", description: "Tarayıcınız bildirimleri desteklemiyor.", variant: "destructive" });
-         setNotificationsEnabledSetting(false);
+         setNotificationsEnabledSetting(false); // Revert
          localStorage.setItem(NOTIFICATION_ENABLED_KEY, JSON.stringify(false));
          setIsSWRegistered(false);
          return;
@@ -156,15 +157,16 @@ export default function AyarlarPage() {
         console.log('Notification permission result:', permission);
       }
       
-
       if (permission === 'granted') {
-        const { swRegistered } = await registerServiceWorkerAndSubscribe();
-        if (swRegistered) {
+        const { swRegistered: swRegStatus, pushSubscribed } = await registerServiceWorkerAndSubscribe();
+        setIsSWRegistered(swRegStatus); // Update state based on actual registration result
+        console.log("handleNotificationToggle - After registerServiceWorkerAndSubscribe: swRegStatus:", swRegStatus, "isSWRegistered state set to:", swRegStatus);
+
+        if (swRegStatus) {
           toast({ title: "Bildirim Sistemi Etkin", description: "Tarayıcı bildirimleri Service Worker üzerinden yönetilecektir." });
         } else {
-          setNotificationsEnabledSetting(false);
+          setNotificationsEnabledSetting(false); // Revert the toggle if SW registration failed
           localStorage.setItem(NOTIFICATION_ENABLED_KEY, JSON.stringify(false));
-          setIsSWRegistered(false);
           toast({ title: "Bildirimler Etkinleştirilemedi", description: "Service Worker kaydı yapılamadı.", variant: "destructive" });
         }
       } else if (permission === 'denied') {
@@ -173,20 +175,20 @@ export default function AyarlarPage() {
           description: "Tarayıcı ayarlarından bildirimlere izin vermeniz gerekiyor.",
           variant: "destructive",
         });
-        setNotificationsEnabledSetting(false);
+        setNotificationsEnabledSetting(false); // Revert
         localStorage.setItem(NOTIFICATION_ENABLED_KEY, JSON.stringify(false));
         setIsSWRegistered(false);
-      } else { 
+      } else { // Permission is 'default' and user likely dismissed the prompt
          toast({
             title: "Bildirim İzni Gerekli",
             description: "Bildirimleri almak için izin vermelisiniz.",
             variant: "destructive",
           });
-        setNotificationsEnabledSetting(false);
+        setNotificationsEnabledSetting(false); // Revert
         localStorage.setItem(NOTIFICATION_ENABLED_KEY, JSON.stringify(false));
         setIsSWRegistered(false);
       }
-    } else {
+    } else { // Turning notifications OFF
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistration().then(registration => {
           if (registration) {
@@ -204,24 +206,22 @@ export default function AyarlarPage() {
                 setIsSWRegistered(false); 
                 toast({ title: "Bildirimler Devre Dışı", description: "Hava durumu uyarıları almayacaksınız. Service Worker kaydı kaldırıldı." });
               } else {
-                // If unregister returns false, it might mean it's already unregistered or couldn't be.
-                // We should still ensure our state reflects no SW.
-                setIsSWRegistered(false);
+                setIsSWRegistered(false); // Ensure state reflects no SW even if unregister returns false
                 toast({ title: "Bildirimler Devre Dışı", description: "Hava durumu uyarıları almayacaksınız." });
               }
             }).catch(err => {
                console.error('Service Worker kaydı kaldırılırken hata:', err);
-               setIsSWRegistered(false);
+               setIsSWRegistered(false); // Ensure state reflects no SW
                toast({ title: "Bildirimler Devre Dışı", description: "Hava durumu uyarıları almayacaksınız (SW kaldırma hatası)." });
             });
           } else {
+             setIsSWRegistered(false);
              toast({ title: "Bildirimler Devre Dışı", description: "Hava durumu uyarıları almayacaksınız." });
-             setIsSWRegistered(false); 
           }
         });
       } else {
-         toast({ title: "Bildirimler Devre Dışı", description: "Hava durumu uyarıları almayacaksınız." });
          setIsSWRegistered(false);
+         toast({ title: "Bildirimler Devre Dışı", description: "Hava durumu uyarıları almayacaksınız." });
       }
     }
   };
@@ -298,10 +298,11 @@ export default function AyarlarPage() {
     setTheme('light'); 
     localStorage.removeItem('havadurumux-theme');
 
+    // Turn off notifications and unregister SW
     localStorage.setItem(NOTIFICATION_ENABLED_KEY, JSON.stringify(false));
     setNotificationsEnabledSetting(false);
     if (typeof Notification !== 'undefined') {
-      setCurrentNotificationPermission(Notification.permission); 
+      setCurrentNotificationPermission(Notification.permission); // Reflect current browser state
     }
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistration().then(registration => {
@@ -329,7 +330,7 @@ export default function AyarlarPage() {
         setCurrentLocationPermission(null); 
     }
     
-    setGlobalSoundEnabled(false);
+    setGlobalSoundEnabled(false); // Turn off UI sounds via context
 
     toast({ title: "Tüm Ayarlar Sıfırlandı", description: "Uygulama ayarları varsayılan değerlere döndürüldü." });
   };
@@ -337,40 +338,36 @@ export default function AyarlarPage() {
   const sendTestNotification = async () => {
     playClickSound();
     console.log("sendTestNotification: Attempting to send test notification.");
-    console.log("sendTestNotification: isSWRegistered:", isSWRegistered, "currentNotificationPermission:", currentNotificationPermission);
+    console.log("sendTestNotification states: notificationsEnabledSetting:", notificationsEnabledSetting, "currentNotificationPermission:", currentNotificationPermission, "isSWRegistered:", isSWRegistered);
 
     if (!('serviceWorker' in navigator)) {
       toast({ title: "Service Worker Desteklenmiyor", description: "Tarayıcınız Service Worker API'sini desteklemiyor.", variant: "destructive" });
       return;
     }
-    if (!isSWRegistered) {
-      toast({
-        title: "Service Worker Kayıtlı Değil",
-        description: "Test bildirimi için Service Worker'ın kayıtlı olması gerekir. Lütfen bildirim ayarını açıp, tarayıcı iznini verip tekrar deneyin.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (currentNotificationPermission !== 'granted') {
+    
+    // Use the direct browser API for permission check at the moment of sending
+    if (Notification.permission !== 'granted') {
       toast({
         title: "Bildirim İzni Gerekli",
-        description: "Test bildirimi göndermek için tarayıcı bildirim izni verilmiş olmalı.",
+        description: "Test bildirimi göndermek için tarayıcı bildirim izni verilmiş olmalı. Lütfen 'Hava Durumu Bildirimleri' ayarını açıp, tarayıcıdan gelen izin isteğini onaylayın.",
         variant: "destructive",
       });
       return;
     }
 
-    console.log("sendTestNotification: All checks passed, proceeding to show notification via SW.");
+    console.log("sendTestNotification: Notification permission is granted. Checking SW readiness...");
     try {
-      const registration = await navigator.serviceWorker.ready;
-      console.log("sendTestNotification: Service Worker is ready.", registration);
+      const registration = await navigator.serviceWorker.ready; // This ensures SW is ready and controlling
+      console.log("sendTestNotification: Service Worker is ready. Registration object:", registration);
 
-      if (!registration.active) {
+      if (!registration.active) { 
         console.warn("sendTestNotification: Service Worker is ready but not active. Notification might not show immediately.");
         toast({ title: "SW Aktif Değil", description: "Service Worker hazır ama henüz aktif değil. Birkaç saniye sonra tekrar deneyin veya sayfayı yenileyin.", variant: "default" });
+        // It might be good to also check isSWRegistered here and potentially re-evaluate.
+        // For now, if .ready resolved but not active, it's a transient state.
       }
       
+      console.log("sendTestNotification: Attempting to show notification via SW.");
       await registration.showNotification("Test Bildirimi Başlığı (SW)", {
         body: "Bu bir Service Worker test bildirimidir. Eğer bunu görüyorsanız, SW bildirimleri çalışıyor!",
         icon: '/logo.png', 
@@ -388,11 +385,14 @@ export default function AyarlarPage() {
         errorMessage = "Bildirim izni verilmedi veya reddedildi (Service Worker seviyesinde).";
       } else if (error.name === 'InvalidStateError') {
          errorMessage = `Bildirim gösterme hatası (InvalidStateError): ${error.message}. Service Worker aktif olmayabilir veya push aboneliği ile ilgili bir sorun olabilir.`;
+      } else if (error.message.includes("Service Worker is not controlling the page")) {
+        errorMessage = "Service Worker sayfayı kontrol etmiyor. Bildirim ayarını açıp kapatmayı veya sayfayı yenilemeyi deneyin.";
       }
       toast({
         title: "SW Test Bildirimi Hatası",
         description: errorMessage,
         variant: "destructive",
+        duration: 7000,
       });
     }
   };
@@ -439,7 +439,7 @@ export default function AyarlarPage() {
               id="notifications-switch"
               checked={notificationsEnabledSetting && currentNotificationPermission === 'granted'}
               onCheckedChange={handleNotificationToggle}
-              disabled={currentNotificationPermission === 'denied'}
+              disabled={currentNotificationPermission === 'denied'} // Only truly disabled if permission is denied by browser
             />
           </div>
           {currentNotificationPermission === 'denied' && (
@@ -505,9 +505,21 @@ export default function AyarlarPage() {
           <div className="p-4 bg-muted/30 rounded-lg shadow-sm">
             <h3 className="text-base font-medium mb-2 flex items-center gap-2"><Send className="w-5 h-5 text-primary" />Test Bildirimi</h3>
             <p className="text-sm text-muted-foreground mb-3">Service Worker üzerinden tarayıcı bildirimlerinin düzgün çalışıp çalışmadığını test etmek için bir bildirim gönderin.</p>
-            <Button onClick={sendTestNotification} variant="outline" className="w-full sm:w-auto" disabled={!isSWRegistered || currentNotificationPermission !== 'granted'}>
+            <Button 
+                onClick={sendTestNotification} 
+                variant="outline" 
+                className="w-full sm:w-auto" 
+                // Button is enabled if main notification toggle is ON AND browser permission is GRANTED.
+                // sendTestNotification will internally check for SW readiness.
+                disabled={!notificationsEnabledSetting || currentNotificationPermission !== 'granted'}
+            >
               Test Bildirimi Gönder
             </Button>
+            {(!notificationsEnabledSetting || currentNotificationPermission !== 'granted') && (
+                 <p className="text-xs text-muted-foreground mt-2">
+                    Test bildirimi gönderebilmek için "Hava Durumu Bildirimleri" ayarını açmanız ve tarayıcı bildirimlerine izin vermeniz gerekmektedir.
+                 </p>
+            )}
           </div>
 
           <div className="p-4 bg-muted/30 rounded-lg shadow-sm">
