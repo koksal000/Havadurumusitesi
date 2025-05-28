@@ -4,8 +4,8 @@ import { AccordionContent, AccordionItem, AccordionTrigger } from '@/components/
 import { WeatherIconDisplay } from '@/components/WeatherIconDisplay';
 import { format, parseISO } from 'date-fns';
 import { tr } from 'date-fns/locale';
-import { Sunrise, Sunset, Thermometer, Droplets, Wind, Zap, Umbrella, Clock, CloudSun, WindIcon } from 'lucide-react'; // Added CloudSun, WindIcon
-import { getWeatherInfo } from '@/lib/weatherIcons'; // Corrected import
+import { Sunrise, Sunset, Thermometer, Droplets, Wind, Zap, Umbrella, Clock, CloudSun, WindIcon, CloudRain, CloudDrizzle, CloudSnow } from 'lucide-react'; // Added CloudSun, WindIcon and missing rain/snow icons
+import { getWeatherInfo } from '@/lib/weatherIcons';
 
 interface DailyForecastItemProps {
   dayData: DailyWeatherType; // Use the full daily weather type
@@ -77,27 +77,28 @@ export function DailyForecastItem({ dayData, hourlyDataForDay, isToday = false }
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
             <DetailItem Icon={Thermometer} label="Hissedilen Max" value={Math.round(apparent_temperature_max)} unit="°C" />
             <DetailItem Icon={Thermometer} label="Hissedilen Min" value={Math.round(apparent_temperature_min)} unit="°C" />
-            <DetailItem Icon={Sunrise} label="Gün Doğumu" value={format(parseISO(sunrise), 'HH:mm')} />
-            <DetailItem Icon={Sunset} label="Gün Batımı" value={format(parseISO(sunset), 'HH:mm')} />
+            <DetailItem Icon={Sunrise} label="Gün Doğumu" value={sunrise ? format(parseISO(sunrise), 'HH:mm') : 'N/A'} />
+            <DetailItem Icon={Sunset} label="Gün Batımı" value={sunset ? format(parseISO(sunset), 'HH:mm') : 'N/A'} />
             <DetailItem Icon={Umbrella} label="Toplam Yağış" value={precipitation_sum?.toFixed(1)} unit="mm" />
-            {rain_sum > 0 && <DetailItem Icon={CloudRain} label="Yağmur Toplamı" value={rain_sum?.toFixed(1)} unit="mm" />}
-            {showers_sum > 0 && <DetailItem Icon={CloudDrizzle} label="Sağanak Toplamı" value={showers_sum?.toFixed(1)} unit="mm" />}
-            {snowfall_sum > 0 && <DetailItem Icon={CloudSnow} label="Kar Toplamı" value={snowfall_sum?.toFixed(1)} unit="cm" />}
+            {rain_sum !== undefined && rain_sum > 0 && <DetailItem Icon={CloudRain} label="Yağmur Toplamı" value={rain_sum?.toFixed(1)} unit="mm" />}
+            {showers_sum !== undefined && showers_sum > 0 && <DetailItem Icon={CloudDrizzle} label="Sağanak Toplamı" value={showers_sum?.toFixed(1)} unit="mm" />}
+            {snowfall_sum !== undefined && snowfall_sum > 0 && <DetailItem Icon={CloudSnow} label="Kar Toplamı" value={snowfall_sum?.toFixed(1)} unit="cm" />}
             <DetailItem Icon={Clock} label="Yağış Süresi" value={precipitation_hours?.toFixed(0)} unit=" sa" />
             <DetailItem Icon={Wind} label="Max Rüzgar" value={wind_speed_10m_max?.toFixed(1)} unit=" km/s" />
             <DetailItem Icon={WindIcon} label="Max Hamle" value={wind_gusts_10m_max?.toFixed(1)} unit=" km/s" />
             <DetailItem Icon={CloudSun} label="Dominant Rüzgar Yönü" value={wind_direction_10m_dominant} unit="°" />
             <DetailItem Icon={Zap} label="Max UV İndeksi" value={uv_index_max?.toFixed(1)} />
           </div>
-          {hourlyDataForDay && hourlyDataForDay.time.length > 0 && (
+          {hourlyDataForDay && hourlyDataForDay.time && hourlyDataForDay.time.length > 0 && (
              <div className="mt-3 pt-3 border-t border-border/50">
                 <p className="text-xs font-medium text-muted-foreground mb-1">Öne Çıkan Saatlik Detaylar:</p>
                 <div className="space-y-1">
                 {/* Show a few key hourly details, e.g., morning, noon, evening */}
-                {[hourlyDataForDay.time.findIndex(t => parseISO(t).getHours() >= 8), 
+                {[hourlyDataForDay.time.findIndex(t => parseISO(t).getHours() >= 8),
                   hourlyDataForDay.time.findIndex(t => parseISO(t).getHours() >= 12),
                   hourlyDataForDay.time.findIndex(t => parseISO(t).getHours() >= 18)]
-                  .filter(idx => idx !== -1 && idx < hourlyDataForDay.time.length) // Filter out invalid indices
+                  .map(idx => (idx !== -1 && hourlyDataForDay.time?.[idx] && hourlyDataForDay.weather_code?.[idx] !== undefined && hourlyDataForDay.temperature_2m?.[idx] !== undefined && hourlyDataForDay.relative_humidity_2m?.[idx] !== undefined) ? idx : -1) // Ensure all data points exist for the index
+                  .filter(idx => idx !== -1) // Filter out invalid indices
                   .slice(0,3) // Max 3 items
                   .map((idx) => (
                     <div key={hourlyDataForDay.time[idx]} className="grid grid-cols-4 gap-1 items-center text-xs p-1 bg-background/50 rounded">
@@ -115,5 +116,3 @@ export function DailyForecastItem({ dayData, hourlyDataForDay, isToday = false }
     </AccordionItem>
   );
 }
-
-// getWeatherInfo already imported from lib
