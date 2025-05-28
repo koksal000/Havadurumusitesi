@@ -5,12 +5,79 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Brush, Bell, Compass } from 'lucide-react';
+import { Brush, Bell, Compass, AlertTriangle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useToast } from '@/components/ui/use-toast';
+
+const NOTIFICATION_ENABLED_KEY = 'havadurumux-notifications-enabled';
+const NOTIFICATION_PERMISSION_KEY = 'havadurumux-notification-permission';
 
 export default function AyarlarPage() {
-  // Placeholder states for future settings
+  const { toast } = useToast();
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
-  const [locationServicesEnabled, setLocationServicesEnabled] = useState(true);
+  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission | null>(null);
+  const [locationServicesEnabled, setLocationServicesEnabled] = useState(true); // Placeholder
+
+  useEffect(() => {
+    // Load saved notification enabled state
+    const savedEnabled = localStorage.getItem(NOTIFICATION_ENABLED_KEY);
+    if (savedEnabled) {
+      setNotificationsEnabled(JSON.parse(savedEnabled));
+    }
+
+    // Load saved or current notification permission state
+    if (typeof Notification !== 'undefined') {
+      const savedPermission = localStorage.getItem(NOTIFICATION_PERMISSION_KEY) as NotificationPermission | null;
+      setNotificationPermission(savedPermission || Notification.permission);
+    }
+  }, []);
+
+  const handleNotificationToggle = async (checked: boolean) => {
+    setNotificationsEnabled(checked);
+    localStorage.setItem(NOTIFICATION_ENABLED_KEY, JSON.stringify(checked));
+
+    if (checked) {
+      if (typeof Notification !== 'undefined') {
+        if (Notification.permission === 'granted') {
+          setNotificationPermission('granted');
+          localStorage.setItem(NOTIFICATION_PERMISSION_KEY, 'granted');
+          toast({ title: "Bildirimler Etkin", description: "Hava durumu uyarıları için bildirim alacaksınız." });
+        } else if (Notification.permission === 'denied') {
+          setNotificationPermission('denied');
+          localStorage.setItem(NOTIFICATION_PERMISSION_KEY, 'denied');
+          toast({
+            title: "Bildirim İzni Reddedilmiş",
+            description: "Tarayıcı ayarlarından bildirimlere izin vermeniz gerekiyor.",
+            variant: "destructive",
+          });
+          setNotificationsEnabled(false); // Revert if permission is denied
+          localStorage.setItem(NOTIFICATION_ENABLED_KEY, JSON.stringify(false));
+        } else {
+          // default or prompt
+          const permission = await Notification.requestPermission();
+          setNotificationPermission(permission);
+          localStorage.setItem(NOTIFICATION_PERMISSION_KEY, permission);
+          if (permission === 'granted') {
+            toast({ title: "Bildirim İzni Verildi", description: "Hava durumu uyarıları için bildirim alacaksınız." });
+          } else {
+            toast({
+              title: "Bildirim İzni Verilmedi",
+              description: "Önemli hava durumu uyarılarını alamayacaksınız.",
+              variant: "destructive",
+            });
+            setNotificationsEnabled(false); // Revert if permission is not granted
+            localStorage.setItem(NOTIFICATION_ENABLED_KEY, JSON.stringify(false));
+          }
+        }
+      } else {
+        toast({ title: "Bildirimler Desteklenmiyor", description: "Tarayıcınız bildirimleri desteklemiyor.", variant: "destructive" });
+        setNotificationsEnabled(false);
+        localStorage.setItem(NOTIFICATION_ENABLED_KEY, JSON.stringify(false));
+      }
+    } else {
+      toast({ title: "Bildirimler Devre Dışı", description: "Hava durumu uyarıları almayacaksınız." });
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -32,7 +99,6 @@ export default function AyarlarPage() {
             </div>
             <ThemeToggle />
           </div>
-          {/* Placeholder for more appearance settings if needed */}
         </CardContent>
       </Card>
 
@@ -48,15 +114,21 @@ export default function AyarlarPage() {
           <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg shadow-sm">
             <div>
               <Label htmlFor="notifications-switch" className="text-base font-medium">Hava Durumu Bildirimleri</Label>
-              <p className="text-sm text-muted-foreground">Önemli hava durumu uyarıları için bildirim alın (Yakında).</p>
+              <p className="text-sm text-muted-foreground">Favori konumlarınız için önemli hava durumu uyarıları alın.</p>
             </div>
             <Switch
               id="notifications-switch"
-              checked={notificationsEnabled}
-              onCheckedChange={setNotificationsEnabled}
-              disabled // Feature not yet implemented
+              checked={notificationsEnabled && notificationPermission === 'granted'}
+              onCheckedChange={handleNotificationToggle}
+              disabled={notificationPermission === 'denied'}
             />
           </div>
+          {notificationPermission === 'denied' && (
+            <div className="flex items-center gap-2 p-3 text-sm text-destructive-foreground bg-destructive/80 rounded-md">
+              <AlertTriangle className="w-5 h-5" />
+              <p>Tarayıcı bildirimlerine izin vermediniz. Ayarlardan değiştirmediğiniz sürece bildirim alamazsınız.</p>
+            </div>
+          )}
           <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg shadow-sm">
              <div>
               <Label htmlFor="location-switch" className="text-base font-medium">Konum Servisleri</Label>
@@ -84,6 +156,3 @@ export default function AyarlarPage() {
     </div>
   );
 }
-
-// Dummy useState for example functionality
-import { useState } from 'react';

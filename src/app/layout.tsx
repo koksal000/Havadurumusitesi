@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import { CloudSun, Search, Map, Radar, Heart, Settings, Info, Mail, Home, Zap } from 'lucide-react';
+import { WeatherNotificationInitializer } from '@/hooks/useWeatherNotificationManager'; // Import the initializer
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
@@ -109,6 +110,7 @@ export default function RootLayout({
                   {children}
                 </main>
                 <Toaster />
+                <WeatherNotificationInitializer /> {/* Add the initializer here */}
               </div>
             </SidebarInset>
           </SidebarProvider>
