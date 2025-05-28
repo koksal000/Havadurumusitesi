@@ -18,103 +18,197 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Brush, Bell, Compass, AlertTriangle, InfoIcon, Speaker, RotateCcw, Trash2, Send } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { useTheme } from '@/components/ThemeProvider';
 import { useSound } from '@/contexts/SoundContext';
 
 const NOTIFICATION_ENABLED_KEY = 'havadurumux-notifications-enabled';
-const NOTIFICATION_PERMISSION_KEY = 'havadurumux-notification-permission';
+// const NOTIFICATION_PERMISSION_KEY = 'havadurumux-notification-permission'; // We now read Notification.permission directly
 const LOCATION_SERVICES_ENABLED_KEY = 'havadurumux-location-services-enabled';
-const LOCATION_PERMISSION_KEY = 'havadurumux-location-permission';
+// const LOCATION_PERMISSION_KEY = 'havadurumux-location-permission'; // We now read navigator.permissions directly
+
+// REPLACE THIS with your actual generated VAPID public key
+const VAPID_PUBLIC_KEY = 'BPA_YOUR_VAPID_PUBLIC_KEY_REPLACE_ME_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX';
+
+function urlBase64ToUint8Array(base64String: string) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding)
+    .replace(/-/g, '+')
+    .replace(/_/g, '/');
+
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
 
 export default function AyarlarPage() {
   const { toast } = useToast();
   const { theme, setTheme } = useTheme();
   const { playClickSound, setGlobalSoundEnabled, isSoundGloballyEnabled } = useSound();
 
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
-  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission | null>(null);
+  const [notificationsEnabledSetting, setNotificationsEnabledSetting] = useState(false);
+  const [currentNotificationPermission, setCurrentNotificationPermission] = useState<NotificationPermission | null>(null);
 
   const [locationServicesEnabled, setLocationServicesEnabled] = useState(false);
-  const [locationPermission, setLocationPermission] = useState<PermissionState | null>(null);
+  const [currentLocationPermission, setCurrentLocationPermission] = useState<PermissionState | null>(null);
+  
+  const [isSWRegistered, setIsSWRegistered] = useState(false);
 
   const [uiSoundSwitchState, setUiSoundSwitchState] = useState(isSoundGloballyEnabled);
-
   useEffect(() => {
     setUiSoundSwitchState(isSoundGloballyEnabled);
   }, [isSoundGloballyEnabled]);
 
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedNotificationsEnabled = localStorage.getItem(NOTIFICATION_ENABLED_KEY);
-      if (savedNotificationsEnabled) setNotificationsEnabled(JSON.parse(savedNotificationsEnabled));
-
+      setNotificationsEnabledSetting(savedNotificationsEnabled === 'true');
       if (typeof Notification !== 'undefined') {
-        const savedNotificationPerm = localStorage.getItem(NOTIFICATION_PERMISSION_KEY) as NotificationPermission | null;
-        setNotificationPermission(savedNotificationPerm || Notification.permission);
+        setCurrentNotificationPermission(Notification.permission);
       } else {
         console.warn("Tarayıcı Notification API'sini desteklemiyor.");
       }
 
       const savedLocationServicesEnabled = localStorage.getItem(LOCATION_SERVICES_ENABLED_KEY);
-      if (savedLocationServicesEnabled) setLocationServicesEnabled(JSON.parse(savedLocationServicesEnabled));
-
-      const savedLocationPerm = localStorage.getItem(LOCATION_PERMISSION_KEY) as PermissionState | null;
-      if (savedLocationPerm) {
-          setLocationPermission(savedLocationPerm);
-      } else if (navigator.permissions) {
-          navigator.permissions.query({ name: 'geolocation' }).then(status => {
-              setLocationPermission(status.state);
-              localStorage.setItem(LOCATION_PERMISSION_KEY, status.state);
-          });
+      setLocationServicesEnabled(savedLocationServicesEnabled === 'true');
+      if (navigator.permissions) {
+        navigator.permissions.query({ name: 'geolocation' }).then(status => {
+          setCurrentLocationPermission(status.state);
+          status.onchange = () => setCurrentLocationPermission(status.state);
+        });
+      }
+      
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistration().then(registration => {
+          setIsSWRegistered(!!registration);
+        });
       }
     }
   }, []);
 
+  const registerServiceWorkerAndSubscribe = async () => {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window) || typeof Notification === 'undefined') {
+      toast({ title: "Push Bildirimleri Desteklenmiyor", description: "Tarayıcınız Service Worker veya Push API'sini desteklemiyor.", variant: "destructive" });
+      return false;
+    }
+
+    try {
+      const registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+      setIsSWRegistered(true);
+      console.log('Service Worker başarıyla kaydedildi.', registration);
+      
+      try {
+        if (VAPID_PUBLIC_KEY.includes("PLACEHOLDER_YOUR_VAPID_PUBLIC_KEY_HERE")) {
+            toast({ title: "VAPID Anahtarı Eksik", description: "Push aboneliği için VAPID public key ayarlanmalı.", variant: "destructive", duration: 7000 });
+        }
+        const subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+        });
+        console.log('Push aboneliği başarıyla oluşturuldu:', JSON.stringify(subscription));
+        // TODO: Send this subscription to your backend server to store it.
+        toast({ title: "Push Aboneliği Başarılı", description: "Bildirimler için abone olundu (backend entegrasyonu ve geçerli VAPID anahtarı gerekli)." });
+      } catch (subError) {
+        console.error('Push aboneliği oluşturulurken hata:', subError);
+        let subErrorMessage = (subError as Error).message;
+        if ((subError as Error).name === 'NotAllowedError') {
+            subErrorMessage = "Push abonelik izni verilmedi veya reddedildi.";
+        } else if (VAPID_PUBLIC_KEY.includes("PLACEHOLDER_YOUR_VAPID_PUBLIC_KEY_HERE")) {
+            subErrorMessage = "Push aboneliği için VAPID public key eksik veya hatalı. Lütfen geliştirici ile iletişime geçin.";
+        }
+        toast({ title: "Push Aboneliği Başarısız", description: `Abonelik hatası: ${subErrorMessage}`, variant: "destructive", duration: 7000 });
+      }
+      return true;
+    } catch (error) {
+      console.error('Service Worker kaydedilirken hata:', error);
+      toast({ title: "Service Worker Kayıt Hatası", description: `Bir hata oluştu: ${(error as Error).message}`, variant: "destructive" });
+      setIsSWRegistered(false);
+      return false;
+    }
+  };
+
+
   const handleNotificationToggle = async (checked: boolean) => {
-    setNotificationsEnabled(checked);
+    setNotificationsEnabledSetting(checked);
     localStorage.setItem(NOTIFICATION_ENABLED_KEY, JSON.stringify(checked));
 
     if (checked) {
-      if (typeof Notification !== 'undefined') {
-        if (Notification.permission === 'granted') {
-          setNotificationPermission('granted');
-          localStorage.setItem(NOTIFICATION_PERMISSION_KEY, 'granted');
+      if (typeof Notification === 'undefined') {
+         toast({ title: "Bildirimler Desteklenmiyor", description: "Tarayıcınız bildirimleri desteklemiyor.", variant: "destructive" });
+         setNotificationsEnabledSetting(false);
+         localStorage.setItem(NOTIFICATION_ENABLED_KEY, JSON.stringify(false));
+         return;
+      }
+
+      let permission = Notification.permission;
+      if (permission === 'default') {
+        permission = await Notification.requestPermission();
+      }
+      setCurrentNotificationPermission(permission); 
+
+      if (permission === 'granted') {
+        const swSubscribed = await registerServiceWorkerAndSubscribe();
+        if (swSubscribed) {
           toast({ title: "Bildirimler Etkin", description: "Hava durumu uyarıları için bildirim alacaksınız." });
-        } else if (Notification.permission === 'denied') {
-          setNotificationPermission('denied');
-          localStorage.setItem(NOTIFICATION_PERMISSION_KEY, 'denied');
-          toast({
-            title: "Bildirim İzni Reddedilmiş",
-            description: "Tarayıcı ayarlarından bildirimlere izin vermeniz gerekiyor.",
+        } else {
+          setNotificationsEnabledSetting(false);
+          localStorage.setItem(NOTIFICATION_ENABLED_KEY, JSON.stringify(false));
+        }
+      } else if (permission === 'denied') {
+        toast({
+          title: "Bildirim İzni Reddedilmiş",
+          description: "Tarayıcı ayarlarından bildirimlere izin vermeniz gerekiyor.",
+          variant: "destructive",
+        });
+        setNotificationsEnabledSetting(false);
+        localStorage.setItem(NOTIFICATION_ENABLED_KEY, JSON.stringify(false));
+      } else { 
+         toast({
+            title: "Bildirim İzni Gerekli",
+            description: "Bildirimleri almak için izin vermelisiniz.",
             variant: "destructive",
           });
-          setNotificationsEnabled(false);
-          localStorage.setItem(NOTIFICATION_ENABLED_KEY, JSON.stringify(false));
-        } else {
-          const permission = await Notification.requestPermission();
-          setNotificationPermission(permission);
-          localStorage.setItem(NOTIFICATION_PERMISSION_KEY, permission);
-          if (permission === 'granted') {
-            toast({ title: "Bildirim İzni Verildi", description: "Hava durumu uyarıları için bildirim alacaksınız." });
-          } else {
-            toast({
-              title: "Bildirim İzni Verilmedi",
-              description: "Önemli hava durumu uyarılarını alamayacaksınız.",
-              variant: "destructive",
-            });
-            setNotificationsEnabled(false);
-            localStorage.setItem(NOTIFICATION_ENABLED_KEY, JSON.stringify(false));
-          }
-        }
-      } else {
-        toast({ title: "Bildirimler Desteklenmiyor", description: "Tarayıcınız bildirimleri desteklemiyor.", variant: "destructive" });
-        setNotificationsEnabled(false);
+        setNotificationsEnabledSetting(false);
         localStorage.setItem(NOTIFICATION_ENABLED_KEY, JSON.stringify(false));
       }
     } else {
-      toast({ title: "Bildirimler Devre Dışı", description: "Hava durumu uyarıları almayacaksınız." });
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistration().then(registration => {
+          if (registration) {
+            registration.pushManager.getSubscription().then(subscription => {
+                if (subscription) {
+                    subscription.unsubscribe().then(successful => {
+                        if (successful) console.log("Push aboneliği başarıyla kaldırıldı.");
+                        else console.error("Push aboneliği kaldırılamadı.");
+                    }).catch(e => console.error("Push aboneliği kaldırılırken hata:", e));
+                }
+            });
+            registration.unregister().then(unregistered => {
+              if (unregistered) {
+                console.log('Service Worker kaydı kaldırıldı.');
+                setIsSWRegistered(false);
+                toast({ title: "Bildirimler Devre Dışı", description: "Hava durumu uyarıları almayacaksınız. Service Worker kaydı kaldırıldı." });
+              } else {
+                toast({ title: "Bildirimler Devre Dışı", description: "Hava durumu uyarıları almayacaksınız." });
+              }
+            }).catch(err => {
+               console.error('Service Worker kaydı kaldırılırken hata:', err);
+               toast({ title: "Bildirimler Devre Dışı", description: "Hava durumu uyarıları almayacaksınız (SW kaldırma hatası)." });
+            });
+          } else {
+             toast({ title: "Bildirimler Devre Dışı", description: "Hava durumu uyarıları almayacaksınız." });
+          }
+        });
+      } else {
+         toast({ title: "Bildirimler Devre Dışı", description: "Hava durumu uyarıları almayacaksınız." });
+      }
     }
   };
 
@@ -123,27 +217,21 @@ export default function AyarlarPage() {
     localStorage.setItem(LOCATION_SERVICES_ENABLED_KEY, JSON.stringify(checked));
 
     if (checked) {
-        if (navigator.geolocation) {
-            if (locationPermission === 'granted') {
+        if (navigator.geolocation && navigator.permissions) {
+            let permissionStatus = await navigator.permissions.query({ name: 'geolocation' });
+            setCurrentLocationPermission(permissionStatus.state);
+
+            if (permissionStatus.state === 'granted') {
                 toast({ title: "Konum Servisleri Etkin", description: "Mevcut konumunuz kullanılabilir." });
-            } else if (locationPermission === 'denied') {
-                toast({
-                    title: "Konum İzni Reddedilmiş",
-                    description: "Tarayıcı ayarlarından konum iznini vermeniz gerekiyor.",
-                    variant: "destructive",
-                });
-                setLocationServicesEnabled(false);
-                localStorage.setItem(LOCATION_SERVICES_ENABLED_KEY, JSON.stringify(false));
-            } else { // prompt or other
-                navigator.geolocation.getCurrentPosition(
-                    () => {
-                        setLocationPermission('granted');
-                        localStorage.setItem(LOCATION_PERMISSION_KEY, 'granted');
+            } else if (permissionStatus.state === 'prompt') {
+                 toast({ title: "Konum İzni Bekleniyor", description: "Tarayıcı konum izni isteyecektir.", variant: "default" });
+                 navigator.geolocation.getCurrentPosition(
+                    () => { 
+                        setCurrentLocationPermission('granted');
                         toast({ title: "Konum İzni Verildi", description: "Mevcut konumunuz kullanılabilir." });
                     },
-                    (error) => {
-                        setLocationPermission('denied'); // Assume denied if any error during prompt
-                        localStorage.setItem(LOCATION_PERMISSION_KEY, 'denied');
+                    (error) => { 
+                        setCurrentLocationPermission('denied');
                         if (error.code === error.PERMISSION_DENIED) {
                             toast({
                                 title: "Konum İzni Reddedildi",
@@ -161,6 +249,14 @@ export default function AyarlarPage() {
                         localStorage.setItem(LOCATION_SERVICES_ENABLED_KEY, JSON.stringify(false));
                     }
                 );
+            } else if (permissionStatus.state === 'denied') {
+                toast({
+                    title: "Konum İzni Reddedilmiş",
+                    description: "Tarayıcı ayarlarından konum iznini vermeniz gerekiyor.",
+                    variant: "destructive",
+                });
+                setLocationServicesEnabled(false);
+                localStorage.setItem(LOCATION_SERVICES_ENABLED_KEY, JSON.stringify(false));
             }
         } else {
             toast({ title: "Konum Servisleri Desteklenmiyor", description: "Tarayıcınız konum servislerini desteklemiyor.", variant: "destructive" });
@@ -186,77 +282,68 @@ export default function AyarlarPage() {
     setTheme('light'); 
     localStorage.removeItem('havadurumux-theme');
 
-    setNotificationsEnabled(false);
+    setNotificationsEnabledSetting(false);
     localStorage.setItem(NOTIFICATION_ENABLED_KEY, JSON.stringify(false));
     if (typeof Notification !== 'undefined') {
-      setNotificationPermission(Notification.permission); 
-      localStorage.setItem(NOTIFICATION_PERMISSION_KEY, Notification.permission);
+      setCurrentNotificationPermission(Notification.permission); 
     }
-
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistration().then(registration => {
+          if (registration) {
+            registration.pushManager.getSubscription().then(sub => sub && sub.unsubscribe());
+            registration.unregister().then(() => setIsSWRegistered(false));
+          }
+        });
+    }
 
     setLocationServicesEnabled(false);
     localStorage.setItem(LOCATION_SERVICES_ENABLED_KEY, JSON.stringify(false));
     if (navigator.permissions) {
         navigator.permissions.query({ name: 'geolocation' }).then(status => {
-            setLocationPermission(status.state); 
-            localStorage.setItem(LOCATION_PERMISSION_KEY, status.state);
+            setCurrentLocationPermission(status.state); 
         });
     } else {
-        setLocationPermission(null); 
-        localStorage.removeItem(LOCATION_PERMISSION_KEY);
+        setCurrentLocationPermission(null); 
     }
     
-
     setGlobalSoundEnabled(false);
 
     toast({ title: "Tüm Ayarlar Sıfırlandı", description: "Uygulama ayarları varsayılan değerlere döndürüldü." });
   };
 
-  const sendTestNotification = () => {
-    if (typeof Notification === 'undefined') {
+  const sendTestNotification = async () => {
+    if (!('serviceWorker' in navigator) || !isSWRegistered) {
       toast({
-        title: "Bildirimler Desteklenmiyor",
-        description: "Tarayıcınız bildirimleri desteklemiyor.",
+        title: "Service Worker Aktif Değil",
+        description: "Test bildirimi için Service Worker'ın kayıtlı ve aktif olması gerekir. Lütfen bildirim ayarını açıp kapatmayı deneyin.",
         variant: "destructive",
       });
       return;
     }
 
-    if (Notification.permission === 'granted') {
-      try {
-        const notification = new Notification("Test Bildirimi Başlığı", {
-          body: "Bu bir test bildirimidir. Eğer bunu görüyorsanız, tarayıcı bildirimleri çalışıyor!",
-          icon: '/logo.png', 
-        });
-        toast({ title: "Test Bildirimi Gönderildi", description: "Tarayıcınızda bir bildirim görmelisiniz." });
-      } catch (error: any) {
-        console.error("Test bildirimi oluşturulurken hata:", error);
-        if (error.name === 'TypeError' && error.message.includes('Illegal constructor')) {
-          toast({
-            title: "Bildirim Oluşturma Hatası",
-            description: "Bu hata genellikle tarayıcıda aktif bir Service Worker kaydı olduğunda ve bildirimlerin onun üzerinden yönetilmesi gerektiğinde ortaya çıkar. Basit bildirimler için, tarayıcınızın Geliştirici Araçları > Application > Service Workers bölümünden bu siteye ait Service Worker kaydını kaldırmayı deneyebilirsiniz. Veya daha kapsamlı bildirimler için Service Worker entegrasyonu yapılmalıdır.",
-            variant: "destructive",
-            duration: 9000, // Hata mesajının daha uzun süre görünmesi için
-          });
-        } else {
-          toast({
-            title: "Bilinmeyen Bildirim Hatası",
-            description: `Bir hata oluştu: ${error.message}`,
-            variant: "destructive",
-          });
-        }
-      }
-    } else if (Notification.permission === 'denied') {
-      toast({
-        title: "Bildirim İzni Reddedilmiş",
-        description: "Test bildirimi göndermek için tarayıcı ayarlarından bildirimlere izin vermeniz gerekiyor.",
-        variant: "destructive",
-      });
-    } else { 
+    if (currentNotificationPermission !== 'granted') {
       toast({
         title: "Bildirim İzni Gerekli",
-        description: "Lütfen önce yukarıdaki 'Hava Durumu Bildirimleri' ayarını etkinleştirin ve tarayıcı iznini verin.",
-        variant: "default",
+        description: "Test bildirimi göndermek için tarayıcı bildirim izni verilmiş olmalı.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      await registration.showNotification("Test Bildirimi Başlığı (SW)", {
+        body: "Bu bir Service Worker test bildirimidir. Eğer bunu görüyorsanız, SW bildirimleri çalışıyor!",
+        icon: '/logo.png', // Ensure /public/logo.png exists
+        data: { url: '/bildirimler' } 
+      });
+      toast({ title: "Test Bildirimi Gönderildi", description: "Service Worker üzerinden bir bildirim görmelisiniz." });
+    } catch (error: any) {
+      console.error("SW Test bildirimi oluşturulurken hata:", error);
+      toast({
+        title: "SW Test Bildirimi Hatası",
+        description: `Bir hata oluştu: ${error.message}`,
+        variant: "destructive",
       });
     }
   };
@@ -297,21 +384,27 @@ export default function AyarlarPage() {
           <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg shadow-sm">
             <div>
               <Label htmlFor="notifications-switch" className="text-base font-medium">Hava Durumu Bildirimleri</Label>
-              <p className="text-sm text-muted-foreground">Favori konumlarınız için önemli hava durumu uyarıları alın.</p>
+              <p className="text-sm text-muted-foreground">Favori konumlarınız için önemli hava durumu uyarıları alın (Service Worker ile).</p>
             </div>
             <Switch
               id="notifications-switch"
-              checked={notificationsEnabled && notificationPermission === 'granted'}
+              checked={notificationsEnabledSetting && currentNotificationPermission === 'granted'}
               onCheckedChange={handleNotificationToggle}
-              disabled={notificationPermission === 'denied'}
+              disabled={currentNotificationPermission === 'denied'}
             />
           </div>
-          {notificationPermission === 'denied' && (
+          {currentNotificationPermission === 'denied' && (
             <div className="flex items-center gap-2 p-3 text-sm text-destructive-foreground bg-destructive/80 rounded-md">
               <AlertTriangle className="w-5 h-5" />
               <p>Tarayıcı bildirimlerine izin vermediniz. Ayarlardan değiştirmediğiniz sürece bildirim alamazsınız.</p>
             </div>
           )}
+           {currentNotificationPermission === 'prompt' && notificationsEnabledSetting && ( 
+            <div className="flex items-center gap-2 p-3 text-sm text-info-foreground bg-info/80 rounded-md">
+              <InfoIcon className="w-5 h-5" />
+              <p>Tarayıcınız bildirim izni isteyecektir. Lütfen izin verin.</p>
+            </div>
+           )}
           <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg shadow-sm">
              <div>
               <Label htmlFor="location-switch" className="text-base font-medium">Konum Servisleri</Label>
@@ -319,18 +412,18 @@ export default function AyarlarPage() {
             </div>
             <Switch
               id="location-switch"
-              checked={locationServicesEnabled && locationPermission === 'granted'}
+              checked={locationServicesEnabled && currentLocationPermission === 'granted'}
               onCheckedChange={handleLocationServicesToggle}
-              disabled={locationPermission === 'denied'}
+              disabled={currentLocationPermission === 'denied'}
             />
           </div>
-           {locationPermission === 'denied' && (
+           {currentLocationPermission === 'denied' && (
             <div className="flex items-center gap-2 p-3 text-sm text-destructive-foreground bg-destructive/80 rounded-md">
               <AlertTriangle className="w-5 h-5" />
               <p>Tarayıcı konum iznini vermediniz. Ayarlardan değiştirmediğiniz sürece mevcut konumunuz kullanılamaz.</p>
             </div>
           )}
-           {locationPermission === 'prompt' && locationServicesEnabled && ( 
+           {currentLocationPermission === 'prompt' && locationServicesEnabled && ( 
             <div className="flex items-center gap-2 p-3 text-sm text-info-foreground bg-info/80 rounded-md">
               <InfoIcon className="w-5 h-5" />
               <p>Tarayıcınız konum izni isteyecektir. Lütfen izin verin.</p>
@@ -362,8 +455,8 @@ export default function AyarlarPage() {
 
           <div className="p-4 bg-muted/30 rounded-lg shadow-sm">
             <h3 className="text-base font-medium mb-2 flex items-center gap-2"><Send className="w-5 h-5 text-primary" />Test Bildirimi</h3>
-            <p className="text-sm text-muted-foreground mb-3">Tarayıcı bildirimlerinin düzgün çalışıp çalışmadığını test etmek için bir bildirim gönderin.</p>
-            <Button onClick={sendTestNotification} variant="outline" className="w-full sm:w-auto">
+            <p className="text-sm text-muted-foreground mb-3">Service Worker üzerinden tarayıcı bildirimlerinin düzgün çalışıp çalışmadığını test etmek için bir bildirim gönderin.</p>
+            <Button onClick={sendTestNotification} variant="outline" className="w-full sm:w-auto" disabled={!isSWRegistered || currentNotificationPermission !== 'granted'}>
               Test Bildirimi Gönder
             </Button>
           </div>
@@ -396,9 +489,11 @@ export default function AyarlarPage() {
             Not: Tıklama sesi için tarayıcınızın otomatik oynatma politikaları nedeniyle ilk etkileşimde ses çalmayabilir.
             Ses, harici bir video kaynağından (`https://files.catbox.moe/42qpsz.mp4`) çalınmaktadır.
             Eğer ses yüklenemezse veya çalınamazsa konsolda uyarı görebilirsiniz.
+            Bildirimler için tarayıcıda Service Worker kaydı yönetilmektedir. VAPID anahtarı şu an için bir yer tutucudur; gerçek bir push sunucusu entegrasyonu için bu anahtarın üretilip sunucu tarafında kullanılması gerekir.
           </p>
         </CardContent>
       </Card>
     </div>
   );
 }
+    
