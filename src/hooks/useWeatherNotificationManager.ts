@@ -28,8 +28,8 @@ interface WeatherEvent {
   details: string;
   type: StoredNotification['type'];
   link: string;
-  icon?: string; 
-  tag?: string; 
+  icon?: string;
+  tag?: string;
 }
 
 async function showNotificationViaSW(title: string, options: NotificationOptions) {
@@ -65,7 +65,7 @@ export function useWeatherNotificationManager() {
 
     const notificationsEnabled = localStorage.getItem(NOTIFICATION_ENABLED_KEY) === 'true';
     // We must rely on Notification.permission as it's the source of truth for permission status
-    const permission = Notification.permission; 
+    const permission = Notification.permission;
 
     if (!notificationsEnabled || permission !== 'granted' || favorites.length === 0) {
       console.log(`WeatherNotificationManager: Skipping check. Enabled: ${notificationsEnabled}, Permission: ${permission}, Favorites: ${favorites.length}`);
@@ -85,8 +85,8 @@ export function useWeatherNotificationManager() {
         const link = `/konum/${encodeURIComponent(fav.province)}/${encodeURIComponent(fav.district)}`;
         const dailyToday = weather.daily;
         const currentToday = weather.current;
-        const todayIndex = 0; 
-        
+        const todayIndex = 0;
+
         const currentCodeInfo = getWeatherInfo(currentToday.weather_code, currentToday.is_day === 1);
         const dailyWeatherCodeInfo = getWeatherInfo(dailyToday.weather_code?.[todayIndex] ?? 0, true); // Assume day for daily summary icon
         const defaultIcon = '/logo.png'; // Ensure this exists in /public
@@ -113,7 +113,7 @@ export function useWeatherNotificationManager() {
         if ((dailyToday.wind_gusts_10m_max?.[todayIndex] ?? 0) >= SEVERE_WEATHER_THRESHOLDS.STRONG_GUST_KMH) {
           events.push({ locationName, condition: "Çok Şiddetli Rüzgar Hamlesi Bekleniyor", details: `Max Hamle: ${dailyToday.wind_gusts_10m_max?.[todayIndex]?.toFixed(1)}km/s`, type: 'alert', link, icon: defaultIcon, tag: `stronggust-${fav.province}-${fav.district}` });
         }
-        
+
         // Informational Notifications
         if ((dailyToday.precipitation_probability_max?.[todayIndex] ?? 0) >= 50 && (dailyToday.precipitation_sum?.[todayIndex] ?? 0) < SEVERE_WEATHER_THRESHOLDS.HEAVY_RAIN_MM && (dailyToday.precipitation_sum?.[todayIndex] ?? 0) > 0) {
             if (!events.some(e => e.locationName === locationName && e.condition.includes("Yağmur") && e.type === 'info')) {
@@ -160,10 +160,10 @@ export function useWeatherNotificationManager() {
         const enabled = localStorage.getItem(NOTIFICATION_ENABLED_KEY) === 'true';
         // Directly check Notification.permission for the most up-to-date status
         const permission = Notification.permission;
-        setCurrentNotificationPermission(permission); // Update local state for UI
+        // setCurrentNotificationPermission(permission); // This line was causing the error and is removed
         setIsManagerActive(enabled && permission === 'granted');
     }
-    
+
     checkInitialStatusAndPermission();
 
     const handleStorageChange = (event: StorageEvent) => {
@@ -172,7 +172,7 @@ export function useWeatherNotificationManager() {
       }
     };
     window.addEventListener('storage', handleStorageChange);
-    
+
     let permissionStatus: PermissionStatus | null = null;
     const handlePermissionChange = () => {
         console.log("WeatherNotificationManager: Notification permission changed to: ", Notification.permission);
@@ -189,7 +189,7 @@ export function useWeatherNotificationManager() {
 
     let intervalId: NodeJS.Timeout | null = null;
     if (isManagerActive && favorites.length > 0) {
-      checkAndNotify(); 
+      checkAndNotify();
       intervalId = setInterval(checkAndNotify, POLLING_INTERVAL);
       console.log('WeatherNotificationManager: Started polling.');
     } else {
@@ -207,13 +207,13 @@ export function useWeatherNotificationManager() {
       }
       console.log('WeatherNotificationManager: Cleaned up.');
     };
-  }, [isManagerActive, favorites, checkAndNotify]); 
+  }, [isManagerActive, favorites, checkAndNotify]);
 
-  return null; 
+  return null;
 }
 
 export function WeatherNotificationInitializer() {
   useWeatherNotificationManager();
-  return null; 
+  return null;
 }
     
