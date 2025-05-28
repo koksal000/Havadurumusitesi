@@ -18,9 +18,10 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Brush, Bell, Compass, AlertTriangle, InfoIcon, Speaker, RotateCcw, Trash2 } from 'lucide-react';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { useTheme } from '@/components/ThemeProvider';
+import { useSound } from '@/contexts/SoundContext'; // Import useSound
 
 const NOTIFICATION_ENABLED_KEY = 'havadurumux-notifications-enabled';
 const NOTIFICATION_PERMISSION_KEY = 'havadurumux-notification-permission';
@@ -31,6 +32,7 @@ const UI_SOUND_ENABLED_KEY = 'havadurumux-ui-sound-enabled';
 export default function AyarlarPage() {
   const { toast } = useToast();
   const { theme, setTheme } = useTheme(); 
+  const { playClickSound } = useSound(); // Get playClickSound from context
 
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission | null>(null);
@@ -39,21 +41,6 @@ export default function AyarlarPage() {
   const [locationPermission, setLocationPermission] = useState<PermissionState | null>(null);
 
   const [uiSoundEnabled, setUiSoundEnabled] = useState(false);
-  const [audioContextAllowed, setAudioContextAllowed] = useState(false);
-  const [clickAudio, setClickAudio] = useState<HTMLAudioElement | null>(null);
-
-  const initializeAudioContext = useCallback(() => {
-    if (typeof window !== 'undefined' && !audioContextAllowed) {
-      try {
-        // Updated to use the provided MP4 video link for audio
-        const audio = new Audio('https://files.catbox.moe/42qpsz.mp4'); 
-        setClickAudio(audio);
-        setAudioContextAllowed(true); 
-      } catch (error) {
-        console.warn("Audio element could not be initialized with the video link:", error);
-      }
-    }
-  }, [audioContextAllowed]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -83,19 +70,8 @@ export default function AyarlarPage() {
     }
   }, []);
 
-  const playClickSound = useCallback(() => {
-    if (uiSoundEnabled && clickAudio) {
-      clickAudio.currentTime = 0; 
-      clickAudio.play().catch(error => console.warn("Click sound play failed:", error));
-    } else if (uiSoundEnabled && !clickAudio) {
-      initializeAudioContext();
-    }
-  }, [uiSoundEnabled, clickAudio, initializeAudioContext]);
-
-
   const handleNotificationToggle = async (checked: boolean) => {
-    if (!audioContextAllowed) initializeAudioContext(); 
-    playClickSound();
+    // playClickSound(); // Sound will be played by the Button component itself
     setNotificationsEnabled(checked);
     localStorage.setItem(NOTIFICATION_ENABLED_KEY, JSON.stringify(checked));
 
@@ -142,8 +118,7 @@ export default function AyarlarPage() {
   };
 
   const handleLocationServicesToggle = async (checked: boolean) => {
-    if (!audioContextAllowed) initializeAudioContext();
-    playClickSound();
+    // playClickSound(); // Sound will be played by the Button component itself
     setLocationServicesEnabled(checked);
     localStorage.setItem(LOCATION_SERVICES_ENABLED_KEY, JSON.stringify(checked));
 
@@ -198,11 +173,13 @@ export default function AyarlarPage() {
   };
 
   const handleUiSoundToggle = (checked: boolean) => {
-    if (!audioContextAllowed) initializeAudioContext();
-    playClickSound(); // Play sound on initial toggle as well
+    // No need to call playClickSound() here as the Switch itself is not a Button
+    // However, the user might expect a sound here too. 
+    // For now, we only make <Button> components play sound.
     setUiSoundEnabled(checked);
     localStorage.setItem(UI_SOUND_ENABLED_KEY, JSON.stringify(checked));
     if (checked) {
+      playClickSound(); // Play sound when toggling on
       toast({ title: "UI Tıklama Sesi Etkin" });
     } else {
       toast({ title: "UI Tıklama Sesi Devre Dışı" });
@@ -210,9 +187,9 @@ export default function AyarlarPage() {
   };
 
   const handleResetSettings = () => {
-    playClickSound();
+    // playClickSound(); // Sound will be played by the Button component itself
     setTheme('light'); 
-    localStorage.removeItem('havadurumux-theme'); // ThemeProvider handles this, but ensure consistency
+    localStorage.removeItem('havadurumux-theme');
 
     setNotificationsEnabled(false);
     localStorage.setItem(NOTIFICATION_ENABLED_KEY, JSON.stringify(false));
@@ -239,7 +216,6 @@ export default function AyarlarPage() {
     toast({ title: "Tüm Ayarlar Sıfırlandı", description: "Uygulama ayarları varsayılan değerlere döndürüldü." });
   };
 
-
   return (
     <div className="space-y-8">
       <h1 className="text-3xl font-bold tracking-tight">Ayarlar</h1>
@@ -258,7 +234,7 @@ export default function AyarlarPage() {
               <Label htmlFor="theme-toggle-label" className="text-base font-medium">Tema Seçimi</Label>
               <p className="text-sm text-muted-foreground">Açık veya koyu tema arasında geçiş yapın.</p>
             </div>
-            <ThemeToggle />
+            <ThemeToggle /> {/* This is a Button, will play sound */}
           </div>
         </CardContent>
       </Card>
@@ -308,7 +284,7 @@ export default function AyarlarPage() {
               <p>Tarayıcı konum iznini vermediniz. Ayarlardan değiştirmediğiniz sürece mevcut konumunuz kullanılamaz.</p>
             </div>
           )}
-           {locationPermission === 'prompt' && locationServicesEnabled && ( // Show if permission is prompt and user tries to enable
+           {locationPermission === 'prompt' && locationServicesEnabled && (
             <div className="flex items-center gap-2 p-3 text-sm text-info-foreground bg-info/80 rounded-md">
               <InfoIcon className="w-5 h-5" />
               <p>Tarayıcınız konum izni isteyecektir. Lütfen izin verin.</p>
@@ -329,12 +305,12 @@ export default function AyarlarPage() {
           <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg shadow-sm">
             <div>
               <Label htmlFor="ui-sound-switch" className="text-base font-medium">UI Tıklama Sesi</Label>
-              <p className="text-sm text-muted-foreground">Buton ve anahtar etkileşimlerinde sesli geri bildirim.</p>
+              <p className="text-sm text-muted-foreground">Buton etkileşimlerinde sesli geri bildirim.</p>
             </div>
             <Switch
               id="ui-sound-switch"
               checked={uiSoundEnabled}
-              onCheckedChange={handleUiSoundToggle}
+              onCheckedChange={handleUiSoundToggle} // This will also play sound when toggled ON.
             />
           </div>
           <div className="p-4 bg-muted/30 rounded-lg shadow-sm">
@@ -342,7 +318,7 @@ export default function AyarlarPage() {
             <p className="text-sm text-muted-foreground mb-3">Tüm uygulama ayarlarını (tema, bildirimler, konum, ses) varsayılan değerlere döndürür.</p>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive" className="w-full sm:w-auto" onClick={playClickSound}>
+                <Button variant="destructive" className="w-full sm:w-auto"> {/* Will play sound */}
                   <Trash2 className="mr-2 h-4 w-4" /> Tüm Ayarları Sıfırla
                 </Button>
               </AlertDialogTrigger>
@@ -355,8 +331,8 @@ export default function AyarlarPage() {
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel onClick={playClickSound}>İptal</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleResetSettings}>Sıfırla</AlertDialogAction>
+                  <AlertDialogCancel>İptal</AlertDialogCancel> {/* Will play sound */}
+                  <AlertDialogAction onClick={handleResetSettings}>Sıfırla</AlertDialogAction> {/* Will play sound */}
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
@@ -371,9 +347,3 @@ export default function AyarlarPage() {
     </div>
   );
 }
-
-    
-
-    
-
-    

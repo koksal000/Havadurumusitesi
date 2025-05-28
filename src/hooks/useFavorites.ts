@@ -10,7 +10,7 @@ export function useFavorites() {
 
   const addFavorite = (location: FavoriteLocation) => {
     if (!favorites.find(fav => fav.province === location.province && fav.district === location.district)) {
-      setFavorites([...favorites, location]);
+      setFavorites(prevFavorites => [...prevFavorites, location]);
       toast({
         title: "Favorilere Eklendi",
         description: `${location.province} / ${location.district} favorilerinize eklendi.`,
@@ -25,7 +25,7 @@ export function useFavorites() {
   };
 
   const removeFavorite = (province: string, district: string) => {
-    setFavorites(favorites.filter(fav => !(fav.province === province && fav.district === district)));
+    setFavorites(prevFavorites => prevFavorites.filter(fav => !(fav.province === province && fav.district === district)));
     toast({
       title: "Favorilerden Çıkarıldı",
       description: `${province} / ${district} favorilerinizden çıkarıldı.`,
