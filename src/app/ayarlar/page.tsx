@@ -102,7 +102,7 @@ export default function AyarlarPage() {
     try {
       console.log('Registering service worker...');
       const registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
-      setIsSWRegistered(true);
+      setIsSWRegistered(true); // Update state here
       console.log('Service Worker başarıyla kaydedildi.', registration);
       
       try {
@@ -123,12 +123,12 @@ export default function AyarlarPage() {
             subErrorMessage = "Push aboneliği için VAPID public key eksik veya hatalı. Lütfen geliştirici ile iletişime geçin.";
         }
         toast({ title: "Push Aboneliği Başarısız", description: `Abonelik hatası: ${subErrorMessage}`, variant: "destructive", duration: 7000 });
-        return { swRegistered: true, pushSubscribed: false }; // SW registered, but push failed
+        return { swRegistered: true, pushSubscribed: false };
       }
     } catch (error: any) {
       console.error('Service Worker kaydedilirken hata:', error);
       toast({ title: "Service Worker Kayıt Hatası", description: `Bir hata oluştu: ${error.message || 'Bilinmeyen SW kayıt hatası.'}`, variant: "destructive" });
-      setIsSWRegistered(false);
+      setIsSWRegistered(false); // Update state here
       return { swRegistered: false, pushSubscribed: false };
     }
   };
@@ -137,17 +137,18 @@ export default function AyarlarPage() {
   const handleNotificationToggle = async (checked: boolean) => {
     playClickSound();
     localStorage.setItem(NOTIFICATION_ENABLED_KEY, JSON.stringify(checked));
-    setNotificationsEnabledSetting(checked); // Set user's direct intent
+    setNotificationsEnabledSetting(checked); 
 
     if (checked) {
       if (typeof Notification === 'undefined') {
          toast({ title: "Bildirimler Desteklenmiyor", description: "Tarayıcınız bildirimleri desteklemiyor.", variant: "destructive" });
          setNotificationsEnabledSetting(false);
          localStorage.setItem(NOTIFICATION_ENABLED_KEY, JSON.stringify(false));
+         setIsSWRegistered(false);
          return;
       }
 
-      let permission = currentNotificationPermission || Notification.permission; // Use state or direct check
+      let permission = currentNotificationPermission || Notification.permission; 
       if (permission === 'default') {
         console.log('Requesting notification permission...');
         permission = await Notification.requestPermission();
@@ -161,9 +162,9 @@ export default function AyarlarPage() {
         if (swRegistered) {
           toast({ title: "Bildirim Sistemi Etkin", description: "Tarayıcı bildirimleri Service Worker üzerinden yönetilecektir." });
         } else {
-          // SW registration failed, revert the main toggle
           setNotificationsEnabledSetting(false);
           localStorage.setItem(NOTIFICATION_ENABLED_KEY, JSON.stringify(false));
+          setIsSWRegistered(false);
           toast({ title: "Bildirimler Etkinleştirilemedi", description: "Service Worker kaydı yapılamadı.", variant: "destructive" });
         }
       } else if (permission === 'denied') {
@@ -174,7 +175,8 @@ export default function AyarlarPage() {
         });
         setNotificationsEnabledSetting(false);
         localStorage.setItem(NOTIFICATION_ENABLED_KEY, JSON.stringify(false));
-      } else { // 'default' after request but not granted
+        setIsSWRegistered(false);
+      } else { 
          toast({
             title: "Bildirim İzni Gerekli",
             description: "Bildirimleri almak için izin vermelisiniz.",
@@ -182,9 +184,9 @@ export default function AyarlarPage() {
           });
         setNotificationsEnabledSetting(false);
         localStorage.setItem(NOTIFICATION_ENABLED_KEY, JSON.stringify(false));
+        setIsSWRegistered(false);
       }
     } else {
-      // User is turning notifications OFF
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistration().then(registration => {
           if (registration) {
@@ -199,22 +201,27 @@ export default function AyarlarPage() {
             registration.unregister().then(unregistered => {
               if (unregistered) {
                 console.log('Service Worker kaydı kaldırıldı.');
-                setIsSWRegistered(false); // Explicitly set here
+                setIsSWRegistered(false); 
                 toast({ title: "Bildirimler Devre Dışı", description: "Hava durumu uyarıları almayacaksınız. Service Worker kaydı kaldırıldı." });
               } else {
+                // If unregister returns false, it might mean it's already unregistered or couldn't be.
+                // We should still ensure our state reflects no SW.
+                setIsSWRegistered(false);
                 toast({ title: "Bildirimler Devre Dışı", description: "Hava durumu uyarıları almayacaksınız." });
               }
             }).catch(err => {
                console.error('Service Worker kaydı kaldırılırken hata:', err);
+               setIsSWRegistered(false);
                toast({ title: "Bildirimler Devre Dışı", description: "Hava durumu uyarıları almayacaksınız (SW kaldırma hatası)." });
             });
           } else {
              toast({ title: "Bildirimler Devre Dışı", description: "Hava durumu uyarıları almayacaksınız." });
-             setIsSWRegistered(false); // No registration found, ensure state reflects this
+             setIsSWRegistered(false); 
           }
         });
       } else {
          toast({ title: "Bildirimler Devre Dışı", description: "Hava durumu uyarıları almayacaksınız." });
+         setIsSWRegistered(false);
       }
     }
   };
@@ -291,11 +298,10 @@ export default function AyarlarPage() {
     setTheme('light'); 
     localStorage.removeItem('havadurumux-theme');
 
-    // Turn off notifications and unregister SW
     localStorage.setItem(NOTIFICATION_ENABLED_KEY, JSON.stringify(false));
     setNotificationsEnabledSetting(false);
     if (typeof Notification !== 'undefined') {
-      setCurrentNotificationPermission(Notification.permission); // Re-check after potential unregister
+      setCurrentNotificationPermission(Notification.permission); 
     }
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistration().then(registration => {
@@ -309,8 +315,9 @@ export default function AyarlarPage() {
              setIsSWRegistered(false);
           }
         });
+    } else {
+        setIsSWRegistered(false);
     }
-
 
     setLocationServicesEnabled(false);
     localStorage.setItem(LOCATION_SERVICES_ENABLED_KEY, JSON.stringify(false));
@@ -362,7 +369,6 @@ export default function AyarlarPage() {
       if (!registration.active) {
         console.warn("sendTestNotification: Service Worker is ready but not active. Notification might not show immediately.");
         toast({ title: "SW Aktif Değil", description: "Service Worker hazır ama henüz aktif değil. Birkaç saniye sonra tekrar deneyin veya sayfayı yenileyin.", variant: "default" });
-        // return; // Optionally return here or let it try anyway
       }
       
       await registration.showNotification("Test Bildirimi Başlığı (SW)", {
@@ -377,7 +383,7 @@ export default function AyarlarPage() {
       console.error("SW Test bildirimi oluşturulurken hata:", error);
       let errorMessage = `Bir hata oluştu: ${error.message}`;
       if (error.name === 'TypeError' && error.message.includes('Illegal constructor')) {
-        errorMessage = "Bildirim oluşturulamadı. Tarayıcınız aktif bir Service Worker üzerinden bildirim bekliyor olabilir. Lütfen tarayıcı ayarlarından bu site için eski Service Worker kayıtlarını temizlemeyi deneyin veya bildirim ayarını kapatıp açın.";
+        errorMessage = "Bildirim oluşturulamadı (Illegal Constructor). Tarayıcınızda bu site için eski bir Service Worker kaydı kalmış olabilir. Geliştirici araçlarından (Application > Service Workers) kaydı kaldırıp tekrar deneyin veya bildirim ayarını kapatıp açın.";
       } else if (error.name === 'NotAllowedError') {
         errorMessage = "Bildirim izni verilmedi veya reddedildi (Service Worker seviyesinde).";
       } else if (error.name === 'InvalidStateError') {
