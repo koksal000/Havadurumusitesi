@@ -6,6 +6,7 @@ import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,16 +18,20 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Brush, Bell, Compass, AlertTriangle, InfoIcon, Speaker, RotateCcw, Trash2, Send } from 'lucide-react';
+import { Brush, Bell, Compass, AlertTriangle, InfoIcon, Speaker, RotateCcw, Trash2, Send, Mail } from 'lucide-react';
 import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { useTheme } from '@/components/ThemeProvider';
 import { useSound } from '@/contexts/SoundContext';
+import { useForm, SubmitHandler } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { handleEmailSubscription } from '@/app/actions/emailSubscriptionActions'; // Server Action import
 
 const NOTIFICATION_ENABLED_KEY = 'havadurumux-notifications-enabled';
 const LOCATION_SERVICES_ENABLED_KEY = 'havadurumux-location-services-enabled';
+const EMAIL_ALERT_INFO_KEY = 'havadurumux-email-alert-info';
 
-// This is your VAPID public key
 const VAPID_PUBLIC_KEY = 'BEOgt6ovxyEDuHK9UUo-OOjk4aaQlJGesgDmPTCJg5keyaEg8LwZHahPNLLDNk36jD5G4FDSGYG1Nq92f5OYV58';
 
 function urlBase64ToUint8Array(base64String: string) {
@@ -44,6 +49,12 @@ function urlBase64ToUint8Array(base64String: string) {
   return outputArray;
 }
 
+const emailFormSchema = z.object({
+  name: z.string().min(2, { message: "Ad Soyad en az 2 karakter olmalıdır." }),
+  email: z.string().email({ message: "Geçerli bir e-posta adresi giriniz." }),
+});
+
+type EmailFormValues = z.infer<typeof emailFormSchema>;
 
 export default function AyarlarPage() {
   const { toast } = useToast();
@@ -56,9 +67,14 @@ export default function AyarlarPage() {
   const [locationServicesEnabled, setLocationServicesEnabled] = useState(false);
   const [currentLocationPermission, setCurrentLocationPermission] = useState<PermissionState | null>(null);
   
-  const [isSWRegistered, setIsSWRegistered] = useState(false); // This state tracks if SW registration attempt was made and its outcome
+  const [isSWRegistered, setIsSWRegistered] = useState(false);
 
   const [uiSoundSwitchState, setUiSoundSwitchState] = useState(isSoundGloballyEnabled);
+
+  const { register, handleSubmit, formState: { errors }, setValue: setEmailFormValue } = useForm<EmailFormValues>({
+    resolver: zodResolver(emailFormSchema),
+  });
+
   useEffect(() => {
     setUiSoundSwitchState(isSoundGloballyEnabled);
   }, [isSoundGloballyEnabled]);
@@ -68,11 +84,9 @@ export default function AyarlarPage() {
     if (typeof window !== 'undefined') {
       const savedNotificationsEnabled = localStorage.getItem(NOTIFICATION_ENABLED_KEY);
       setNotificationsEnabledSetting(savedNotificationsEnabled === 'true');
-      console.log("Initial notificationsEnabledSetting from localStorage:", savedNotificationsEnabled === 'true');
       
       if (typeof Notification !== 'undefined') {
         setCurrentNotificationPermission(Notification.permission);
-        console.log("Initial currentNotificationPermission:", Notification.permission);
       } else {
         console.warn("Tarayıcı Notification API'sini desteklemiyor.");
       }
@@ -88,12 +102,23 @@ export default function AyarlarPage() {
       
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistration().then(registration => {
-          console.log('Initial SW registration check from useEffect:', registration);
-          setIsSWRegistered(!!registration); // if a registration exists, consider it "registered" for UI purposes initially
+          setIsSWRegistered(!!registration);
         });
       }
+
+      // E-posta bilgilerini localStorage'dan yükle
+      const savedEmailInfo = localStorage.getItem(EMAIL_ALERT_INFO_KEY);
+      if (savedEmailInfo) {
+        try {
+          const parsedInfo: EmailFormValues = JSON.parse(savedEmailInfo);
+          setEmailFormValue('name', parsedInfo.name);
+          setEmailFormValue('email', parsedInfo.email);
+        } catch (e) {
+          console.error("Error parsing saved email info:", e);
+        }
+      }
     }
-  }, []);
+  }, [setEmailFormValue]);
 
   const registerServiceWorkerAndSubscribe = async (): Promise<{ swRegistered: boolean, pushSubscribed: boolean }> => {
     if (!('serviceWorker' in navigator) || !('PushManager' in window) || typeof Notification === 'undefined') {
@@ -102,18 +127,17 @@ export default function AyarlarPage() {
     }
 
     try {
-      console.log('Registering service worker...');
       const registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
       console.log('Service Worker başarıyla kaydedildi.', registration);
-      setIsSWRegistered(true); // SW registration part succeeded
+      // setIsSWRegistered(true); // Bu state'i burada set etmek yerine handleNotificationToggle içinde kontrol et
       
       try {
-        console.log('Attempting push subscription...');
         const subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
         });
         console.log('Push aboneliği başarıyla oluşturuldu:', JSON.stringify(subscription));
+        // Gerçek uygulamada abonelik backend'e gönderilir.
         toast({ title: "Push Aboneliği Başarılı", description: "Bildirimler için abone olundu." });
         return { swRegistered: true, pushSubscribed: true };
       } catch (subError: any) {
@@ -130,7 +154,7 @@ export default function AyarlarPage() {
     } catch (error: any) {
       console.error('Service Worker kaydedilirken hata:', error);
       toast({ title: "Service Worker Kayıt Hatası", description: `Bir hata oluştu: ${error.message || 'Bilinmeyen SW kayıt hatası.'}`, variant: "destructive" });
-      setIsSWRegistered(false); // SW registration itself failed
+      // setIsSWRegistered(false); // Bu state'i burada set etmek yerine handleNotificationToggle içinde kontrol et
       return { swRegistered: false, pushSubscribed: false };
     }
   };
@@ -140,7 +164,6 @@ export default function AyarlarPage() {
     playClickSound();
     localStorage.setItem(NOTIFICATION_ENABLED_KEY, JSON.stringify(checked));
     setNotificationsEnabledSetting(checked); 
-    console.log("handleNotificationToggle - checked:", checked, "notificationsEnabledSetting set to:", checked);
 
     if (checked) {
       if (typeof Notification === 'undefined') {
@@ -153,21 +176,20 @@ export default function AyarlarPage() {
 
       let permission = currentNotificationPermission || Notification.permission; 
       if (permission === 'default') {
-        console.log('Requesting notification permission...');
         permission = await Notification.requestPermission();
         setCurrentNotificationPermission(permission); 
-        console.log('Notification permission result:', permission);
       }
       
       if (permission === 'granted') {
         const { swRegistered: swRegStatus, pushSubscribed } = await registerServiceWorkerAndSubscribe();
-        // setIsSWRegistered(swRegStatus); // This is now handled inside registerServiceWorkerAndSubscribe
+        setIsSWRegistered(swRegStatus);
 
-        if (swRegStatus) {
+        if (swRegStatus) { // SW kaydı başarılıysa (push aboneliği olmasa bile)
           toast({ title: "Bildirim Sistemi Etkin", description: "Tarayıcı bildirimleri Service Worker üzerinden yönetilecektir." });
         } else {
           setNotificationsEnabledSetting(false); 
           localStorage.setItem(NOTIFICATION_ENABLED_KEY, JSON.stringify(false));
+          setIsSWRegistered(false); // Ekstra güvenlik
           toast({ title: "Bildirimler Etkinleştirilemedi", description: "Service Worker kaydı yapılamadı.", variant: "destructive" });
         }
       } else if (permission === 'denied') {
@@ -207,7 +229,6 @@ export default function AyarlarPage() {
                 setIsSWRegistered(false); 
                 toast({ title: "Bildirimler Devre Dışı", description: "Hava durumu uyarıları almayacaksınız. Service Worker kaydı kaldırıldı." });
               } else {
-                // Even if unregister returns false, it might be because no SW was found.
                 console.log('Service Worker kaydı kaldırılamadı veya bulunamadı.');
                 setIsSWRegistered(false); 
                 toast({ title: "Bildirimler Devre Dışı", description: "Hava durumu uyarıları almayacaksınız." });
@@ -334,13 +355,18 @@ export default function AyarlarPage() {
     
     setGlobalSoundEnabled(false); 
 
+    // E-posta bilgilerini de sıfırla
+    localStorage.removeItem(EMAIL_ALERT_INFO_KEY);
+    setEmailFormValue('name', '');
+    setEmailFormValue('email', '');
+
     toast({ title: "Tüm Ayarlar Sıfırlandı", description: "Uygulama ayarları varsayılan değerlere döndürüldü." });
   };
 
   const sendTestNotification = async () => {
     playClickSound();
     console.log("sendTestNotification: Attempting to send test notification.");
-    console.log("sendTestNotification states: notificationsEnabledSetting:", notificationsEnabledSetting, "currentNotificationPermission:", currentNotificationPermission);
+    console.log("sendTestNotification states: notificationsEnabledSetting:", notificationsEnabledSetting, "currentNotificationPermission:", currentNotificationPermission, "isSWRegistered:", isSWRegistered);
 
     if (!('serviceWorker' in navigator)) {
       toast({ title: "Service Worker Desteklenmiyor", description: "Tarayıcınız Service Worker API'sini desteklemiyor.", variant: "destructive" });
@@ -355,6 +381,11 @@ export default function AyarlarPage() {
       });
       return;
     }
+    
+    if (!isSWRegistered) {
+        toast({ title: "Service Worker Kayıtlı Değil", description: "Test bildirimi için Service Worker'ın kayıtlı ve aktif olması gerekir. Lütfen 'Hava Durumu Bildirimleri' ayarını açıp kapatmayı deneyin veya sayfayı yenileyin.", variant: "destructive", duration: 7000 });
+        return;
+    }
 
     console.log("sendTestNotification: Notification permission is granted. Checking SW readiness...");
     try {
@@ -364,7 +395,7 @@ export default function AyarlarPage() {
       if (!registration.active) { 
         console.warn("sendTestNotification: Service Worker is ready but NOT active. Notification might not show immediately or at all if SW doesn't take control.");
         toast({ title: "SW Aktif Değil", description: "Service Worker hazır ama henüz aktif değil. Birkaç saniye sonra tekrar deneyin veya sayfayı yenileyin. Bildirim ayarını kapatıp açmak da SW'nin aktifleşmesine yardımcı olabilir.", variant: "default", duration: 7000 });
-        return; // Potansiyel olarak burada durmak daha iyi olabilir.
+        return;
       }
       
       console.log("sendTestNotification: Attempting to show notification via SW. Registration.active:", registration.active);
@@ -377,7 +408,7 @@ export default function AyarlarPage() {
       console.log("sendTestNotification: registration.showNotification call completed.");
       toast({ title: "Test Bildirimi Gönderildi", description: "Service Worker üzerinden bir bildirim görmelisiniz. Eğer bildirim görünmüyorsa, tarayıcı/işletim sistemi ayarlarınızı (Rahatsız Etmeyin modu vb.) kontrol edin." });
     } catch (error: any) {
-      console.error("SW Test bildirimi oluşturulurken hata:", error.name, error.message, error); // Log the full error object
+      console.error("SW Test bildirimi oluşturulurken hata:", error.name, error.message, error); 
       let errorMessage = `Bir hata oluştu: ${error.message}`;
       if (error.name === 'TypeError' && error.message.includes('Illegal constructor')) {
         errorMessage = "Bildirim oluşturulamadı (Illegal Constructor). Tarayıcınızda bu site için eski bir Service Worker kaydı kalmış olabilir. Geliştirici araçlarından (Application > Service Workers) kaydı kaldırıp tekrar deneyin veya bildirim ayarını kapatıp açın.";
@@ -387,7 +418,7 @@ export default function AyarlarPage() {
          errorMessage = `Bildirim gösterme hatası (InvalidStateError): ${error.message}. Service Worker aktif olmayabilir veya push aboneliği ile ilgili bir sorun olabilir.`;
       } else if (error.message && error.message.includes("Service Worker is not controlling the page")) {
         errorMessage = "Service Worker sayfayı kontrol etmiyor. Bildirim ayarını açıp kapatmayı veya sayfayı yenilemeyi deneyin.";
-      } else if (error.message && error.message.includes("Notification constructor")) { // Catching other constructor related errors
+      } else if (error.message && error.message.includes("Notification constructor")) { 
         errorMessage = `Bildirim oluşturma hatası (constructor): ${error.message}. Service worker ile ilgili bir sorun olabilir.`;
       }
       toast({
@@ -399,6 +430,28 @@ export default function AyarlarPage() {
     }
   };
 
+  const onEmailSubmit: SubmitHandler<EmailFormValues> = async (data) => {
+    playClickSound();
+    const formData = new FormData();
+    formData.append('name', data.name);
+    formData.append('email', data.email);
+
+    const result = await handleEmailSubscription(formData);
+
+    if (result.success) {
+      localStorage.setItem(EMAIL_ALERT_INFO_KEY, JSON.stringify(data));
+      toast({
+        title: "E-posta Aboneliği Başarılı",
+        description: result.message,
+      });
+    } else {
+      toast({
+        title: "E-posta Aboneliği Hatası",
+        description: result.message || "Bir hata oluştu.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -434,7 +487,7 @@ export default function AyarlarPage() {
         <CardContent className="space-y-6">
           <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg shadow-sm">
             <div>
-              <Label htmlFor="notifications-switch" className="text-base font-medium">Hava Durumu Bildirimleri</Label>
+              <Label htmlFor="notifications-switch" className="text-base font-medium">Hava Durumu Bildirimleri (Web Push)</Label>
               <p className="text-sm text-muted-foreground">Favori konumlarınız için önemli hava durumu uyarıları alın (Service Worker ile).</p>
             </div>
             <Switch
@@ -486,6 +539,38 @@ export default function AyarlarPage() {
       <Card className="shadow-lg rounded-xl">
         <CardHeader>
          <div className="flex items-center gap-3">
+            <Mail className="w-7 h-7 text-primary" />
+            <CardTitle className="text-2xl">E-posta ile Hava Durumu Uyarıları</CardTitle>
+          </div>
+          <CardDescription>Önemli hava durumu uyarılarını e-posta adresinize alın. E-postalar `havadurumuxsite@gmail.com` adresinden gönderilecektir.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <form onSubmit={handleSubmit(onEmailSubmit)} className="space-y-4">
+            <div>
+              <Label htmlFor="name" className="text-base font-medium">Ad Soyad</Label>
+              <Input id="name" {...register("name")} placeholder="Adınız Soyadınız" className="mt-1"/>
+              {errors.name && <p className="text-xs text-destructive mt-1">{errors.name.message}</p>}
+            </div>
+            <div>
+              <Label htmlFor="email" className="text-base font-medium">E-posta Adresi</Label>
+              <Input id="email" type="email" {...register("email")} placeholder="eposta@adresiniz.com" className="mt-1"/>
+              {errors.email && <p className="text-xs text-destructive mt-1">{errors.email.message}</p>}
+            </div>
+            <Button type="submit" className="w-full sm:w-auto">
+              E-posta Uyarılarını Kaydet/Güncelle
+            </Button>
+          </form>
+          <p className="text-xs text-muted-foreground">
+            Not: Bu özellik şu anda e-posta göndermemektedir. Yalnızca abonelik bilgileriniz kaydedilir ve konsola bir mesaj yazılır.
+            Gerçek e-posta gönderimi için sunucu tarafı entegrasyonu gereklidir.
+          </p>
+        </CardContent>
+      </Card>
+
+
+      <Card className="shadow-lg rounded-xl">
+        <CardHeader>
+         <div className="flex items-center gap-3">
             <Speaker className="w-7 h-7 text-primary" />
             <CardTitle className="text-2xl">Diğer Ayarlar</CardTitle>
           </div>
@@ -505,7 +590,7 @@ export default function AyarlarPage() {
           </div>
 
           <div className="p-4 bg-muted/30 rounded-lg shadow-sm">
-            <h3 className="text-base font-medium mb-2 flex items-center gap-2"><Send className="w-5 h-5 text-primary" />Test Bildirimi</h3>
+            <h3 className="text-base font-medium mb-2 flex items-center gap-2"><Send className="w-5 h-5 text-primary" />Test Bildirimi (Web Push)</h3>
             <p className="text-sm text-muted-foreground mb-3">Service Worker üzerinden tarayıcı bildirimlerinin düzgün çalışıp çalışmadığını test etmek için bir bildirim gönderin.</p>
             <Button 
                 onClick={sendTestNotification} 
@@ -524,7 +609,7 @@ export default function AyarlarPage() {
 
           <div className="p-4 bg-muted/30 rounded-lg shadow-sm">
             <h3 className="text-base font-medium mb-2 flex items-center gap-2"><RotateCcw className="w-5 h-5 text-primary" />Ayarları Sıfırla</h3>
-            <p className="text-sm text-muted-foreground mb-3">Tüm uygulama ayarlarını (tema, bildirimler, konum, ses) varsayılan değerlere döndürür.</p>
+            <p className="text-sm text-muted-foreground mb-3">Tüm uygulama ayarlarını (tema, bildirimler, konum, ses, e-posta) varsayılan değerlere döndürür.</p>
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="destructive" className="w-full sm:w-auto">
@@ -535,7 +620,7 @@ export default function AyarlarPage() {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Emin misiniz?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Bu işlem tüm HavaDurumuX ayarlarınızı (tema, bildirim tercihleri, konum izinleri ve diğer ayarlar)
+                    Bu işlem tüm HavaDurumuX ayarlarınızı (tema, bildirim tercihleri, konum izinleri, ses ve e-posta abonelik bilgileri)
                     sıfırlayacak ve geri alınamaz. Devam etmek istediğinizden emin misiniz?
                   </AlertDialogDescription>
                 </AlertDialogHeader>
@@ -550,11 +635,13 @@ export default function AyarlarPage() {
             Not: Tıklama sesi için tarayıcınızın otomatik oynatma politikaları nedeniyle ilk etkileşimde ses çalmayabilir.
             Ses, harici bir video kaynağından (`https://files.catbox.moe/42qpsz.mp4`) çalınmaktadır.
             Eğer ses yüklenemezse veya çalınamazsa konsolda uyarı görebilirsiniz.
-            Bildirimler için tarayıcıda Service Worker kaydı yönetilmektedir. VAPID anahtarı, push aboneliği için gereklidir; gerçek bir push sunucusu entegrasyonu için bu anahtarın sunucu tarafında da kullanılması gerekir.
+            Web Push Bildirimleri için tarayıcıda Service Worker kaydı yönetilmektedir. VAPID anahtarı, push aboneliği için gereklidir; gerçek bir push sunucusu entegrasyonu için bu anahtarın sunucu tarafında da kullanılması gerekir.
           </p>
         </CardContent>
       </Card>
     </div>
   );
 }
+    
+
     
