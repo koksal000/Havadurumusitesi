@@ -52,12 +52,12 @@ export default function IletisimPage() {
 
       <div className="text-center mt-10">
          <Image 
-            src="https://placehold.co/700x350.png" 
-            alt="İletişim ve geri bildirim konsept görseli" 
+            src="https://i.ibb.co/p6JH9Fg9/copilot-image-1748418745923.png" 
+            alt="HavaDurumuX Banner İletişim" 
             width={700} 
-            height={350} 
+            height={175} 
             className="rounded-lg shadow-md mx-auto"
-            data-ai-hint="communication feedback"
+            data-ai-hint="weather app banner contact"
             />
       </div>
     </div>

@@ -3,7 +3,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { CloudSun, MapPin, Radar, Compass, Info, Mail, BarChart3, Thermometer, WindIcon } from 'lucide-react';
+import { CloudSun, MapPin, Radar, Compass, Info, Mail, BarChart3 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -77,14 +77,14 @@ export default function LandingPage() {
       </div>
        <div className="py-6 text-center">
           <Image 
-            src="https://placehold.co/1200x300.png" 
-            alt="Türkiye haritası üzerinde hava durumu ikonları" 
+            src="https://i.ibb.co/p6JH9Fg9/copilot-image-1748418745923.png" 
+            alt="HavaDurumuX Banner" 
             width={1200} 
             height={300} 
             className="rounded-lg shadow-md mx-auto"
-            data-ai-hint="weather map turkey"
+            data-ai-hint="weather app banner"
+            priority
             />
-            <p className="text-xs text-muted-foreground mt-2">Görsel temsilidir.</p>
        </div>
     </div>
   );
@@ -132,4 +132,3 @@ function InfoCard({ Icon, title, description, link, linkLabel }: InfoCardProps) 
     </Card>
   );
 }
-

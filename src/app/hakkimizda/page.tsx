@@ -61,12 +61,12 @@ export default function HakkimizdaPage() {
       
       <div className="text-center mt-10">
         <Image 
-            src="https://placehold.co/800x400.png" 
-            alt="Hava durumu uygulamasının arayüzünden bir kesit" 
+            src="https://i.ibb.co/p6JH9Fg9/copilot-image-1748418745923.png" 
+            alt="HavaDurumuX Banner" 
             width={800} 
-            height={400} 
+            height={200} 
             className="rounded-lg shadow-md mx-auto"
-            data-ai-hint="weather app interface"
+            data-ai-hint="weather app banner"
             />
         <p className="text-sm text-muted-foreground mt-4">HavaDurumuX ile her zaman bir adım önde olun.</p>
       </div>
