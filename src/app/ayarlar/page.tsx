@@ -24,12 +24,10 @@ import { useTheme } from '@/components/ThemeProvider';
 import { useSound } from '@/contexts/SoundContext';
 
 const NOTIFICATION_ENABLED_KEY = 'havadurumux-notifications-enabled';
-// const NOTIFICATION_PERMISSION_KEY = 'havadurumux-notification-permission'; // We now read Notification.permission directly
 const LOCATION_SERVICES_ENABLED_KEY = 'havadurumux-location-services-enabled';
-// const LOCATION_PERMISSION_KEY = 'havadurumux-location-permission'; // We now read navigator.permissions directly
 
 // REPLACE THIS with your actual generated VAPID public key
-const VAPID_PUBLIC_KEY = 'BPA_YOUR_VAPID_PUBLIC_KEY_REPLACE_ME_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX';
+const VAPID_PUBLIC_KEY = 'BEOgt6ovxyEDuHK9UUo-OOjk4aaQlJGesgDmPTCJg5keyaEg8LwZHahPNLLDNk36jD5G4FDSGYG1Nq92f5OYV58';
 
 function urlBase64ToUint8Array(base64String: string) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -105,7 +103,7 @@ export default function AyarlarPage() {
       console.log('Service Worker başarıyla kaydedildi.', registration);
       
       try {
-        if (VAPID_PUBLIC_KEY.includes("PLACEHOLDER_YOUR_VAPID_PUBLIC_KEY_HERE")) {
+        if (VAPID_PUBLIC_KEY.includes("PLACEHOLDER_YOUR_VAPID_PUBLIC_KEY_HERE")) { // This check might be less relevant now but good for catching initial placeholder
             toast({ title: "VAPID Anahtarı Eksik", description: "Push aboneliği için VAPID public key ayarlanmalı.", variant: "destructive", duration: 7000 });
         }
         const subscription = await registration.pushManager.subscribe({
@@ -120,7 +118,7 @@ export default function AyarlarPage() {
         let subErrorMessage = (subError as Error).message;
         if ((subError as Error).name === 'NotAllowedError') {
             subErrorMessage = "Push abonelik izni verilmedi veya reddedildi.";
-        } else if (VAPID_PUBLIC_KEY.includes("PLACEHOLDER_YOUR_VAPID_PUBLIC_KEY_HERE")) {
+        } else if (VAPID_PUBLIC_KEY.includes("PLACEHOLDER_YOUR_VAPID_PUBLIC_KEY_HERE")) { // Check again for placeholder
             subErrorMessage = "Push aboneliği için VAPID public key eksik veya hatalı. Lütfen geliştirici ile iletişime geçin.";
         }
         toast({ title: "Push Aboneliği Başarısız", description: `Abonelik hatası: ${subErrorMessage}`, variant: "destructive", duration: 7000 });
@@ -335,14 +333,21 @@ export default function AyarlarPage() {
       await registration.showNotification("Test Bildirimi Başlığı (SW)", {
         body: "Bu bir Service Worker test bildirimidir. Eğer bunu görüyorsanız, SW bildirimleri çalışıyor!",
         icon: '/logo.png', // Ensure /public/logo.png exists
+        badge: '/logo_badge.png', // Ensure /public/logo_badge.png exists (optional)
         data: { url: '/bildirimler' } 
       });
       toast({ title: "Test Bildirimi Gönderildi", description: "Service Worker üzerinden bir bildirim görmelisiniz." });
     } catch (error: any) {
       console.error("SW Test bildirimi oluşturulurken hata:", error);
+      let errorMessage = `Bir hata oluştu: ${error.message}`;
+      if (error.name === 'TypeError' && error.message.includes('Illegal constructor')) {
+        errorMessage = "Bildirim oluşturulamadı. Tarayıcınız aktif bir Service Worker üzerinden bildirim bekliyor olabilir. Lütfen tarayıcı ayarlarından bu site için eski Service Worker kayıtlarını temizlemeyi deneyin veya bildirim ayarını kapatıp açın.";
+      } else if (error.name === 'NotAllowedError') {
+        errorMessage = "Bildirim izni verilmedi veya reddedildi.";
+      }
       toast({
         title: "SW Test Bildirimi Hatası",
-        description: `Bir hata oluştu: ${error.message}`,
+        description: errorMessage,
         variant: "destructive",
       });
     }
@@ -489,7 +494,7 @@ export default function AyarlarPage() {
             Not: Tıklama sesi için tarayıcınızın otomatik oynatma politikaları nedeniyle ilk etkileşimde ses çalmayabilir.
             Ses, harici bir video kaynağından (`https://files.catbox.moe/42qpsz.mp4`) çalınmaktadır.
             Eğer ses yüklenemezse veya çalınamazsa konsolda uyarı görebilirsiniz.
-            Bildirimler için tarayıcıda Service Worker kaydı yönetilmektedir. VAPID anahtarı şu an için bir yer tutucudur; gerçek bir push sunucusu entegrasyonu için bu anahtarın üretilip sunucu tarafında kullanılması gerekir.
+            Bildirimler için tarayıcıda Service Worker kaydı yönetilmektedir. VAPID anahtarı, push aboneliği için gereklidir; gerçek bir push sunucusu entegrasyonu için bu anahtarın sunucu tarafında da kullanılması gerekir.
           </p>
         </CardContent>
       </Card>
