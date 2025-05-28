@@ -17,7 +17,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Brush, Bell, Compass, AlertTriangle, InfoIcon, SpeakerLoud, RotateCcw, Trash2 } from 'lucide-react';
+import { Brush, Bell, Compass, AlertTriangle, InfoIcon, Speaker, RotateCcw, Trash2 } from 'lucide-react';
 import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { useTheme } from '@/components/ThemeProvider';
@@ -320,7 +320,7 @@ export default function AyarlarPage() {
       <Card className="shadow-lg rounded-xl">
         <CardHeader>
          <div className="flex items-center gap-3">
-            <SpeakerLoud className="w-7 h-7 text-primary" />
+            <Speaker className="w-7 h-7 text-primary" />
             <CardTitle className="text-2xl">Diğer Ayarlar</CardTitle>
           </div>
           <CardDescription>Ek uygulama tercihlerinizi buradan yönetin.</CardDescription>
@@ -371,6 +371,8 @@ export default function AyarlarPage() {
     </div>
   );
 }
+
+    
 
     
 
