@@ -13,7 +13,7 @@ import { FavoriteButton } from '@/components/FavoriteButton';
 import { Accordion } from '@/components/ui/accordion';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, ArrowLeft, Loader2, Thermometer, Wind, Droplets, Zap } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, Loader2, Thermometer, Wind, Droplets, Zap, Waves, Sun, Leaf } from 'lucide-react'; // Added Waves, Sun, Leaf
 import Link from 'next/link';
 import { format, parseISO, isSameDay } from 'date-fns';
 import { tr } from 'date-fns/locale';
@@ -52,26 +52,24 @@ export default function DistrictWeatherPage() {
 
       let usedCache = false;
       try {
-        setLoading(true); // Start loading
+        setLoading(true); 
         const cachedDataString = localStorage.getItem(`weather-${districtData.lat}-${districtData.lon}`);
         if (cachedDataString) {
            const parsedCache = JSON.parse(cachedDataString);
-           if (new Date().getTime() - new Date(parsedCache.timestamp).getTime() < 3600 * 1000) { // 1 hour cache
+           if (new Date().getTime() - new Date(parsedCache.timestamp).getTime() < 3600 * 1000) { 
               setWeatherData(parsedCache.data);
-              setLoading(false); // Set loading false if using cache
+              setLoading(false); 
               usedCache = true; 
-              // UI updates with cache first, fresh data can be fetched in background if needed
            }
         }
         
-        // Fetch fresh data regardless of cache, unless cache was just used and is recent
         if (!usedCache || (usedCache && new Date().getTime() - new Date(JSON.parse(cachedDataString!).timestamp).getTime() >= 3600 * 1000) ) {
             const data = await getWeatherData(districtData.lat, districtData.lon);
             if (data) {
               setWeatherData(data);
               localStorage.setItem(`weather-${districtData.lat}-${districtData.lon}`, JSON.stringify({data: data, timestamp: new Date().toISOString()}));
             } else {
-              if (!weatherData) { // Only set error if no cached data is already displayed
+              if (!weatherData) { 
                 setError("Hava durumu verileri alınamadı.");
               }
             }
@@ -79,19 +77,18 @@ export default function DistrictWeatherPage() {
 
       } catch (e) {
         console.error(e);
-        if (!weatherData) { // Only set error if no cached data is already displayed
+        if (!weatherData) { 
             setError("Hava durumu verileri yüklenirken bir hata oluştu.");
         }
       } finally {
-        // Set loading to false only if we didn't use a recent cache
-        if (!usedCache) {
+        if (!usedCache || (weatherData && new Date().getTime() - new Date(JSON.parse(localStorage.getItem(`weather-${districtData.lat}-${districtData.lon}`)!).timestamp).getTime() >= 3600 * 1000 ) ) {
              setLoading(false);
         }
       }
     }
 
     fetchData();
-  }, [province, district]); 
+  }, [province, district]); // weatherData removed from dependencies to prevent re-fetch loops
   
   if (loading && !weatherData) { 
     return (
@@ -115,10 +112,10 @@ export default function DistrictWeatherPage() {
     );
   }
 
-  if (!weatherData) {
+  if (!weatherData) { // This case handles if loading is false but weatherData is still null (e.g. API error after cache displayed)
     return (
       <div className="text-center py-10">
-        <p>Hava durumu verisi bulunamadı.</p>
+        <p>Hava durumu verisi bulunamadı veya yüklenemedi.</p>
         <Button asChild className="mt-4">
           <Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Ana Sayfaya Dön</Link>
         </Button>
@@ -126,12 +123,13 @@ export default function DistrictWeatherPage() {
     );
   }
   
-  const getHourlyDataForDay = (targetDate: string): HourlyWeather | null => {
-    if (!weatherData?.hourly?.time) return null;
+  const getHourlyDataForDay = (targetDateStr: string): HourlyWeather | null => {
+    if (!weatherData?.hourly?.time || !weatherData.hourly.time.length) return null;
     
+    const targetDate = parseISO(targetDateStr);
     const indices: number[] = [];
     weatherData.hourly.time.forEach((timeStr, index) => {
-        if (isSameDay(parseISO(timeStr), parseISO(targetDate))) {
+        if (isSameDay(parseISO(timeStr), targetDate)) {
             indices.push(index);
         }
     });
@@ -141,11 +139,24 @@ export default function DistrictWeatherPage() {
     const hourlyDataForDay: Partial<HourlyWeather> = {};
     for (const key in weatherData.hourly) {
         if (Array.isArray((weatherData.hourly as any)[key])) {
-            (hourlyDataForDay as any)[key] = indices.map(i => (weatherData.hourly as any)[key][i]);
+             // Ensure all hourly arrays are sliced correctly
+            (hourlyDataForDay as any)[key] = indices.map(i => (weatherData.hourly as any)[key]?.[i]);
+        } else {
+            // Copy non-array properties if any (though not typical for hourly block)
+            (hourlyDataForDay as any)[key] = (weatherData.hourly as any)[key];
         }
     }
+    // Ensure all required arrays are present in the returned object
+    const requiredHourlyKeys: (keyof HourlyWeather)[] = ['time', 'temperature_2m', 'relative_humidity_2m', 'apparent_temperature', 'precipitation_probability', 'precipitation', 'rain', 'showers', 'snowfall', 'weather_code', 'surface_pressure', 'cloud_cover', 'visibility', 'wind_speed_10m', 'wind_direction_10m', 'wind_gusts_10m', 'uv_index', 'soil_temperature_0cm', 'soil_moisture_0_1cm', 'pressure_msl', 'is_day'];
+    requiredHourlyKeys.forEach(key => {
+        if (!(hourlyDataForDay as any)[key]) {
+            (hourlyDataForDay as any)[key] = indices.map(() => undefined); // Fill with undefined if missing
+        }
+    });
+    
     return hourlyDataForDay as HourlyWeather;
   };
+
 
   return (
     <div className="space-y-8">
@@ -162,8 +173,8 @@ export default function DistrictWeatherPage() {
           <CurrentWeatherCard
             currentWeather={weatherData.current}
             dailyWeather={{ 
-              sunrise: weatherData.daily?.sunrise?.[0] as string,
-              sunset: weatherData.daily?.sunset?.[0] as string,
+              sunrise: weatherData.daily?.sunrise?.[0],
+              sunset: weatherData.daily?.sunset?.[0],
               uv_index_max: weatherData.daily?.uv_index_max?.[0],
               precipitation_sum: weatherData.daily?.precipitation_sum?.[0]
             }}
@@ -201,7 +212,7 @@ export default function DistrictWeatherPage() {
                       wind_speed_10m_max: weatherData.daily.wind_speed_10m_max?.[index] ?? 0,
                       wind_gusts_10m_max: weatherData.daily.wind_gusts_10m_max?.[index] ?? 0,
                       wind_direction_10m_dominant: weatherData.daily.wind_direction_10m_dominant?.[index] ?? 0,
-                      uv_index_max: weatherData.daily.uv_index_max?.[index] ?? 0,
+                      uv_index_max: weatherData.daily.uv_index_max?.[index],
                       shortwave_radiation_sum: weatherData.daily.shortwave_radiation_sum?.[index] ?? 0,
                       et0_fao_evapotranspiration: weatherData.daily.et0_fao_evapotranspiration?.[index] ?? 0,
                     }}
@@ -224,16 +235,24 @@ export default function DistrictWeatherPage() {
                 <p className="text-xs">{weatherData.hourly?.soil_temperature_0cm?.[0]?.toFixed(1) ?? 'N/A'} °C (İlk saat)</p>
               </div>
               <div className="p-4 bg-muted/30 rounded-lg shadow-sm">
-                <h4 className="font-semibold text-sm flex items-center"><Droplets className="w-4 h-4 mr-2 text-primary" />Toprak Nemi (0-1cm)</h4>
+                <h4 className="font-semibold text-sm flex items-center"><Waves className="w-4 h-4 mr-2 text-primary" />Toprak Nemi (0-1cm)</h4>
                 <p className="text-xs">{weatherData.hourly?.soil_moisture_0_1cm?.[0]?.toFixed(2) ?? 'N/A'} m³/m³ (İlk saat)</p>
               </div>
                <div className="p-4 bg-muted/30 rounded-lg shadow-sm">
-                <h4 className="font-semibold text-sm flex items-center"><Zap className="w-4 h-4 mr-2 text-primary" />Evapotranspirasyon (Günlük)</h4>
+                <h4 className="font-semibold text-sm flex items-center"><Leaf className="w-4 h-4 mr-2 text-primary" />Evapotranspirasyon (Günlük)</h4>
                 <p className="text-xs">{weatherData.daily?.et0_fao_evapotranspiration?.[0]?.toFixed(2) ?? 'N/A'} mm</p>
               </div>
               <div className="p-4 bg-muted/30 rounded-lg shadow-sm">
                 <h4 className="font-semibold text-sm flex items-center"><Wind className="w-4 h-4 mr-2 text-primary" />Dominant Rüzgar Yönü (Günlük)</h4>
                 <p className="text-xs">{weatherData.daily?.wind_direction_10m_dominant?.[0] ?? 'N/A'}°</p>
+              </div>
+               <div className="p-4 bg-muted/30 rounded-lg shadow-sm">
+                <h4 className="font-semibold text-sm flex items-center"><Sun className="w-4 h-4 mr-2 text-primary" />Kısa Dalga Radyasyon (Günlük)</h4>
+                <p className="text-xs">{weatherData.daily?.shortwave_radiation_sum?.[0]?.toFixed(1) ?? 'N/A'} MJ/m²</p>
+              </div>
+               <div className="p-4 bg-muted/30 rounded-lg shadow-sm">
+                <h4 className="font-semibold text-sm flex items-center"><Zap className="w-4 h-4 mr-2 text-primary" />Max UV İndeksi (Açık Hava)</h4>
+                <p className="text-xs">{weatherData.daily?.uv_index_clear_sky_max?.[0]?.toFixed(1) ?? 'N/A'}</p>
               </div>
               <p className="text-xs text-muted-foreground md:col-span-2">Not: Bazı veriler anlık veya ilk saatlik/günlük değerleri temsil etmektedir.</p>
             </CardContent>
@@ -243,11 +262,11 @@ export default function DistrictWeatherPage() {
           <Card>
             <CardHeader>
               <CardTitle>Detaylı Grafiksel Bilgiler</CardTitle>
-              <CardDescription>Hava durumu verilerinin grafiksel gösterimi burada yer alacak.</CardDescription>
+              <CardDescription>Hava durumu verilerinin grafiksel gösterimi.</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">Grafikler yakında eklenecektir.</p>
-              {/* New chart components will be added here */}
+              <p className="text-muted-foreground">Bu bölümde çeşitli hava durumu verileri için detaylı grafikler yer alacaktır. Yakında eklenecektir.</p>
+              {/* New chart components will be added here in the next step */}
             </CardContent>
           </Card>
         </TabsContent>

@@ -11,8 +11,8 @@ interface CurrentWeatherCardProps {
   dailyWeather: { 
     sunrise?: string; 
     sunset?: string; 
-    uv_index_max?: number; // From daily data
-    precipitation_sum?: number; // From daily data
+    uv_index_max?: number | null; 
+    precipitation_sum?: number; 
   };
   locationName: string;
 }
@@ -29,9 +29,9 @@ export function CurrentWeatherCard({ currentWeather, dailyWeather, locationName 
     weather_code,
     is_day,
     visibility,
-    uv_index,
+    uv_index, // Current UV index
     cloud_cover,
-    precipitation,
+    precipitation, // Current total precipitation
   } = currentWeather;
 
   const formatTime = (dateString?: string) => {
@@ -48,7 +48,7 @@ export function CurrentWeatherCard({ currentWeather, dailyWeather, locationName 
     <Card className="shadow-xl rounded-xl">
       <CardHeader>
         <CardTitle className="text-3xl font-bold">{locationName}</CardTitle>
-        <CardDescription>Anlık Hava Durumu ({currentWeather.time ? format(new Date(currentWeather.time), 'HH:mm', { locale: tr }) : 'N/A'})</CardDescription>
+        <CardDescription>Anlık Hava Durumu ({currentWeather.time ? format(new Date(currentWeather.time), 'HH:mm, dd MMM', { locale: tr }) : 'N/A'})</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-center text-center sm:text-left">
@@ -66,7 +66,7 @@ export function CurrentWeatherCard({ currentWeather, dailyWeather, locationName 
           <WeatherInfoItem Icon={Wind} label="Rüzgar Hamlesi" value={`${(wind_gusts_10m ?? 0).toFixed(1)} km/s`} />
           <WeatherInfoItem Icon={Droplets} label="Nem" value={`%${(relative_humidity_2m ?? 0).toFixed(0)}`} />
           <WeatherInfoItem Icon={Gauge} label="Basınç" value={`${(surface_pressure ?? 0).toFixed(0)} hPa`} />
-          <WeatherInfoItem Icon={Eye} label="Görüş Mesafesi" value={`${(visibility ? visibility / 1000 : 0).toFixed(1)} km`} />
+          <WeatherInfoItem Icon={Eye} label="Görüş Mesafesi" value={`${(visibility !== undefined ? visibility / 1000 : 0).toFixed(1)} km`} />
           <WeatherInfoItem Icon={Zap} label="UV İndeksi (Anlık)" value={`${(uv_index ?? 'N/A') === 'N/A' ? 'N/A' : (uv_index ?? 0).toFixed(1)}`} />
           <WeatherInfoItem Icon={Zap} label="UV İndeksi (Günlük Max)" value={`${(dailyWeather.uv_index_max ?? 'N/A') === 'N/A' ? 'N/A' : (dailyWeather.uv_index_max ?? 0).toFixed(1)}`} />
           <WeatherInfoItem Icon={CloudIcon} label="Bulut Örtüsü" value={`%${(cloud_cover ?? 0).toFixed(0)}`} />
@@ -83,7 +83,7 @@ export function CurrentWeatherCard({ currentWeather, dailyWeather, locationName 
 interface WeatherInfoItemProps {
   Icon: React.ElementType;
   label: string;
-  value: string;
+  value: string | number;
 }
 
 function WeatherInfoItem({ Icon, label, value }: WeatherInfoItemProps) {
@@ -100,6 +100,7 @@ function WeatherInfoItem({ Icon, label, value }: WeatherInfoItemProps) {
 
 function getWindDirection(degrees: number): string {
   const directions = ['K', 'KKD', 'KD', 'DKD', 'D', 'DGD', 'GD', 'GGD', 'G', 'GGB', 'GB', 'BGB', 'B', 'BKB', 'KB', 'KKB'];
-  const index = Math.round(degrees / 22.5) % 16;
+  const index = Math.round((degrees ?? 0) / 22.5) % 16;
   return directions[index];
 }
+
