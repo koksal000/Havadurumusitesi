@@ -26,7 +26,7 @@ import { useSound } from '@/contexts/SoundContext';
 const NOTIFICATION_ENABLED_KEY = 'havadurumux-notifications-enabled';
 const LOCATION_SERVICES_ENABLED_KEY = 'havadurumux-location-services-enabled';
 
-// REPLACE THIS with your actual generated VAPID public key
+// This is your VAPID public key
 const VAPID_PUBLIC_KEY = 'BEOgt6ovxyEDuHK9UUo-OOjk4aaQlJGesgDmPTCJg5keyaEg8LwZHahPNLLDNk36jD5G4FDSGYG1Nq92f5OYV58';
 
 function urlBase64ToUint8Array(base64String: string) {
@@ -103,25 +103,23 @@ export default function AyarlarPage() {
       console.log('Service Worker başarıyla kaydedildi.', registration);
       
       try {
-        if (VAPID_PUBLIC_KEY.includes("PLACEHOLDER_YOUR_VAPID_PUBLIC_KEY_HERE")) { // This check might be less relevant now but good for catching initial placeholder
-            toast({ title: "VAPID Anahtarı Eksik", description: "Push aboneliği için VAPID public key ayarlanmalı.", variant: "destructive", duration: 7000 });
-        }
         const subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
         });
         console.log('Push aboneliği başarıyla oluşturuldu:', JSON.stringify(subscription));
         // TODO: Send this subscription to your backend server to store it.
-        toast({ title: "Push Aboneliği Başarılı", description: "Bildirimler için abone olundu (backend entegrasyonu ve geçerli VAPID anahtarı gerekli)." });
+        toast({ title: "Push Aboneliği Başarılı", description: "Bildirimler için abone olundu (backend entegrasyonu gerekli)." });
       } catch (subError) {
         console.error('Push aboneliği oluşturulurken hata:', subError);
         let subErrorMessage = (subError as Error).message;
         if ((subError as Error).name === 'NotAllowedError') {
             subErrorMessage = "Push abonelik izni verilmedi veya reddedildi.";
-        } else if (VAPID_PUBLIC_KEY.includes("PLACEHOLDER_YOUR_VAPID_PUBLIC_KEY_HERE")) { // Check again for placeholder
+        } else if (!VAPID_PUBLIC_KEY || VAPID_PUBLIC_KEY.includes("PLACEHOLDER")) {
             subErrorMessage = "Push aboneliği için VAPID public key eksik veya hatalı. Lütfen geliştirici ile iletişime geçin.";
         }
         toast({ title: "Push Aboneliği Başarısız", description: `Abonelik hatası: ${subErrorMessage}`, variant: "destructive", duration: 7000 });
+         return false; // Return false if subscription fails
       }
       return true;
     } catch (error) {
@@ -156,8 +154,11 @@ export default function AyarlarPage() {
         if (swSubscribed) {
           toast({ title: "Bildirimler Etkin", description: "Hava durumu uyarıları için bildirim alacaksınız." });
         } else {
+          // If subscription failed, revert the toggle
           setNotificationsEnabledSetting(false);
           localStorage.setItem(NOTIFICATION_ENABLED_KEY, JSON.stringify(false));
+          // Optionally, unregister SW if it was just registered for a failed subscription attempt
+          // This part can be tricky, as SW might be used for other things.
         }
       } else if (permission === 'denied') {
         toast({
@@ -167,7 +168,7 @@ export default function AyarlarPage() {
         });
         setNotificationsEnabledSetting(false);
         localStorage.setItem(NOTIFICATION_ENABLED_KEY, JSON.stringify(false));
-      } else { 
+      } else { // 'default' or other states after requestPermission if not granted
          toast({
             title: "Bildirim İzni Gerekli",
             description: "Bildirimleri almak için izin vermelisiniz.",
@@ -177,6 +178,7 @@ export default function AyarlarPage() {
         localStorage.setItem(NOTIFICATION_ENABLED_KEY, JSON.stringify(false));
       }
     } else {
+      // User is turning notifications off
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistration().then(registration => {
           if (registration) {
@@ -185,15 +187,19 @@ export default function AyarlarPage() {
                     subscription.unsubscribe().then(successful => {
                         if (successful) console.log("Push aboneliği başarıyla kaldırıldı.");
                         else console.error("Push aboneliği kaldırılamadı.");
+                        // Unsubscribe from backend if applicable
                     }).catch(e => console.error("Push aboneliği kaldırılırken hata:", e));
                 }
             });
+            // Only unregister the SW if it's solely for notifications and not other PWA features.
+            // For simplicity here, we'll unregister it.
             registration.unregister().then(unregistered => {
               if (unregistered) {
                 console.log('Service Worker kaydı kaldırıldı.');
                 setIsSWRegistered(false);
                 toast({ title: "Bildirimler Devre Dışı", description: "Hava durumu uyarıları almayacaksınız. Service Worker kaydı kaldırıldı." });
               } else {
+                // This might happen if another part of the app is still using the SW
                 toast({ title: "Bildirimler Devre Dışı", description: "Hava durumu uyarıları almayacaksınız." });
               }
             }).catch(err => {
@@ -501,4 +507,6 @@ export default function AyarlarPage() {
     </div>
   );
 }
+    
+
     
