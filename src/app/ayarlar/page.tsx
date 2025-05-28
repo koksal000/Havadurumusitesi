@@ -17,7 +17,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Brush, Bell, Compass, AlertTriangle, InfoIcon, Speaker, RotateCcw, Trash2 } from 'lucide-react';
+import { Brush, Bell, Compass, AlertTriangle, InfoIcon, Speaker, RotateCcw, Trash2, Send } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { useTheme } from '@/components/ThemeProvider';
@@ -27,20 +27,18 @@ const NOTIFICATION_ENABLED_KEY = 'havadurumux-notifications-enabled';
 const NOTIFICATION_PERMISSION_KEY = 'havadurumux-notification-permission';
 const LOCATION_SERVICES_ENABLED_KEY = 'havadurumux-location-services-enabled';
 const LOCATION_PERMISSION_KEY = 'havadurumux-location-permission';
-// UI_SOUND_ENABLED_KEY is managed by SoundContext now
 
 export default function AyarlarPage() {
   const { toast } = useToast();
-  const { theme, setTheme } = useTheme(); 
+  const { theme, setTheme } = useTheme();
   const { playClickSound, setGlobalSoundEnabled, isSoundGloballyEnabled } = useSound();
 
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission | null>(null);
-  
+
   const [locationServicesEnabled, setLocationServicesEnabled] = useState(false);
   const [locationPermission, setLocationPermission] = useState<PermissionState | null>(null);
 
-  // Local state for the UI sound switch, synced with global context
   const [uiSoundSwitchState, setUiSoundSwitchState] = useState(isSoundGloballyEnabled);
 
   useEffect(() => {
@@ -51,7 +49,7 @@ export default function AyarlarPage() {
     if (typeof window !== 'undefined') {
       const savedNotificationsEnabled = localStorage.getItem(NOTIFICATION_ENABLED_KEY);
       if (savedNotificationsEnabled) setNotificationsEnabled(JSON.parse(savedNotificationsEnabled));
-      
+
       if (typeof Notification !== 'undefined') {
         const savedNotificationPerm = localStorage.getItem(NOTIFICATION_PERMISSION_KEY) as NotificationPermission | null;
         setNotificationPermission(savedNotificationPerm || Notification.permission);
@@ -59,7 +57,7 @@ export default function AyarlarPage() {
 
       const savedLocationServicesEnabled = localStorage.getItem(LOCATION_SERVICES_ENABLED_KEY);
       if (savedLocationServicesEnabled) setLocationServicesEnabled(JSON.parse(savedLocationServicesEnabled));
-      
+
       const savedLocationPerm = localStorage.getItem(LOCATION_PERMISSION_KEY) as PermissionState | null;
       if (savedLocationPerm) {
           setLocationPermission(savedLocationPerm);
@@ -69,7 +67,6 @@ export default function AyarlarPage() {
               localStorage.setItem(LOCATION_PERMISSION_KEY, status.state);
           });
       }
-      // Initial UI sound switch state is set from context above
     }
   }, []);
 
@@ -91,7 +88,7 @@ export default function AyarlarPage() {
             description: "Tarayıcı ayarlarından bildirimlere izin vermeniz gerekiyor.",
             variant: "destructive",
           });
-          setNotificationsEnabled(false); 
+          setNotificationsEnabled(false);
           localStorage.setItem(NOTIFICATION_ENABLED_KEY, JSON.stringify(false));
         } else {
           const permission = await Notification.requestPermission();
@@ -105,7 +102,7 @@ export default function AyarlarPage() {
               description: "Önemli hava durumu uyarılarını alamayacaksınız.",
               variant: "destructive",
             });
-            setNotificationsEnabled(false); 
+            setNotificationsEnabled(false);
             localStorage.setItem(NOTIFICATION_ENABLED_KEY, JSON.stringify(false));
           }
         }
@@ -135,7 +132,7 @@ export default function AyarlarPage() {
                 });
                 setLocationServicesEnabled(false);
                 localStorage.setItem(LOCATION_SERVICES_ENABLED_KEY, JSON.stringify(false));
-            } else { 
+            } else {
                 navigator.geolocation.getCurrentPosition(
                     () => {
                         setLocationPermission('granted');
@@ -174,10 +171,9 @@ export default function AyarlarPage() {
   };
 
   const handleUiSoundToggle = (checked: boolean) => {
-    setGlobalSoundEnabled(checked); // Update global context and localStorage
-    // setUiSoundSwitchState(checked); // Local switch state will be updated by useEffect
+    setGlobalSoundEnabled(checked);
     if (checked) {
-      playClickSound(); // Play sound once when toggling on
+      playClickSound(); 
       toast({ title: "UI Tıklama Sesi Etkin" });
     } else {
       toast({ title: "UI Tıklama Sesi Devre Dışı" });
@@ -185,13 +181,13 @@ export default function AyarlarPage() {
   };
 
   const handleResetSettings = () => {
-    setTheme('light'); 
+    setTheme('light');
     localStorage.removeItem('havadurumux-theme');
 
     setNotificationsEnabled(false);
     localStorage.setItem(NOTIFICATION_ENABLED_KEY, JSON.stringify(false));
     if (typeof Notification !== 'undefined') {
-      setNotificationPermission(Notification.permission); 
+      setNotificationPermission(Notification.permission);
       localStorage.setItem(NOTIFICATION_PERMISSION_KEY, Notification.permission);
     }
 
@@ -199,19 +195,50 @@ export default function AyarlarPage() {
     localStorage.setItem(LOCATION_SERVICES_ENABLED_KEY, JSON.stringify(false));
     if (navigator.permissions) {
         navigator.permissions.query({ name: 'geolocation' }).then(status => {
-            setLocationPermission(status.state); 
+            setLocationPermission(status.state);
             localStorage.setItem(LOCATION_PERMISSION_KEY, status.state);
         });
     } else {
         setLocationPermission(null);
         localStorage.removeItem(LOCATION_PERMISSION_KEY);
     }
-    
-    setGlobalSoundEnabled(false); // Reset UI sound via context
-    // setUiSoundSwitchState(false); // Local switch state will update via useEffect
+
+    setGlobalSoundEnabled(false);
 
     toast({ title: "Tüm Ayarlar Sıfırlandı", description: "Uygulama ayarları varsayılan değerlere döndürüldü." });
   };
+
+  const sendTestNotification = () => {
+    if (typeof Notification === 'undefined') {
+      toast({
+        title: "Bildirimler Desteklenmiyor",
+        description: "Tarayıcınız bildirimleri desteklemiyor.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (Notification.permission === 'granted') {
+      new Notification("Test Bildirimi Başlığı", {
+        body: "Bu bir test bildirimidir. Eğer bunu görüyorsanız, tarayıcı bildirimleri çalışıyor!",
+        icon: '/logo.png', // İsteğe bağlı: /public klasöründe bir logo.png olmalı
+      });
+      toast({ title: "Test Bildirimi Gönderildi", description: "Tarayıcınızda bir bildirim görmelisiniz." });
+    } else if (Notification.permission === 'denied') {
+      toast({
+        title: "Bildirim İzni Reddedilmiş",
+        description: "Test bildirimi göndermek için tarayıcı ayarlarından bildirimlere izin vermeniz gerekiyor.",
+        variant: "destructive",
+      });
+    } else { // default
+      toast({
+        title: "Bildirim İzni Gerekli",
+        description: "Lütfen önce yukarıdaki 'Hava Durumu Bildirimleri' ayarını etkinleştirin ve tarayıcı iznini verin.",
+        variant: "default",
+      });
+    }
+  };
+
 
   return (
     <div className="space-y-8">
@@ -289,7 +316,7 @@ export default function AyarlarPage() {
            )}
         </CardContent>
       </Card>
-      
+
       <Card className="shadow-lg rounded-xl">
         <CardHeader>
          <div className="flex items-center gap-3">
@@ -310,6 +337,15 @@ export default function AyarlarPage() {
               onCheckedChange={handleUiSoundToggle}
             />
           </div>
+
+          <div className="p-4 bg-muted/30 rounded-lg shadow-sm">
+            <h3 className="text-base font-medium mb-2 flex items-center gap-2"><Send className="w-5 h-5 text-primary" />Test Bildirimi</h3>
+            <p className="text-sm text-muted-foreground mb-3">Tarayıcı bildirimlerinin düzgün çalışıp çalışmadığını test etmek için bir bildirim gönderin.</p>
+            <Button onClick={sendTestNotification} variant="outline" className="w-full sm:w-auto">
+              Test Bildirimi Gönder
+            </Button>
+          </div>
+
           <div className="p-4 bg-muted/30 rounded-lg shadow-sm">
             <h3 className="text-base font-medium mb-2 flex items-center gap-2"><RotateCcw className="w-5 h-5 text-primary" />Ayarları Sıfırla</h3>
             <p className="text-sm text-muted-foreground mb-3">Tüm uygulama ayarlarını (tema, bildirimler, konum, ses) varsayılan değerlere döndürür.</p>
@@ -335,7 +371,7 @@ export default function AyarlarPage() {
             </AlertDialog>
           </div>
           <p className="text-xs text-muted-foreground text-center pt-4">
-            Not: Tıklama sesi için tarayıcınızın otomatik oynatma politikaları nedeniyle ilk etkileşimde ses çalmayabilir. 
+            Not: Tıklama sesi için tarayıcınızın otomatik oynatma politikaları nedeniyle ilk etkileşimde ses çalmayabilir.
             Ses, harici bir video kaynağından (`https://files.catbox.moe/42qpsz.mp4`) çalınmaktadır.
             Eğer ses yüklenemezse veya çalınamazsa konsolda uyarı görebilirsiniz.
           </p>
