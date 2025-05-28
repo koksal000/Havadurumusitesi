@@ -5,55 +5,111 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Brush, Bell, Compass, AlertTriangle, InfoIcon } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Brush, Bell, Compass, AlertTriangle, InfoIcon, SpeakerLoud, RotateCcw, Trash2 } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/components/ui/use-toast';
+import { useTheme } from '@/components/ThemeProvider';
 
 const NOTIFICATION_ENABLED_KEY = 'havadurumux-notifications-enabled';
 const NOTIFICATION_PERMISSION_KEY = 'havadurumux-notification-permission';
 const LOCATION_SERVICES_ENABLED_KEY = 'havadurumux-location-services-enabled';
 const LOCATION_PERMISSION_KEY = 'havadurumux-location-permission';
-
+const UI_SOUND_ENABLED_KEY = 'havadurumux-ui-sound-enabled';
 
 export default function AyarlarPage() {
   const { toast } = useToast();
+  const { theme, setTheme } = useTheme(); // useTheme hook'undan theme ve setTheme'i alıyoruz
+
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission | null>(null);
   
   const [locationServicesEnabled, setLocationServicesEnabled] = useState(false);
   const [locationPermission, setLocationPermission] = useState<PermissionState | null>(null);
 
+  const [uiSoundEnabled, setUiSoundEnabled] = useState(false);
+  const [audioContextAllowed, setAudioContextAllowed] = useState(false);
+  const [clickAudio, setClickAudio] = useState<HTMLAudioElement | null>(null);
+
+  // Audio context'i kullanıcı etkileşimiyle başlatma
+  const initializeAudioContext = useCallback(() => {
+    if (typeof window !== 'undefined' && !audioContextAllowed) {
+      // Web Audio API için AudioContext'i bir kullanıcı etkileşimiyle başlatmak genellikle daha iyidir.
+      // Ancak basit bir click sesi için doğrudan HTMLAudioElement yeterli olabilir.
+      try {
+        const audio = new Audio('/audio/click-sound.mp3'); // SES DOSYASININ YOLU
+        // Test için kısa bir sessiz ses çalmayı deneyebiliriz, bu bazı tarayıcılarda otomatik oynatma kısıtlamalarını aşmaya yardımcı olabilir.
+        // audio.volume = 0;
+        // audio.play().catch(() => {}); // Hataları yoksay
+        // audio.volume = 1;
+        setClickAudio(audio);
+        setAudioContextAllowed(true); // Sadece bir kere ayarla
+      } catch (error) {
+        console.warn("Audio context could not be initialized or click sound not found:", error);
+      }
+    }
+  }, [audioContextAllowed]);
 
   useEffect(() => {
-    // Load saved notification enabled state
-    const savedNotificationsEnabled = localStorage.getItem(NOTIFICATION_ENABLED_KEY);
-    if (savedNotificationsEnabled) {
-      setNotificationsEnabled(JSON.parse(savedNotificationsEnabled));
-    }
-    // Load saved or current notification permission state
-    if (typeof Notification !== 'undefined') {
-      const savedNotificationPerm = localStorage.getItem(NOTIFICATION_PERMISSION_KEY) as NotificationPermission | null;
-      setNotificationPermission(savedNotificationPerm || Notification.permission);
-    }
+    // Tarayıcıda olduğumuzdan emin olalım
+    if (typeof window !== 'undefined') {
+      // Kayıtlı ayarları yükle
+      const savedNotificationsEnabled = localStorage.getItem(NOTIFICATION_ENABLED_KEY);
+      if (savedNotificationsEnabled) setNotificationsEnabled(JSON.parse(savedNotificationsEnabled));
+      
+      if (typeof Notification !== 'undefined') {
+        const savedNotificationPerm = localStorage.getItem(NOTIFICATION_PERMISSION_KEY) as NotificationPermission | null;
+        setNotificationPermission(savedNotificationPerm || Notification.permission);
+      }
 
-    // Load saved location services enabled state
-    const savedLocationServicesEnabled = localStorage.getItem(LOCATION_SERVICES_ENABLED_KEY);
-    if (savedLocationServicesEnabled) {
-      setLocationServicesEnabled(JSON.parse(savedLocationServicesEnabled));
-    }
-    // Load saved location permission state
-    const savedLocationPerm = localStorage.getItem(LOCATION_PERMISSION_KEY) as PermissionState | null;
-    if (savedLocationPerm) {
-        setLocationPermission(savedLocationPerm);
-    } else if (navigator.permissions) {
-        navigator.permissions.query({ name: 'geolocation' }).then(status => {
-            setLocationPermission(status.state);
-            localStorage.setItem(LOCATION_PERMISSION_KEY, status.state);
-        });
+      const savedLocationServicesEnabled = localStorage.getItem(LOCATION_SERVICES_ENABLED_KEY);
+      if (savedLocationServicesEnabled) setLocationServicesEnabled(JSON.parse(savedLocationServicesEnabled));
+      
+      const savedLocationPerm = localStorage.getItem(LOCATION_PERMISSION_KEY) as PermissionState | null;
+      if (savedLocationPerm) {
+          setLocationPermission(savedLocationPerm);
+      } else if (navigator.permissions) {
+          navigator.permissions.query({ name: 'geolocation' }).then(status => {
+              setLocationPermission(status.state);
+              localStorage.setItem(LOCATION_PERMISSION_KEY, status.state);
+          });
+      }
+
+      const savedUiSoundEnabled = localStorage.getItem(UI_SOUND_ENABLED_KEY);
+      if (savedUiSoundEnabled) setUiSoundEnabled(JSON.parse(savedUiSoundEnabled));
+
+      // Audio context'i başlatma girişiminde bulun. Kullanıcı etkileşimi gerekebilir.
+      // Bu useEffect bir kere çalışır, ancak initializeAudioContext içindeki audioContextAllowed kontrolü sayesinde ses tekrar tekrar yüklenmez.
+      // initializeAudioContext(); // İlk yüklemede denemek yerine, kullanıcı bir switch'e tıkladığında başlatmayı deneyebiliriz.
     }
   }, []);
 
+  const playClickSound = useCallback(() => {
+    if (uiSoundEnabled && clickAudio) {
+      clickAudio.currentTime = 0; // Sesi başa sar
+      clickAudio.play().catch(error => console.warn("Click sound play failed:", error));
+    } else if (uiSoundEnabled && !clickAudio) {
+      // Eğer clickAudio henüz yüklenmediyse, yüklemeyi dene
+      initializeAudioContext();
+      // clickAudio state'i hemen güncellenmeyebilir, bu yüzden bir sonraki tıklamada çalabilir.
+    }
+  }, [uiSoundEnabled, clickAudio, initializeAudioContext]);
+
+
   const handleNotificationToggle = async (checked: boolean) => {
+    if (!audioContextAllowed) initializeAudioContext(); // Ses için ilk etkileşim
+    playClickSound();
     setNotificationsEnabled(checked);
     localStorage.setItem(NOTIFICATION_ENABLED_KEY, JSON.stringify(checked));
 
@@ -100,6 +156,8 @@ export default function AyarlarPage() {
   };
 
   const handleLocationServicesToggle = async (checked: boolean) => {
+    if (!audioContextAllowed) initializeAudioContext();
+    playClickSound();
     setLocationServicesEnabled(checked);
     localStorage.setItem(LOCATION_SERVICES_ENABLED_KEY, JSON.stringify(checked));
 
@@ -115,7 +173,7 @@ export default function AyarlarPage() {
                 });
                 setLocationServicesEnabled(false);
                 localStorage.setItem(LOCATION_SERVICES_ENABLED_KEY, JSON.stringify(false));
-            } else { // prompt or unknown
+            } else { 
                 navigator.geolocation.getCurrentPosition(
                     () => {
                         setLocationPermission('granted');
@@ -151,6 +209,55 @@ export default function AyarlarPage() {
     } else {
       toast({ title: "Konum Servisleri Devre Dışı", description: "Mevcut konumunuz kullanılmayacak." });
     }
+  };
+
+  const handleUiSoundToggle = (checked: boolean) => {
+    if (!audioContextAllowed) initializeAudioContext();
+    playClickSound();
+    setUiSoundEnabled(checked);
+    localStorage.setItem(UI_SOUND_ENABLED_KEY, JSON.stringify(checked));
+    if (checked) {
+      toast({ title: "UI Tıklama Sesi Etkin" });
+    } else {
+      toast({ title: "UI Tıklama Sesi Devre Dışı" });
+    }
+  };
+
+  const handleResetSettings = () => {
+    playClickSound();
+    // Reset Theme (assuming useTheme might set system default, so explicitly set to light or a known default)
+    setTheme('light'); // Or 'system' if you prefer. localStorage will be updated by ThemeProvider.
+    localStorage.removeItem('havadurumux-theme');
+
+
+    // Reset Notifications
+    setNotificationsEnabled(false);
+    localStorage.setItem(NOTIFICATION_ENABLED_KEY, JSON.stringify(false));
+    if (typeof Notification !== 'undefined') {
+      // We can't revoke permission, but we can reset our stored state for it
+      setNotificationPermission(Notification.permission); // Reset to current actual browser permission
+      localStorage.setItem(NOTIFICATION_PERMISSION_KEY, Notification.permission);
+    }
+
+    // Reset Location Services
+    setLocationServicesEnabled(false);
+    localStorage.setItem(LOCATION_SERVICES_ENABLED_KEY, JSON.stringify(false));
+    if (navigator.permissions) {
+        navigator.permissions.query({ name: 'geolocation' }).then(status => {
+            setLocationPermission(status.state); // Reset to current actual browser permission
+            localStorage.setItem(LOCATION_PERMISSION_KEY, status.state);
+        });
+    } else {
+        setLocationPermission(null);
+        localStorage.removeItem(LOCATION_PERMISSION_KEY);
+    }
+    
+
+    // Reset UI Sound
+    setUiSoundEnabled(false);
+    localStorage.setItem(UI_SOUND_ENABLED_KEY, JSON.stringify(false));
+
+    toast({ title: "Tüm Ayarlar Sıfırlandı", description: "Uygulama ayarları varsayılan değerlere döndürüldü." });
   };
 
 
@@ -234,10 +341,49 @@ export default function AyarlarPage() {
       <Card className="shadow-lg rounded-xl">
         <CardHeader>
           <CardTitle className="text-2xl">Diğer Ayarlar</CardTitle>
-          <CardDescription>Gelecekte eklenecek diğer uygulama ayarları burada yer alacaktır.</CardDescription>
+          <CardDescription>Ek uygulama tercihlerinizi buradan yönetin.</CardDescription>
         </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">Bu bölüm yapım aşamasındadır.</p>
+        <CardContent className="space-y-6">
+          <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg shadow-sm">
+            <div>
+              <Label htmlFor="ui-sound-switch" className="text-base font-medium">UI Tıklama Sesi</Label>
+              <p className="text-sm text-muted-foreground">Buton ve anahtar etkileşimlerinde sesli geri bildirim.</p>
+            </div>
+            <Switch
+              id="ui-sound-switch"
+              checked={uiSoundEnabled}
+              onCheckedChange={handleUiSoundToggle}
+            />
+          </div>
+          <div className="p-4 bg-muted/30 rounded-lg shadow-sm">
+            <h3 className="text-base font-medium mb-2 flex items-center gap-2"><RotateCcw className="w-5 h-5 text-primary" />Ayarları Sıfırla</h3>
+            <p className="text-sm text-muted-foreground mb-3">Tüm uygulama ayarlarını (tema, bildirimler, konum, ses) varsayılan değerlere döndürür.</p>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" className="w-full sm:w-auto" onClick={playClickSound}>
+                  <Trash2 className="mr-2 h-4 w-4" /> Tüm Ayarları Sıfırla
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Emin misiniz?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Bu işlem tüm HavaDurumuX ayarlarınızı (tema, bildirim tercihleri, konum izinleri ve diğer ayarlar)
+                    sıfırlayacak ve geri alınamaz. Devam etmek istediğinizden emin misiniz?
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel onClick={playClickSound}>İptal</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleResetSettings}>Sıfırla</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+          <p className="text-xs text-muted-foreground text-center pt-4">
+            Not: Tıklama sesi için tarayıcınızın otomatik oynatma politikaları nedeniyle ilk etkileşimde ses çalmayabilir. 
+            Eğer ses dosyası bulunamazsa veya yüklenemezse konsolda uyarı görebilirsiniz. 
+            Lütfen `/public/audio/click-sound.mp3` dosyasını projenize eklediğinizden emin olun.
+          </p>
         </CardContent>
       </Card>
     </div>
