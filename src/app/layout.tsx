@@ -17,7 +17,7 @@ import {
   SidebarFooter
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
-import { CloudSun, Search, Map, Radar, Heart, Settings, Info, Mail, Home, Zap, Bell } from 'lucide-react'; // Added Bell
+import { CloudSun, Search, Map, Radar, Heart, Settings, Info, Mail, Home, Zap, Bell, Compass } from 'lucide-react';
 import { WeatherNotificationInitializer } from '@/hooks/useWeatherNotificationManager';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
@@ -54,6 +54,11 @@ export default function RootLayout({
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild className="w-full justify-start text-base py-2.5">
                       <Link href="/kesfet"><Search className="mr-2 h-5 w-5" />Keşfet</Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                   <SidebarMenuItem>
+                    <SidebarMenuButton asChild className="w-full justify-start text-base py-2.5">
+                      <Link href="/mevcut-konum"><Compass className="mr-2 h-5 w-5" />Mevcut Konumum</Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                    <SidebarMenuItem>
@@ -124,3 +129,5 @@ export default function RootLayout({
     </html>
   );
 }
+
+    

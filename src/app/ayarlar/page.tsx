@@ -5,30 +5,51 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Brush, Bell, Compass, AlertTriangle } from 'lucide-react';
+import { Brush, Bell, Compass, AlertTriangle, InfoIcon } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 
 const NOTIFICATION_ENABLED_KEY = 'havadurumux-notifications-enabled';
 const NOTIFICATION_PERMISSION_KEY = 'havadurumux-notification-permission';
+const LOCATION_SERVICES_ENABLED_KEY = 'havadurumux-location-services-enabled';
+const LOCATION_PERMISSION_KEY = 'havadurumux-location-permission';
+
 
 export default function AyarlarPage() {
   const { toast } = useToast();
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission | null>(null);
-  const [locationServicesEnabled, setLocationServicesEnabled] = useState(true); // Placeholder
+  
+  const [locationServicesEnabled, setLocationServicesEnabled] = useState(false);
+  const [locationPermission, setLocationPermission] = useState<PermissionState | null>(null);
+
 
   useEffect(() => {
     // Load saved notification enabled state
-    const savedEnabled = localStorage.getItem(NOTIFICATION_ENABLED_KEY);
-    if (savedEnabled) {
-      setNotificationsEnabled(JSON.parse(savedEnabled));
+    const savedNotificationsEnabled = localStorage.getItem(NOTIFICATION_ENABLED_KEY);
+    if (savedNotificationsEnabled) {
+      setNotificationsEnabled(JSON.parse(savedNotificationsEnabled));
     }
-
     // Load saved or current notification permission state
     if (typeof Notification !== 'undefined') {
-      const savedPermission = localStorage.getItem(NOTIFICATION_PERMISSION_KEY) as NotificationPermission | null;
-      setNotificationPermission(savedPermission || Notification.permission);
+      const savedNotificationPerm = localStorage.getItem(NOTIFICATION_PERMISSION_KEY) as NotificationPermission | null;
+      setNotificationPermission(savedNotificationPerm || Notification.permission);
+    }
+
+    // Load saved location services enabled state
+    const savedLocationServicesEnabled = localStorage.getItem(LOCATION_SERVICES_ENABLED_KEY);
+    if (savedLocationServicesEnabled) {
+      setLocationServicesEnabled(JSON.parse(savedLocationServicesEnabled));
+    }
+    // Load saved location permission state
+    const savedLocationPerm = localStorage.getItem(LOCATION_PERMISSION_KEY) as PermissionState | null;
+    if (savedLocationPerm) {
+        setLocationPermission(savedLocationPerm);
+    } else if (navigator.permissions) {
+        navigator.permissions.query({ name: 'geolocation' }).then(status => {
+            setLocationPermission(status.state);
+            localStorage.setItem(LOCATION_PERMISSION_KEY, status.state);
+        });
     }
   }, []);
 
@@ -50,10 +71,9 @@ export default function AyarlarPage() {
             description: "Tarayıcı ayarlarından bildirimlere izin vermeniz gerekiyor.",
             variant: "destructive",
           });
-          setNotificationsEnabled(false); // Revert if permission is denied
+          setNotificationsEnabled(false); 
           localStorage.setItem(NOTIFICATION_ENABLED_KEY, JSON.stringify(false));
         } else {
-          // default or prompt
           const permission = await Notification.requestPermission();
           setNotificationPermission(permission);
           localStorage.setItem(NOTIFICATION_PERMISSION_KEY, permission);
@@ -65,7 +85,7 @@ export default function AyarlarPage() {
               description: "Önemli hava durumu uyarılarını alamayacaksınız.",
               variant: "destructive",
             });
-            setNotificationsEnabled(false); // Revert if permission is not granted
+            setNotificationsEnabled(false); 
             localStorage.setItem(NOTIFICATION_ENABLED_KEY, JSON.stringify(false));
           }
         }
@@ -78,6 +98,61 @@ export default function AyarlarPage() {
       toast({ title: "Bildirimler Devre Dışı", description: "Hava durumu uyarıları almayacaksınız." });
     }
   };
+
+  const handleLocationServicesToggle = async (checked: boolean) => {
+    setLocationServicesEnabled(checked);
+    localStorage.setItem(LOCATION_SERVICES_ENABLED_KEY, JSON.stringify(checked));
+
+    if (checked) {
+        if (navigator.geolocation) {
+            if (locationPermission === 'granted') {
+                toast({ title: "Konum Servisleri Etkin", description: "Mevcut konumunuz kullanılabilir." });
+            } else if (locationPermission === 'denied') {
+                toast({
+                    title: "Konum İzni Reddedilmiş",
+                    description: "Tarayıcı ayarlarından konum iznini vermeniz gerekiyor.",
+                    variant: "destructive",
+                });
+                setLocationServicesEnabled(false);
+                localStorage.setItem(LOCATION_SERVICES_ENABLED_KEY, JSON.stringify(false));
+            } else { // prompt or unknown
+                navigator.geolocation.getCurrentPosition(
+                    () => {
+                        setLocationPermission('granted');
+                        localStorage.setItem(LOCATION_PERMISSION_KEY, 'granted');
+                        toast({ title: "Konum İzni Verildi", description: "Mevcut konumunuz kullanılabilir." });
+                    },
+                    (error) => {
+                        setLocationPermission('denied');
+                        localStorage.setItem(LOCATION_PERMISSION_KEY, 'denied');
+                        if (error.code === error.PERMISSION_DENIED) {
+                            toast({
+                                title: "Konum İzni Reddedildi",
+                                description: "Konum servislerini kullanmak için izin vermelisiniz.",
+                                variant: "destructive",
+                            });
+                        } else {
+                             toast({
+                                title: "Konum Alınamadı",
+                                description: `Hata: ${error.message}`,
+                                variant: "destructive",
+                            });
+                        }
+                        setLocationServicesEnabled(false);
+                        localStorage.setItem(LOCATION_SERVICES_ENABLED_KEY, JSON.stringify(false));
+                    }
+                );
+            }
+        } else {
+            toast({ title: "Konum Servisleri Desteklenmiyor", description: "Tarayıcınız konum servislerini desteklemiyor.", variant: "destructive" });
+            setLocationServicesEnabled(false);
+            localStorage.setItem(LOCATION_SERVICES_ENABLED_KEY, JSON.stringify(false));
+        }
+    } else {
+      toast({ title: "Konum Servisleri Devre Dışı", description: "Mevcut konumunuz kullanılmayacak." });
+    }
+  };
+
 
   return (
     <div className="space-y-8">
@@ -132,15 +207,27 @@ export default function AyarlarPage() {
           <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg shadow-sm">
              <div>
               <Label htmlFor="location-switch" className="text-base font-medium">Konum Servisleri</Label>
-              <p className="text-sm text-muted-foreground">Mevcut konumunuza göre hava durumu bilgisi için (Yakında).</p>
+              <p className="text-sm text-muted-foreground">Mevcut konumunuza göre hava durumu bilgisi için.</p>
             </div>
             <Switch
               id="location-switch"
-              checked={locationServicesEnabled}
-              onCheckedChange={setLocationServicesEnabled}
-              disabled // Feature not yet implemented
+              checked={locationServicesEnabled && locationPermission === 'granted'}
+              onCheckedChange={handleLocationServicesToggle}
+              disabled={locationPermission === 'denied'}
             />
           </div>
+           {locationPermission === 'denied' && (
+            <div className="flex items-center gap-2 p-3 text-sm text-destructive-foreground bg-destructive/80 rounded-md">
+              <AlertTriangle className="w-5 h-5" />
+              <p>Tarayıcı konum iznini vermediniz. Ayarlardan değiştirmediğiniz sürece mevcut konumunuz kullanılamaz.</p>
+            </div>
+          )}
+           {locationPermission === 'prompt' && locationServicesEnabled && (
+            <div className="flex items-center gap-2 p-3 text-sm text-info-foreground bg-info/80 rounded-md">
+              <InfoIcon className="w-5 h-5" />
+              <p>Tarayıcınız konum izni isteyecektir. Lütfen izin verin.</p>
+            </div>
+           )}
         </CardContent>
       </Card>
       
@@ -156,3 +243,5 @@ export default function AyarlarPage() {
     </div>
   );
 }
+
+    
