@@ -7,7 +7,8 @@ import { Expand, Minimize } from 'lucide-react';
 import { useRef, useState, useEffect } from 'react';
 
 export default function RadarPage() {
-  const rainviewerEmbedUrl = "https://www.rainviewer.com/map.html?loc=39,35,5&oFa=0&oC=0&oU=0&oCS=1&oF=0&oAP=1&rmt=0&c=2&o=True&lm=1&th=0&sm=1&sn=1&lg=tr&lat=39&lng=35&zoom=5&state=1&frequency=120";
+  // Updated Rainviewer URL to the base URL as per user's working HTML example
+  const rainviewerEmbedUrl = "https://www.rainviewer.com/map.html";
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isFullScreen, setIsFullScreen] = useState(false);
 
@@ -40,9 +41,9 @@ export default function RadarPage() {
         <CardHeader className="flex-shrink-0">
           <CardTitle>Canlı Yağış ve Bulut Takibi (RainViewer)</CardTitle>
           <CardDescription>
-            RainViewer ile anlık ve gelecek 2 saate kadar bulut hareketlerini ve yağış yoğunluğunu takip edin.
+            RainViewer ile anlık ve gelecek bulut hareketlerini ve yağış yoğunluğunu takip edin.
             Harita üzerinde fare tekerleği ile yakınlaşıp uzaklaşabilir, sürükleyerek farklı bölgeleri görüntüleyebilirsiniz.
-            Sağ alttaki kontroller ile animasyonu başlatabilir, durdurabilir ve katmanları değiştirebilirsiniz.
+            Harita kontrolleri ile animasyonu başlatabilir, durdurabilir ve katmanları değiştirebilirsiniz.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex-grow p-0 m-0 overflow-hidden rounded-b-xl relative">
@@ -53,6 +54,7 @@ export default function RadarPage() {
             height="100%"
             frameBorder="0"
             allowFullScreen
+            loading="lazy" // Added loading="lazy" from user's example
             title="RainViewer Radar Haritası"
             className="block"
           ></iframe>
@@ -73,3 +75,4 @@ export default function RadarPage() {
     </div>
   );
 }
+
