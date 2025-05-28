@@ -53,6 +53,8 @@ export default function AyarlarPage() {
       if (typeof Notification !== 'undefined') {
         const savedNotificationPerm = localStorage.getItem(NOTIFICATION_PERMISSION_KEY) as NotificationPermission | null;
         setNotificationPermission(savedNotificationPerm || Notification.permission);
+      } else {
+        console.warn("Tarayıcı Notification API'sini desteklemiyor.");
       }
 
       const savedLocationServicesEnabled = localStorage.getItem(LOCATION_SERVICES_ENABLED_KEY);
@@ -132,7 +134,7 @@ export default function AyarlarPage() {
                 });
                 setLocationServicesEnabled(false);
                 localStorage.setItem(LOCATION_SERVICES_ENABLED_KEY, JSON.stringify(false));
-            } else {
+            } else { // prompt or other
                 navigator.geolocation.getCurrentPosition(
                     () => {
                         setLocationPermission('granted');
@@ -140,7 +142,7 @@ export default function AyarlarPage() {
                         toast({ title: "Konum İzni Verildi", description: "Mevcut konumunuz kullanılabilir." });
                     },
                     (error) => {
-                        setLocationPermission('denied');
+                        setLocationPermission('denied'); // Assume denied if any error during prompt
                         localStorage.setItem(LOCATION_PERMISSION_KEY, 'denied');
                         if (error.code === error.PERMISSION_DENIED) {
                             toast({
@@ -171,7 +173,7 @@ export default function AyarlarPage() {
   };
 
   const handleUiSoundToggle = (checked: boolean) => {
-    setGlobalSoundEnabled(checked);
+    setGlobalSoundEnabled(checked); // This now updates context and localStorage
     if (checked) {
       playClickSound(); 
       toast({ title: "UI Tıklama Sesi Etkin" });
@@ -181,29 +183,35 @@ export default function AyarlarPage() {
   };
 
   const handleResetSettings = () => {
-    setTheme('light');
+    // Reset theme
+    setTheme('light'); // Assuming 'light' is your default theme
     localStorage.removeItem('havadurumux-theme');
 
+    // Reset notifications
     setNotificationsEnabled(false);
     localStorage.setItem(NOTIFICATION_ENABLED_KEY, JSON.stringify(false));
     if (typeof Notification !== 'undefined') {
-      setNotificationPermission(Notification.permission);
+      setNotificationPermission(Notification.permission); // Reset to current browser permission
       localStorage.setItem(NOTIFICATION_PERMISSION_KEY, Notification.permission);
     }
 
+
+    // Reset location services
     setLocationServicesEnabled(false);
     localStorage.setItem(LOCATION_SERVICES_ENABLED_KEY, JSON.stringify(false));
     if (navigator.permissions) {
         navigator.permissions.query({ name: 'geolocation' }).then(status => {
-            setLocationPermission(status.state);
+            setLocationPermission(status.state); // Reset to current browser permission
             localStorage.setItem(LOCATION_PERMISSION_KEY, status.state);
         });
     } else {
-        setLocationPermission(null);
+        setLocationPermission(null); // Or 'prompt' if that's more appropriate default
         localStorage.removeItem(LOCATION_PERMISSION_KEY);
     }
+    
 
-    setGlobalSoundEnabled(false);
+    // Reset UI sound
+    setGlobalSoundEnabled(false); // This will update context & localStorage
 
     toast({ title: "Tüm Ayarlar Sıfırlandı", description: "Uygulama ayarları varsayılan değerlere döndürüldü." });
   };
@@ -219,11 +227,28 @@ export default function AyarlarPage() {
     }
 
     if (Notification.permission === 'granted') {
-      new Notification("Test Bildirimi Başlığı", {
-        body: "Bu bir test bildirimidir. Eğer bunu görüyorsanız, tarayıcı bildirimleri çalışıyor!",
-        icon: '/logo.png', // İsteğe bağlı: /public klasöründe bir logo.png olmalı
-      });
-      toast({ title: "Test Bildirimi Gönderildi", description: "Tarayıcınızda bir bildirim görmelisiniz." });
+      try {
+        const notification = new Notification("Test Bildirimi Başlığı", {
+          body: "Bu bir test bildirimidir. Eğer bunu görüyorsanız, tarayıcı bildirimleri çalışıyor!",
+          icon: '/logo.png', // İsteğe bağlı: /public klasöründe bir logo.png olmalı
+        });
+        toast({ title: "Test Bildirimi Gönderildi", description: "Tarayıcınızda bir bildirim görmelisiniz." });
+      } catch (error: any) {
+        console.error("Test bildirimi oluşturulurken hata:", error);
+        if (error.name === 'TypeError' && error.message.includes('Illegal constructor')) {
+          toast({
+            title: "Bildirim Hatası",
+            description: "Bildirim oluşturulamadı. Muhtemelen bir Service Worker kaydı nedeniyle bu yöntem desteklenmiyor. Geliştirici konsolunu kontrol edin.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Bilinmeyen Bildirim Hatası",
+            description: `Bir hata oluştu: ${error.message}`,
+            variant: "destructive",
+          });
+        }
+      }
     } else if (Notification.permission === 'denied') {
       toast({
         title: "Bildirim İzni Reddedilmiş",
@@ -308,7 +333,7 @@ export default function AyarlarPage() {
               <p>Tarayıcı konum iznini vermediniz. Ayarlardan değiştirmediğiniz sürece mevcut konumunuz kullanılamaz.</p>
             </div>
           )}
-           {locationPermission === 'prompt' && locationServicesEnabled && (
+           {locationPermission === 'prompt' && locationServicesEnabled && ( // Show this only if enabled AND permission is prompt
             <div className="flex items-center gap-2 p-3 text-sm text-info-foreground bg-info/80 rounded-md">
               <InfoIcon className="w-5 h-5" />
               <p>Tarayıcınız konum izni isteyecektir. Lütfen izin verin.</p>
@@ -333,7 +358,7 @@ export default function AyarlarPage() {
             </div>
             <Switch
               id="ui-sound-switch"
-              checked={uiSoundSwitchState}
+              checked={uiSoundSwitchState} // Reflects global state from context
               onCheckedChange={handleUiSoundToggle}
             />
           </div>
