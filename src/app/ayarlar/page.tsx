@@ -21,18 +21,18 @@ import { Brush, Bell, Compass, AlertTriangle, InfoIcon, Speaker, RotateCcw, Tras
 import { useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { useTheme } from '@/components/ThemeProvider';
-import { useSound } from '@/contexts/SoundContext'; // Import useSound
+import { useSound } from '@/contexts/SoundContext';
 
 const NOTIFICATION_ENABLED_KEY = 'havadurumux-notifications-enabled';
 const NOTIFICATION_PERMISSION_KEY = 'havadurumux-notification-permission';
 const LOCATION_SERVICES_ENABLED_KEY = 'havadurumux-location-services-enabled';
 const LOCATION_PERMISSION_KEY = 'havadurumux-location-permission';
-const UI_SOUND_ENABLED_KEY = 'havadurumux-ui-sound-enabled';
+// UI_SOUND_ENABLED_KEY is managed by SoundContext now
 
 export default function AyarlarPage() {
   const { toast } = useToast();
   const { theme, setTheme } = useTheme(); 
-  const { playClickSound } = useSound(); // Get playClickSound from context
+  const { playClickSound, setGlobalSoundEnabled, isSoundGloballyEnabled } = useSound();
 
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission | null>(null);
@@ -40,7 +40,12 @@ export default function AyarlarPage() {
   const [locationServicesEnabled, setLocationServicesEnabled] = useState(false);
   const [locationPermission, setLocationPermission] = useState<PermissionState | null>(null);
 
-  const [uiSoundEnabled, setUiSoundEnabled] = useState(false);
+  // Local state for the UI sound switch, synced with global context
+  const [uiSoundSwitchState, setUiSoundSwitchState] = useState(isSoundGloballyEnabled);
+
+  useEffect(() => {
+    setUiSoundSwitchState(isSoundGloballyEnabled);
+  }, [isSoundGloballyEnabled]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -64,14 +69,11 @@ export default function AyarlarPage() {
               localStorage.setItem(LOCATION_PERMISSION_KEY, status.state);
           });
       }
-
-      const savedUiSoundEnabled = localStorage.getItem(UI_SOUND_ENABLED_KEY);
-      if (savedUiSoundEnabled) setUiSoundEnabled(JSON.parse(savedUiSoundEnabled));
+      // Initial UI sound switch state is set from context above
     }
   }, []);
 
   const handleNotificationToggle = async (checked: boolean) => {
-    // playClickSound(); // Sound will be played by the Button component itself
     setNotificationsEnabled(checked);
     localStorage.setItem(NOTIFICATION_ENABLED_KEY, JSON.stringify(checked));
 
@@ -118,7 +120,6 @@ export default function AyarlarPage() {
   };
 
   const handleLocationServicesToggle = async (checked: boolean) => {
-    // playClickSound(); // Sound will be played by the Button component itself
     setLocationServicesEnabled(checked);
     localStorage.setItem(LOCATION_SERVICES_ENABLED_KEY, JSON.stringify(checked));
 
@@ -173,13 +174,10 @@ export default function AyarlarPage() {
   };
 
   const handleUiSoundToggle = (checked: boolean) => {
-    // No need to call playClickSound() here as the Switch itself is not a Button
-    // However, the user might expect a sound here too. 
-    // For now, we only make <Button> components play sound.
-    setUiSoundEnabled(checked);
-    localStorage.setItem(UI_SOUND_ENABLED_KEY, JSON.stringify(checked));
+    setGlobalSoundEnabled(checked); // Update global context and localStorage
+    // setUiSoundSwitchState(checked); // Local switch state will be updated by useEffect
     if (checked) {
-      playClickSound(); // Play sound when toggling on
+      playClickSound(); // Play sound once when toggling on
       toast({ title: "UI Tıklama Sesi Etkin" });
     } else {
       toast({ title: "UI Tıklama Sesi Devre Dışı" });
@@ -187,7 +185,6 @@ export default function AyarlarPage() {
   };
 
   const handleResetSettings = () => {
-    // playClickSound(); // Sound will be played by the Button component itself
     setTheme('light'); 
     localStorage.removeItem('havadurumux-theme');
 
@@ -210,8 +207,8 @@ export default function AyarlarPage() {
         localStorage.removeItem(LOCATION_PERMISSION_KEY);
     }
     
-    setUiSoundEnabled(false);
-    localStorage.setItem(UI_SOUND_ENABLED_KEY, JSON.stringify(false));
+    setGlobalSoundEnabled(false); // Reset UI sound via context
+    // setUiSoundSwitchState(false); // Local switch state will update via useEffect
 
     toast({ title: "Tüm Ayarlar Sıfırlandı", description: "Uygulama ayarları varsayılan değerlere döndürüldü." });
   };
@@ -234,7 +231,7 @@ export default function AyarlarPage() {
               <Label htmlFor="theme-toggle-label" className="text-base font-medium">Tema Seçimi</Label>
               <p className="text-sm text-muted-foreground">Açık veya koyu tema arasında geçiş yapın.</p>
             </div>
-            <ThemeToggle /> {/* This is a Button, will play sound */}
+            <ThemeToggle />
           </div>
         </CardContent>
       </Card>
@@ -309,8 +306,8 @@ export default function AyarlarPage() {
             </div>
             <Switch
               id="ui-sound-switch"
-              checked={uiSoundEnabled}
-              onCheckedChange={handleUiSoundToggle} // This will also play sound when toggled ON.
+              checked={uiSoundSwitchState}
+              onCheckedChange={handleUiSoundToggle}
             />
           </div>
           <div className="p-4 bg-muted/30 rounded-lg shadow-sm">
@@ -318,7 +315,7 @@ export default function AyarlarPage() {
             <p className="text-sm text-muted-foreground mb-3">Tüm uygulama ayarlarını (tema, bildirimler, konum, ses) varsayılan değerlere döndürür.</p>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive" className="w-full sm:w-auto"> {/* Will play sound */}
+                <Button variant="destructive" className="w-full sm:w-auto">
                   <Trash2 className="mr-2 h-4 w-4" /> Tüm Ayarları Sıfırla
                 </Button>
               </AlertDialogTrigger>
@@ -331,8 +328,8 @@ export default function AyarlarPage() {
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>İptal</AlertDialogCancel> {/* Will play sound */}
-                  <AlertDialogAction onClick={handleResetSettings}>Sıfırla</AlertDialogAction> {/* Will play sound */}
+                  <AlertDialogCancel>İptal</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleResetSettings}>Sıfırla</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>

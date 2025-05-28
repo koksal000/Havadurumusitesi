@@ -29,24 +29,17 @@ export default function IletisimPage() {
         </CardHeader>
         <CardContent className="space-y-6">
           <p className="text-muted-foreground">
-            Şu anda özel bir iletişim formumuz bulunmamaktadır. Ancak, gelecekteki güncellemelerimizle birlikte
-            daha doğrudan iletişim kanalları eklemeyi planlıyoruz.
-          </p>
-          <p className="text-muted-foreground">
-            Platformumuzla ilgili genel bilgiler, güncellemeler ve duyurular için lütfen aşağıdaki web sitemizi
+            Uygulamamızla ilgili genel bilgiler, güncellemeler ve duyurular için lütfen aşağıdaki web sitemizi
             ziyaret edin:
           </p>
           <div className="text-center">
             <Button asChild size="lg" variant="default" className="shadow-md hover:shadow-lg transition-shadow">
-              <Link href="https://havadurumu.com" target="_blank" rel="noopener noreferrer">
+              <Link href="https://studio--havadurumux.us-central1.hosted.app/" target="_blank" rel="noopener noreferrer">
                 <ExternalLink className="mr-2 h-5 w-5" />
-                havadurumu.com (Şimdilik Site Linkimiz)
+                HavaDurumuX Sitesi
               </Link>
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground text-center mt-4">
-            (Lütfen unutmayın, bu link şu an için bir yer tutucudur ve gerçek bir siteye yönlendirmeyebilir.)
-          </p>
         </CardContent>
       </Card>
 
