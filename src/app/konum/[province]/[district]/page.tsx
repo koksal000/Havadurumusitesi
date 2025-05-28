@@ -7,17 +7,27 @@ import { getWeatherData } from '@/lib/weatherApi';
 import { findDistrict } from '@/lib/locationData';
 import type { WeatherData, FavoriteLocation, HourlyWeather } from '@/types/weather';
 import { CurrentWeatherCard } from '@/components/weather/CurrentWeatherCard';
-import { HourlyForecastChart } from '@/components/weather/HourlyForecastChart';
+import { HourlyForecastChart } from '@/components/weather/HourlyForecastChart'; // Main content hourly chart
 import { DailyForecastItem } from '@/components/weather/DailyForecastItem';
 import { FavoriteButton } from '@/components/FavoriteButton';
 import { Accordion } from '@/components/ui/accordion';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, ArrowLeft, Loader2, Thermometer, Wind, Droplets, Zap, Waves, Sun, Leaf } from 'lucide-react'; // Added Waves, Sun, Leaf
+import { AlertTriangle, ArrowLeft, Loader2, Thermometer, Wind, Droplets, Zap, Waves, Sun, Leaf, BarChart3 } from 'lucide-react';
 import Link from 'next/link';
 import { format, parseISO, isSameDay } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+// Import new chart components
+import { TemperatureChart } from '@/components/weather/charts/TemperatureChart';
+import { PrecipitationChart } from '@/components/weather/charts/PrecipitationChart';
+import { WindChart } from '@/components/weather/charts/WindChart';
+import { HumidityChart } from '@/components/weather/charts/HumidityChart';
+import { UvIndexChart } from '@/components/weather/charts/UvIndexChart';
+import { CloudCoverChart } from '@/components/weather/charts/CloudCoverChart';
+import { PressureChart } from '@/components/weather/charts/PressureChart';
+
 
 export default function DistrictWeatherPage() {
   const params = useParams();
@@ -88,7 +98,7 @@ export default function DistrictWeatherPage() {
     }
 
     fetchData();
-  }, [province, district]); // weatherData removed from dependencies to prevent re-fetch loops
+  }, [province, district]); 
   
   if (loading && !weatherData) { 
     return (
@@ -112,7 +122,7 @@ export default function DistrictWeatherPage() {
     );
   }
 
-  if (!weatherData) { // This case handles if loading is false but weatherData is still null (e.g. API error after cache displayed)
+  if (!weatherData) { 
     return (
       <div className="text-center py-10">
         <p>Hava durumu verisi bulunamadı veya yüklenemedi.</p>
@@ -139,18 +149,15 @@ export default function DistrictWeatherPage() {
     const hourlyDataForDay: Partial<HourlyWeather> = {};
     for (const key in weatherData.hourly) {
         if (Array.isArray((weatherData.hourly as any)[key])) {
-             // Ensure all hourly arrays are sliced correctly
             (hourlyDataForDay as any)[key] = indices.map(i => (weatherData.hourly as any)[key]?.[i]);
         } else {
-            // Copy non-array properties if any (though not typical for hourly block)
             (hourlyDataForDay as any)[key] = (weatherData.hourly as any)[key];
         }
     }
-    // Ensure all required arrays are present in the returned object
     const requiredHourlyKeys: (keyof HourlyWeather)[] = ['time', 'temperature_2m', 'relative_humidity_2m', 'apparent_temperature', 'precipitation_probability', 'precipitation', 'rain', 'showers', 'snowfall', 'weather_code', 'surface_pressure', 'cloud_cover', 'visibility', 'wind_speed_10m', 'wind_direction_10m', 'wind_gusts_10m', 'uv_index', 'soil_temperature_0cm', 'soil_moisture_0_1cm', 'pressure_msl', 'is_day'];
     requiredHourlyKeys.forEach(key => {
         if (!(hourlyDataForDay as any)[key]) {
-            (hourlyDataForDay as any)[key] = indices.map(() => undefined); // Fill with undefined if missing
+            (hourlyDataForDay as any)[key] = indices.map(() => undefined); 
         }
     });
     
@@ -165,9 +172,9 @@ export default function DistrictWeatherPage() {
       </Button>
 
       <Tabs defaultValue="main" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2">
           <TabsTrigger value="main">Ana İçerik</TabsTrigger>
-          <TabsTrigger value="graphics">Grafiksel Bilgiler</TabsTrigger>
+          <TabsTrigger value="graphics"><BarChart3 className="mr-2 h-4 w-4" />Grafiksel Bilgiler</TabsTrigger>
         </TabsList>
         <TabsContent value="main" className="mt-6 space-y-6">
           <CurrentWeatherCard
@@ -213,6 +220,7 @@ export default function DistrictWeatherPage() {
                       wind_gusts_10m_max: weatherData.daily.wind_gusts_10m_max?.[index] ?? 0,
                       wind_direction_10m_dominant: weatherData.daily.wind_direction_10m_dominant?.[index] ?? 0,
                       uv_index_max: weatherData.daily.uv_index_max?.[index],
+                      uv_index_clear_sky_max: weatherData.daily.uv_index_clear_sky_max?.[index],
                       shortwave_radiation_sum: weatherData.daily.shortwave_radiation_sum?.[index] ?? 0,
                       et0_fao_evapotranspiration: weatherData.daily.et0_fao_evapotranspiration?.[index] ?? 0,
                     }}
@@ -258,20 +266,16 @@ export default function DistrictWeatherPage() {
             </CardContent>
           </Card>
         </TabsContent>
-        <TabsContent value="graphics" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Detaylı Grafiksel Bilgiler</CardTitle>
-              <CardDescription>Hava durumu verilerinin grafiksel gösterimi.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Bu bölümde çeşitli hava durumu verileri için detaylı grafikler yer alacaktır. Yakında eklenecektir.</p>
-              {/* New chart components will be added here in the next step */}
-            </CardContent>
-          </Card>
+        <TabsContent value="graphics" className="mt-6 space-y-6">
+          <TemperatureChart hourlyWeather={weatherData.hourly} />
+          <PrecipitationChart hourlyWeather={weatherData.hourly} />
+          <WindChart hourlyWeather={weatherData.hourly} />
+          <HumidityChart hourlyWeather={weatherData.hourly} />
+          <UvIndexChart hourlyWeather={weatherData.hourly} />
+          <CloudCoverChart hourlyWeather={weatherData.hourly} />
+          <PressureChart hourlyWeather={weatherData.hourly} />
         </TabsContent>
       </Tabs>
     </div>
   );
 }
-
