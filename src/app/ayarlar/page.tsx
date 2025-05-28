@@ -30,7 +30,7 @@ const UI_SOUND_ENABLED_KEY = 'havadurumux-ui-sound-enabled';
 
 export default function AyarlarPage() {
   const { toast } = useToast();
-  const { theme, setTheme } = useTheme(); // useTheme hook'undan theme ve setTheme'i alıyoruz
+  const { theme, setTheme } = useTheme(); 
 
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission | null>(null);
@@ -42,29 +42,21 @@ export default function AyarlarPage() {
   const [audioContextAllowed, setAudioContextAllowed] = useState(false);
   const [clickAudio, setClickAudio] = useState<HTMLAudioElement | null>(null);
 
-  // Audio context'i kullanıcı etkileşimiyle başlatma
   const initializeAudioContext = useCallback(() => {
     if (typeof window !== 'undefined' && !audioContextAllowed) {
-      // Web Audio API için AudioContext'i bir kullanıcı etkileşimiyle başlatmak genellikle daha iyidir.
-      // Ancak basit bir click sesi için doğrudan HTMLAudioElement yeterli olabilir.
       try {
-        const audio = new Audio('/audio/click-sound.mp3'); // SES DOSYASININ YOLU
-        // Test için kısa bir sessiz ses çalmayı deneyebiliriz, bu bazı tarayıcılarda otomatik oynatma kısıtlamalarını aşmaya yardımcı olabilir.
-        // audio.volume = 0;
-        // audio.play().catch(() => {}); // Hataları yoksay
-        // audio.volume = 1;
+        // Updated to use the provided MP4 video link for audio
+        const audio = new Audio('https://files.catbox.moe/42qpsz.mp4'); 
         setClickAudio(audio);
-        setAudioContextAllowed(true); // Sadece bir kere ayarla
+        setAudioContextAllowed(true); 
       } catch (error) {
-        console.warn("Audio context could not be initialized or click sound not found:", error);
+        console.warn("Audio element could not be initialized with the video link:", error);
       }
     }
   }, [audioContextAllowed]);
 
   useEffect(() => {
-    // Tarayıcıda olduğumuzdan emin olalım
     if (typeof window !== 'undefined') {
-      // Kayıtlı ayarları yükle
       const savedNotificationsEnabled = localStorage.getItem(NOTIFICATION_ENABLED_KEY);
       if (savedNotificationsEnabled) setNotificationsEnabled(JSON.parse(savedNotificationsEnabled));
       
@@ -88,27 +80,21 @@ export default function AyarlarPage() {
 
       const savedUiSoundEnabled = localStorage.getItem(UI_SOUND_ENABLED_KEY);
       if (savedUiSoundEnabled) setUiSoundEnabled(JSON.parse(savedUiSoundEnabled));
-
-      // Audio context'i başlatma girişiminde bulun. Kullanıcı etkileşimi gerekebilir.
-      // Bu useEffect bir kere çalışır, ancak initializeAudioContext içindeki audioContextAllowed kontrolü sayesinde ses tekrar tekrar yüklenmez.
-      // initializeAudioContext(); // İlk yüklemede denemek yerine, kullanıcı bir switch'e tıkladığında başlatmayı deneyebiliriz.
     }
   }, []);
 
   const playClickSound = useCallback(() => {
     if (uiSoundEnabled && clickAudio) {
-      clickAudio.currentTime = 0; // Sesi başa sar
+      clickAudio.currentTime = 0; 
       clickAudio.play().catch(error => console.warn("Click sound play failed:", error));
     } else if (uiSoundEnabled && !clickAudio) {
-      // Eğer clickAudio henüz yüklenmediyse, yüklemeyi dene
       initializeAudioContext();
-      // clickAudio state'i hemen güncellenmeyebilir, bu yüzden bir sonraki tıklamada çalabilir.
     }
   }, [uiSoundEnabled, clickAudio, initializeAudioContext]);
 
 
   const handleNotificationToggle = async (checked: boolean) => {
-    if (!audioContextAllowed) initializeAudioContext(); // Ses için ilk etkileşim
+    if (!audioContextAllowed) initializeAudioContext(); 
     playClickSound();
     setNotificationsEnabled(checked);
     localStorage.setItem(NOTIFICATION_ENABLED_KEY, JSON.stringify(checked));
@@ -213,7 +199,7 @@ export default function AyarlarPage() {
 
   const handleUiSoundToggle = (checked: boolean) => {
     if (!audioContextAllowed) initializeAudioContext();
-    playClickSound();
+    playClickSound(); // Play sound on initial toggle as well
     setUiSoundEnabled(checked);
     localStorage.setItem(UI_SOUND_ENABLED_KEY, JSON.stringify(checked));
     if (checked) {
@@ -225,26 +211,21 @@ export default function AyarlarPage() {
 
   const handleResetSettings = () => {
     playClickSound();
-    // Reset Theme (assuming useTheme might set system default, so explicitly set to light or a known default)
-    setTheme('light'); // Or 'system' if you prefer. localStorage will be updated by ThemeProvider.
-    localStorage.removeItem('havadurumux-theme');
+    setTheme('light'); 
+    localStorage.removeItem('havadurumux-theme'); // ThemeProvider handles this, but ensure consistency
 
-
-    // Reset Notifications
     setNotificationsEnabled(false);
     localStorage.setItem(NOTIFICATION_ENABLED_KEY, JSON.stringify(false));
     if (typeof Notification !== 'undefined') {
-      // We can't revoke permission, but we can reset our stored state for it
-      setNotificationPermission(Notification.permission); // Reset to current actual browser permission
+      setNotificationPermission(Notification.permission); 
       localStorage.setItem(NOTIFICATION_PERMISSION_KEY, Notification.permission);
     }
 
-    // Reset Location Services
     setLocationServicesEnabled(false);
     localStorage.setItem(LOCATION_SERVICES_ENABLED_KEY, JSON.stringify(false));
     if (navigator.permissions) {
         navigator.permissions.query({ name: 'geolocation' }).then(status => {
-            setLocationPermission(status.state); // Reset to current actual browser permission
+            setLocationPermission(status.state); 
             localStorage.setItem(LOCATION_PERMISSION_KEY, status.state);
         });
     } else {
@@ -252,8 +233,6 @@ export default function AyarlarPage() {
         localStorage.removeItem(LOCATION_PERMISSION_KEY);
     }
     
-
-    // Reset UI Sound
     setUiSoundEnabled(false);
     localStorage.setItem(UI_SOUND_ENABLED_KEY, JSON.stringify(false));
 
@@ -329,7 +308,7 @@ export default function AyarlarPage() {
               <p>Tarayıcı konum iznini vermediniz. Ayarlardan değiştirmediğiniz sürece mevcut konumunuz kullanılamaz.</p>
             </div>
           )}
-           {locationPermission === 'prompt' && locationServicesEnabled && (
+           {locationPermission === 'prompt' && locationServicesEnabled && ( // Show if permission is prompt and user tries to enable
             <div className="flex items-center gap-2 p-3 text-sm text-info-foreground bg-info/80 rounded-md">
               <InfoIcon className="w-5 h-5" />
               <p>Tarayıcınız konum izni isteyecektir. Lütfen izin verin.</p>
@@ -340,7 +319,10 @@ export default function AyarlarPage() {
       
       <Card className="shadow-lg rounded-xl">
         <CardHeader>
-          <CardTitle className="text-2xl">Diğer Ayarlar</CardTitle>
+         <div className="flex items-center gap-3">
+            <SpeakerLoud className="w-7 h-7 text-primary" />
+            <CardTitle className="text-2xl">Diğer Ayarlar</CardTitle>
+          </div>
           <CardDescription>Ek uygulama tercihlerinizi buradan yönetin.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -381,13 +363,15 @@ export default function AyarlarPage() {
           </div>
           <p className="text-xs text-muted-foreground text-center pt-4">
             Not: Tıklama sesi için tarayıcınızın otomatik oynatma politikaları nedeniyle ilk etkileşimde ses çalmayabilir. 
-            Eğer ses dosyası bulunamazsa veya yüklenemezse konsolda uyarı görebilirsiniz. 
-            Lütfen `/public/audio/click-sound.mp3` dosyasını projenize eklediğinizden emin olun.
+            Ses, harici bir video kaynağından (`https://files.catbox.moe/42qpsz.mp4`) çalınmaktadır.
+            Eğer ses yüklenemezse veya çalınamazsa konsolda uyarı görebilirsiniz.
           </p>
         </CardContent>
       </Card>
     </div>
   );
 }
+
+    
 
     
