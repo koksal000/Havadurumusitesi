@@ -173,7 +173,7 @@ export default function AyarlarPage() {
   };
 
   const handleUiSoundToggle = (checked: boolean) => {
-    setGlobalSoundEnabled(checked); // This now updates context and localStorage
+    setGlobalSoundEnabled(checked); 
     if (checked) {
       playClickSound(); 
       toast({ title: "UI Tıklama Sesi Etkin" });
@@ -183,35 +183,31 @@ export default function AyarlarPage() {
   };
 
   const handleResetSettings = () => {
-    // Reset theme
-    setTheme('light'); // Assuming 'light' is your default theme
+    setTheme('light'); 
     localStorage.removeItem('havadurumux-theme');
 
-    // Reset notifications
     setNotificationsEnabled(false);
     localStorage.setItem(NOTIFICATION_ENABLED_KEY, JSON.stringify(false));
     if (typeof Notification !== 'undefined') {
-      setNotificationPermission(Notification.permission); // Reset to current browser permission
+      setNotificationPermission(Notification.permission); 
       localStorage.setItem(NOTIFICATION_PERMISSION_KEY, Notification.permission);
     }
 
 
-    // Reset location services
     setLocationServicesEnabled(false);
     localStorage.setItem(LOCATION_SERVICES_ENABLED_KEY, JSON.stringify(false));
     if (navigator.permissions) {
         navigator.permissions.query({ name: 'geolocation' }).then(status => {
-            setLocationPermission(status.state); // Reset to current browser permission
+            setLocationPermission(status.state); 
             localStorage.setItem(LOCATION_PERMISSION_KEY, status.state);
         });
     } else {
-        setLocationPermission(null); // Or 'prompt' if that's more appropriate default
+        setLocationPermission(null); 
         localStorage.removeItem(LOCATION_PERMISSION_KEY);
     }
     
 
-    // Reset UI sound
-    setGlobalSoundEnabled(false); // This will update context & localStorage
+    setGlobalSoundEnabled(false);
 
     toast({ title: "Tüm Ayarlar Sıfırlandı", description: "Uygulama ayarları varsayılan değerlere döndürüldü." });
   };
@@ -230,16 +226,17 @@ export default function AyarlarPage() {
       try {
         const notification = new Notification("Test Bildirimi Başlığı", {
           body: "Bu bir test bildirimidir. Eğer bunu görüyorsanız, tarayıcı bildirimleri çalışıyor!",
-          icon: '/logo.png', // İsteğe bağlı: /public klasöründe bir logo.png olmalı
+          icon: '/logo.png', 
         });
         toast({ title: "Test Bildirimi Gönderildi", description: "Tarayıcınızda bir bildirim görmelisiniz." });
       } catch (error: any) {
         console.error("Test bildirimi oluşturulurken hata:", error);
         if (error.name === 'TypeError' && error.message.includes('Illegal constructor')) {
           toast({
-            title: "Bildirim Hatası",
-            description: "Bildirim oluşturulamadı. Muhtemelen bir Service Worker kaydı nedeniyle bu yöntem desteklenmiyor. Geliştirici konsolunu kontrol edin.",
+            title: "Bildirim Oluşturma Hatası",
+            description: "Bu hata genellikle tarayıcıda aktif bir Service Worker kaydı olduğunda ve bildirimlerin onun üzerinden yönetilmesi gerektiğinde ortaya çıkar. Basit bildirimler için, tarayıcınızın Geliştirici Araçları > Application > Service Workers bölümünden bu siteye ait Service Worker kaydını kaldırmayı deneyebilirsiniz. Veya daha kapsamlı bildirimler için Service Worker entegrasyonu yapılmalıdır.",
             variant: "destructive",
+            duration: 9000, // Hata mesajının daha uzun süre görünmesi için
           });
         } else {
           toast({
@@ -255,7 +252,7 @@ export default function AyarlarPage() {
         description: "Test bildirimi göndermek için tarayıcı ayarlarından bildirimlere izin vermeniz gerekiyor.",
         variant: "destructive",
       });
-    } else { // default
+    } else { 
       toast({
         title: "Bildirim İzni Gerekli",
         description: "Lütfen önce yukarıdaki 'Hava Durumu Bildirimleri' ayarını etkinleştirin ve tarayıcı iznini verin.",
@@ -333,7 +330,7 @@ export default function AyarlarPage() {
               <p>Tarayıcı konum iznini vermediniz. Ayarlardan değiştirmediğiniz sürece mevcut konumunuz kullanılamaz.</p>
             </div>
           )}
-           {locationPermission === 'prompt' && locationServicesEnabled && ( // Show this only if enabled AND permission is prompt
+           {locationPermission === 'prompt' && locationServicesEnabled && ( 
             <div className="flex items-center gap-2 p-3 text-sm text-info-foreground bg-info/80 rounded-md">
               <InfoIcon className="w-5 h-5" />
               <p>Tarayıcınız konum izni isteyecektir. Lütfen izin verin.</p>
@@ -358,7 +355,7 @@ export default function AyarlarPage() {
             </div>
             <Switch
               id="ui-sound-switch"
-              checked={uiSoundSwitchState} // Reflects global state from context
+              checked={uiSoundSwitchState} 
               onCheckedChange={handleUiSoundToggle}
             />
           </div>
