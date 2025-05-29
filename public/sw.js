@@ -1,60 +1,99 @@
-
 // public/sw.js
 
+const CACHE_NAME = 'havadurumux-cache-v1';
+const urlsToCache = [
+  '/',
+  '/manifest.json', // Eğer bir manifest dosyanız varsa
+  '/logo.png', // Bildirim ikonu için
+  // Diğer önemli statik varlıklar
+];
+
 self.addEventListener('install', (event) => {
-  console.log('Service Worker: Install event');
-  // Optionally, precache assets here if needed
-  self.skipWaiting(); // Ensures the new SW activates immediately
-});
-
-self.addEventListener('activate', (event) => {
-  console.log('Service Worker: Activate event');
-  // Optionally, clean up old caches here
-  event.waitUntil(self.clients.claim()); // Ensures the SW takes control of current clients immediately
-});
-
-self.addEventListener('push', (event) => {
-  console.log('Service Worker: Push event received', event);
-  const data = event.data ? event.data.json() : { title: 'HavaDurumuX Bildirimi', body: 'Yeni bir bildiriminiz var!', icon: '/logo.png', data: { url: '/' } };
-  
-  const title = data.title || 'HavaDurumuX Bildirimi';
-  const options = {
-    body: data.body || 'Yeni bir bildiriminiz var!',
-    icon: data.icon || '/logo.png', // Default icon
-    badge: data.badge || '/logo_badge.png', // A smaller icon for the notification tray (create this image if you want to use it)
-    image: data.image, // A larger image within the notification
-    vibrate: data.vibrate || [200, 100, 200], // Vibration pattern
-    tag: data.tag || 'havadurumux-notification', // Tag to group notifications or replace existing ones
-    renotify: data.renotify || false, // If true, new notifications with the same tag will re-alert the user
-    requireInteraction: data.requireInteraction || false, // If true, notification stays until user interacts
-    actions: data.actions || [], // e.g., [{ action: 'explore', title: 'Keşfet', icon: '/icons/explore.png' }]
-    data: data.data || { url: '/' } // Custom data to pass to notificationclick
-  };
-
+  console.log('Service Worker: Installing...');
   event.waitUntil(
-    self.registration.showNotification(title, options)
+    caches.open(CACHE_NAME)
+      .then((cache) => {
+        console.log('Service Worker: Caching app shell');
+        return cache.addAll(urlsToCache);
+      })
+      .then(() => {
+        console.log('Service Worker: Install completed');
+        return self.skipWaiting();
+      })
+      .catch(error => {
+        console.error('Service Worker: Cache open/addAll failed during install:', error);
+      })
   );
 });
 
-self.addEventListener('notificationclick', (event) => {
-  console.log('Service Worker: Notification click received.', event.notification);
-  event.notification.close(); // Close the notification
+self.addEventListener('activate', (event) => {
+  console.log('Service Worker: Activating...');
+  // Eski cache'leri temizle
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_NAME) {
+            console.log('Service Worker: Deleting old cache:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    }).then(() => {
+      console.log('Service Worker: Activate completed, clients claimed.');
+      return self.clients.claim();
+    })
+  );
+});
 
+self.addEventListener('fetch', (event) => {
+  // Şimdilik sadece ağdan getirme stratejisi veya cache-first eklenebilir
+  // console.log('Service Worker: Fetching', event.request.url);
+  // event.respondWith(
+  //   caches.match(event.request)
+  //     .then((response) => {
+  //       return response || fetch(event.request);
+  //     })
+  // );
+});
+
+self.addEventListener('push', (event) => {
+  console.log('Service Worker: Push Received.');
+  const data = event.data ? event.data.json() : { title: 'Yeni Bildirim', body: 'Bir güncelleme var!', icon: '/logo.png', badge: '/logo_badge.png' };
+
+  const title = data.title || 'HavaDurumuX';
+  const options = {
+    body: data.body || 'Hava durumu bilgisi güncellendi.',
+    icon: data.icon || '/logo.png', // /public klasöründe olmalı
+    badge: data.badge || '/logo_badge.png', // /public klasöründe olmalı
+    vibrate: [200, 100, 200],
+    data: {
+      url: data.url || '/', // Bildirime tıklanınca açılacak URL
+    },
+  };
+
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener('notificationclick', (event) => {
+  console.log('Service Worker: Notification click Received.');
+  event.notification.close();
   const urlToOpen = event.notification.data && event.notification.data.url ? event.notification.data.url : '/';
 
   event.waitUntil(
-    clients.matchAll({
-      type: 'window',
-      includeUncontrolled: true
-    }).then((clientList) => {
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      // Eğer site zaten bir sekmede açıksa, o sekmeye odaklan
       for (let i = 0; i < clientList.length; i++) {
         const client = clientList[i];
-        // If a window for the app is already open, focus it
-        if (client.url === self.location.origin + urlToOpen && 'focus' in client) {
+        // URL'yi daha esnek kontrol et, örneğin ana domain'i içeriyor mu diye bak
+        if (client.url.startsWith(self.location.origin) && 'focus' in client) {
+          // Belirli bir sayfaya yönlendirme yapmak istersen:
+          // client.navigate(urlToOpen).then(client => client.focus());
+          // Sadece odaklanmak istersen:
           return client.focus();
         }
       }
-      // Otherwise, open a new window
+      // Site açık değilse, yeni bir sekmede aç
       if (clients.openWindow) {
         return clients.openWindow(urlToOpen);
       }
@@ -62,14 +101,4 @@ self.addEventListener('notificationclick', (event) => {
   );
 });
 
-// Basic fetch handler for offline capability (optional, can be expanded)
-// self.addEventListener('fetch', (event) => {
-//   // console.log('Service Worker: Fetching', event.request.url);
-//   // Example: Cache-first strategy for static assets (very basic)
-//   // event.respondWith(
-//   //   caches.match(event.request).then((response) => {
-//   //     return response || fetch(event.request);
-//   //   })
-//   // );
-// });
-    
+console.log('Service Worker: Loaded.');
