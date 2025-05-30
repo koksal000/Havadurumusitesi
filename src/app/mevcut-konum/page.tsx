@@ -8,7 +8,7 @@ import { getWeatherData } from '@/lib/weatherApi';
 import type { WeatherData, FavoriteLocation, HourlyWeather } from '@/types/weather';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription as AlertDescription Shadcn } from '@/components/ui/alert'; // Renamed for clarity
+import { Alert, AlertDescription as ShadcnAlertDescription } from '@/components/ui/alert'; // Corrected import alias
 import { Loader2, AlertTriangle, Compass, Settings, InfoIcon, ArrowLeft, BarChart3, Thermometer, Wind, Droplets, Zap, Waves, Sun, Leaf } from 'lucide-react';
 import Link from 'next/link';
 import { format, parseISO, isSameDay } from 'date-fns';
@@ -398,3 +398,7 @@ export default function MevcutKonumPage() {
     </div>
   );
 }
+
+    
+
+    
