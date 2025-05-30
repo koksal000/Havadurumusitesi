@@ -8,6 +8,7 @@ import { getWeatherData } from '@/lib/weatherApi';
 import type { WeatherData, FavoriteLocation, HourlyWeather } from '@/types/weather';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription as AlertDescription Shadcn } from '@/components/ui/alert'; // Renamed for clarity
 import { Loader2, AlertTriangle, Compass, Settings, InfoIcon, ArrowLeft, BarChart3, Thermometer, Wind, Droplets, Zap, Waves, Sun, Leaf } from 'lucide-react';
 import Link from 'next/link';
 import { format, parseISO, isSameDay } from 'date-fns';
@@ -31,7 +32,7 @@ import { PressureChart } from '@/components/weather/charts/PressureChart';
 
 const LOCATION_SERVICES_ENABLED_KEY = 'havadurumux-location-services-enabled';
 const LOCATION_PERMISSION_KEY = 'havadurumux-location-permission';
-const POLLING_INTERVAL = 10 * 60 * 1000; // 10 minutes
+const POLLING_INTERVAL = 30 * 60 * 1000; // 30 minutes
 
 // Haversine distance function
 function getDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -97,7 +98,7 @@ export default function MevcutKonumPage() {
 
   const fetchLocationAndWeather = useCallback(async () => {
     setLoading(true);
-    setError(null);
+    // setError(null); // Don't clear general errors on each poll, only API update errors
     setStatusMessage('Konum ve hava durumu bilgileri güncelleniyor...');
 
     const locationServicesEnabled = localStorage.getItem(LOCATION_SERVICES_ENABLED_KEY) === 'true';
@@ -140,7 +141,7 @@ export default function MevcutKonumPage() {
           provincesData.forEach(provinceName => {
             const districtsData = getDistricts(provinceName);
             districtsData.forEach(districtObj => {
-              if (districtObj.lat !== 0 || districtObj.lon !== 0) { // Only consider districts with valid coordinates
+              if (districtObj.lat !== 0 || districtObj.lon !== 0) { 
                 const distance = getDistance(latitude, longitude, districtObj.lat, districtObj.lon);
                 if (distance < minDistance) {
                   minDistance = distance;
@@ -166,19 +167,19 @@ export default function MevcutKonumPage() {
               if (data) {
                 setWeatherData(data);
                 localStorage.setItem(`weather-${closestDistrictObj.lat}-${closestDistrictObj.lon}`, JSON.stringify({data: data, timestamp: new Date().toISOString()}));
-                setError(null);
+                setError(null); // Clear previous errors on successful fetch
               } else {
-                setError("Hava durumu verileri alınamadı.");
+                 setError("Mevcut konum için hava durumu verileri güncellenemedi. (API limitine ulaşılmış olabilir)");
               }
             } catch (e) {
               console.error(e);
-              setError("Hava durumu verileri yüklenirken bir hata oluştu.");
+              setError("Mevcut konum için hava durumu verileri yüklenirken bir hata oluştu.");
             }
 
           } else {
             setError(`En yakın bilinen ilçe bulunamadı (Mesafe: ${minDistance > MAX_ACCEPTABLE_DISTANCE_KM ? '>'+MAX_ACCEPTABLE_DISTANCE_KM : minDistance.toFixed(1)} km). Lütfen konum verilerinin doğruluğunu kontrol edin veya manuel arama yapın.`);
             setStatusMessage('En yakın ilçe bulunamadı.');
-            setWeatherData(null); // Clear previous weather data
+            setWeatherData(null); 
           }
           setLoading(false);
         },
@@ -204,7 +205,7 @@ export default function MevcutKonumPage() {
   }, []);
 
   useEffect(() => {
-    fetchLocationAndWeather(); // Initial fetch
+    fetchLocationAndWeather(); 
     const intervalId = setInterval(fetchLocationAndWeather, POLLING_INTERVAL);
     return () => clearInterval(intervalId);
   }, [fetchLocationAndWeather]);
@@ -219,7 +220,7 @@ export default function MevcutKonumPage() {
     );
   }
 
-  if (error && !weatherData) { // Show error prominently if there's no weather data to display
+  if (error && !weatherData) { 
     return (
       <Card className="shadow-xl rounded-xl max-w-md mx-auto my-10">
         <CardHeader>
@@ -235,7 +236,7 @@ export default function MevcutKonumPage() {
                 <Link href="/ayarlar"><Settings className="mr-2 h-4 w-4" /> Ayarlara Git</Link>
              </Button>
           )}
-           {!error?.includes("ayarlardan") && currentProvince && currentDistrict && (
+           {!error?.includes("ayarlardan") && (currentProvince || currentDistrict) && (
              <Button onClick={fetchLocationAndWeather} variant="outline">
                 <Compass className="mr-2 h-4 w-4" /> Tekrar Dene
              </Button>
@@ -249,8 +250,6 @@ export default function MevcutKonumPage() {
   }
   
   if (!weatherData || !currentProvince || !currentDistrict) {
-     // This state might be hit if location is found but weather fails, or vice-versa briefly
-     // Or if location services are off / permission denied after an initial load
     return (
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)] text-center">
          {loading && <Loader2 className="h-16 w-16 animate-spin text-primary mb-4" />}
@@ -273,13 +272,23 @@ export default function MevcutKonumPage() {
     <div className="space-y-8">
       <p className="text-sm text-muted-foreground">
         Not: Konum bilgisi GPS ve en yakın bilinen ilçe merkezine göre tahmin edilmektedir. Sınır hassasiyeti değişiklik gösterebilir.
-        Veriler her 10 dakikada bir güncellenir.
+        Veriler her 30 dakikada bir güncellenir.
       </p>
-      {error && !loading && ( // Show less intrusive error if weatherData is already available
-        <div className="p-4 bg-destructive/10 text-destructive border border-destructive/30 rounded-md text-sm">
-            <p><strong>Güncelleme Hatası:</strong> {error}. Önceki veriler gösteriliyor.</p>
+      {error && weatherData && ( 
+        <Alert variant="destructive" className="mb-4">
+          <AlertTriangle className="h-4 w-4" />
+          <ShadcnAlertDescription> {/* Using renamed import */}
+            {error}
+          </ShadcnAlertDescription>
+        </Alert>
+      )}
+      {loading && weatherData && (
+        <div className="flex items-center text-sm text-muted-foreground mb-4">
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          Mevcut konum hava durumu güncelleniyor...
         </div>
       )}
+
 
       <Tabs defaultValue="main" className="w-full">
         <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2">
@@ -389,5 +398,3 @@ export default function MevcutKonumPage() {
     </div>
   );
 }
-
-    

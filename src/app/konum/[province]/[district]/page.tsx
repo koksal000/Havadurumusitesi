@@ -12,6 +12,7 @@ import { DailyForecastItem } from '@/components/weather/DailyForecastItem';
 import { FavoriteButton } from '@/components/FavoriteButton';
 import { Accordion } from '@/components/ui/accordion';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert'; // Added Alert
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, ArrowLeft, Loader2, Thermometer, Wind, Droplets, Zap, Waves, Sun, Leaf, BarChart3 } from 'lucide-react';
 import Link from 'next/link';
@@ -68,7 +69,7 @@ export default function DistrictWeatherPage() {
            const parsedCache = JSON.parse(cachedDataString);
            if (new Date().getTime() - new Date(parsedCache.timestamp).getTime() < 3600 * 1000) { 
               setWeatherData(parsedCache.data);
-              setLoading(false); 
+              // setLoading(false); // Don't set loading false yet if we're going to try to update
               usedCache = true; 
            }
         }
@@ -78,22 +79,23 @@ export default function DistrictWeatherPage() {
             if (data) {
               setWeatherData(data);
               localStorage.setItem(`weather-${districtData.lat}-${districtData.lon}`, JSON.stringify({data: data, timestamp: new Date().toISOString()}));
+              setError(null); // Clear previous errors if fetch is successful
             } else {
-              if (!weatherData) { 
-                setError("Hava durumu verileri alınamadı.");
-              }
+              // If fetch fails, set an error message.
+              // We keep displaying cached data if available.
+              setError("Yeni hava durumu verileri alınamadı. Lütfen daha sonra tekrar deneyin. (API limitine ulaşılmış olabilir)");
             }
         }
 
       } catch (e) {
         console.error(e);
-        if (!weatherData) { 
+        // if (!weatherData) { // Only set fatal error if no data at all
             setError("Hava durumu verileri yüklenirken bir hata oluştu.");
-        }
+        // }
       } finally {
-        if (!usedCache || (weatherData && new Date().getTime() - new Date(JSON.parse(localStorage.getItem(`weather-${districtData.lat}-${districtData.lon}`)!).timestamp).getTime() >= 3600 * 1000 ) ) {
-             setLoading(false);
-        }
+        // if (!usedCache || (weatherData && new Date().getTime() - new Date(JSON.parse(localStorage.getItem(`weather-${districtData.lat}-${districtData.lon}`)!).timestamp).getTime() >= 3600 * 1000 ) ) {
+             setLoading(false); // Set loading false after attempting fetch/update
+        // }
       }
     }
 
@@ -104,12 +106,12 @@ export default function DistrictWeatherPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)]">
         <Loader2 className="h-16 w-16 animate-spin text-primary mb-4" />
-        <p className="text-xl text-muted-foreground">{locationName} için hava durumu yükleniyor...</p>
+        <p className="text-xl text-muted-foreground">{locationName || "Konum"} için hava durumu yükleniyor...</p>
       </div>
     );
   }
 
-  if (error && !weatherData) { 
+  if (error && !weatherData) { // Fatal error if no data could be loaded at all
     return (
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)] text-center">
         <AlertTriangle className="h-16 w-16 text-destructive mb-4" />
@@ -170,6 +172,22 @@ export default function DistrictWeatherPage() {
       <Button variant="outline" onClick={() => router.back()} className="mb-2">
         <ArrowLeft className="mr-2 h-4 w-4" /> Geri
       </Button>
+
+      {error && weatherData && ( // Display non-fatal error if we have cached data but update failed
+        <Alert variant="destructive" className="mb-4">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            {error}
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {loading && weatherData && ( // Show a subtle loading indicator if updating in background
+        <div className="flex items-center text-sm text-muted-foreground mb-4">
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          Hava durumu güncelleniyor...
+        </div>
+      )}
 
       <Tabs defaultValue="main" className="w-full">
         <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2">
