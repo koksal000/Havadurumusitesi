@@ -1,9 +1,13 @@
+
+'use client'; // Explicitly mark as a client module
+
 import { useState, useEffect } from 'react';
 
 function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T | ((val: T) => T)) => void] {
   // State to store our value
   // Pass initial state function to useState so logic is only executed once
   const [storedValue, setStoredValue] = useState<T>(() => {
+    // This check is still important, but 'use client' ensures the module context
     if (typeof window === 'undefined') {
       return initialValue;
     }
