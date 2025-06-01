@@ -1,3 +1,6 @@
+
+'use client'; // Ensure this hook is treated as client-side
+
 import type { FavoriteLocation } from '@/types/weather';
 import useLocalStorage from './useLocalStorage';
 import { useToast } from '@/components/ui/use-toast';

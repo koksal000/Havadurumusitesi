@@ -18,8 +18,8 @@ import {
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import { CloudSun, Search, Map, Radar, Heart, Settings, Info, Mail, Home, Zap, Bell, Compass } from 'lucide-react';
-import { WeatherNotificationInitializer } from '@/hooks/useWeatherNotificationManager';
-import { SoundProvider } from '@/contexts/SoundContext'; // Added SoundProvider import
+import { SoundProvider } from '@/contexts/SoundContext';
+import ClientSideWeatherInitializer from '@/components/layout/ClientSideWeatherInitializer'; // Updated import
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
@@ -42,7 +42,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <SoundProvider> {/* Added SoundProvider */}
+          <SoundProvider> 
             <SidebarProvider>
               <Sidebar side="left" collapsible="offcanvas">
                 <SidebarHeader className="p-4 border-b border-sidebar-border">
@@ -122,11 +122,11 @@ export default function RootLayout({
                     {children}
                   </main>
                   <Toaster />
-                  <WeatherNotificationInitializer />
+                  <ClientSideWeatherInitializer /> {/* Use the new client component */}
                 </div>
               </SidebarInset>
             </SidebarProvider>
-          </SoundProvider> {/* Closed SoundProvider */}
+          </SoundProvider> 
         </ThemeProvider>
       </body>
     </html>

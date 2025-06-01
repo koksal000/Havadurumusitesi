@@ -32,7 +32,7 @@ import { PressureChart } from '@/components/weather/charts/PressureChart';
 
 const LOCATION_SERVICES_ENABLED_KEY = 'havadurumux-location-services-enabled';
 const LOCATION_PERMISSION_KEY = 'havadurumux-location-permission';
-const POLLING_INTERVAL = 30 * 60 * 1000; // 30 minutes
+const POLLING_INTERVAL = 4 * 60 * 60 * 1000; // 4 hours
 
 // Haversine distance function
 function getDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -96,9 +96,10 @@ export default function MevcutKonumPage() {
   }, []);
 
 
-  const fetchLocationAndWeather = useCallback(async () => {
-    setLoading(true);
-    // setError(null); // Don't clear general errors on each poll, only API update errors
+  const fetchLocationAndWeather = useCallback(async (isInitialLoad = false) => {
+    if (!isInitialLoad) { // Only show full loading state on subsequent polls if desired
+        setLoading(true);
+    }
     setStatusMessage('Konum ve hava durumu bilgileri güncelleniyor...');
 
     const locationServicesEnabled = localStorage.getItem(LOCATION_SERVICES_ENABLED_KEY) === 'true';
@@ -162,18 +163,36 @@ export default function MevcutKonumPage() {
             setFavoriteLocationData({ province: closestProvinceName, district: closestDistrictObj.name, lat: closestDistrictObj.lat, lon: closestDistrictObj.lon });
             setStatusMessage(`${closestProvinceName} / ${closestDistrictObj.name} için hava durumu yükleniyor...`);
             
+            let usedCache = false;
             try {
-              const data = await getWeatherData(closestDistrictObj.lat, closestDistrictObj.lon);
-              if (data) {
-                setWeatherData(data);
-                localStorage.setItem(`weather-${closestDistrictObj.lat}-${closestDistrictObj.lon}`, JSON.stringify({data: data, timestamp: new Date().toISOString()}));
-                setError(null); // Clear previous errors on successful fetch
-              } else {
-                 setError("Mevcut konum için hava durumu verileri güncellenemedi. (API limitine ulaşılmış olabilir)");
-              }
+                const cachedDataString = localStorage.getItem(`weather-${closestDistrictObj.lat}-${closestDistrictObj.lon}`);
+                if (cachedDataString && isInitialLoad) { // Only use cache on initial load immediately
+                   const parsedCache = JSON.parse(cachedDataString);
+                   if (new Date().getTime() - new Date(parsedCache.timestamp).getTime() < POLLING_INTERVAL) { // Check cache validity
+                      setWeatherData(parsedCache.data);
+                      usedCache = true; 
+                   }
+                }
+
+                const data = await getWeatherData(closestDistrictObj.lat, closestDistrictObj.lon);
+                if (data) {
+                    setWeatherData(data);
+                    localStorage.setItem(`weather-${closestDistrictObj.lat}-${closestDistrictObj.lon}`, JSON.stringify({data: data, timestamp: new Date().toISOString()}));
+                    setError(null); // Clear previous errors on successful fetch
+                } else {
+                    if (!usedCache) { // If fetch fails and no cache was used, set error.
+                        setError("Mevcut konum için hava durumu verileri alınamadı. Lütfen daha sonra tekrar deneyin.");
+                    } else { // If fetch fails but we have cache, show non-fatal error
+                        setError("Yeni hava durumu verileri alınamadı. Önbellek verileri gösteriliyor.");
+                    }
+                }
             } catch (e) {
               console.error(e);
-              setError("Mevcut konum için hava durumu verileri yüklenirken bir hata oluştu.");
+              if (!usedCache) {
+                setError("Mevcut konum için hava durumu verileri yüklenirken bir hata oluştu.");
+              } else {
+                setError("Hava durumu güncellenirken bir hata oluştu. Önbellek verileri gösteriliyor.");
+              }
             }
 
           } else {
@@ -205,8 +224,8 @@ export default function MevcutKonumPage() {
   }, []);
 
   useEffect(() => {
-    fetchLocationAndWeather(); 
-    const intervalId = setInterval(fetchLocationAndWeather, POLLING_INTERVAL);
+    fetchLocationAndWeather(true); // Pass true for initial load
+    const intervalId = setInterval(() => fetchLocationAndWeather(false), POLLING_INTERVAL); // Pass false for subsequent polls
     return () => clearInterval(intervalId);
   }, [fetchLocationAndWeather]);
 
@@ -237,7 +256,7 @@ export default function MevcutKonumPage() {
              </Button>
           )}
            {!error?.includes("ayarlardan") && (currentProvince || currentDistrict) && (
-             <Button onClick={fetchLocationAndWeather} variant="outline">
+             <Button onClick={() => fetchLocationAndWeather(false)} variant="outline">
                 <Compass className="mr-2 h-4 w-4" /> Tekrar Dene
              </Button>
            )}
@@ -272,7 +291,7 @@ export default function MevcutKonumPage() {
     <div className="space-y-8">
       <p className="text-sm text-muted-foreground">
         Not: Konum bilgisi GPS ve en yakın bilinen ilçe merkezine göre tahmin edilmektedir. Sınır hassasiyeti değişiklik gösterebilir.
-        Veriler her 30 dakikada bir güncellenir.
+        Veriler her 4 saatte bir güncellenir.
       </p>
       {error && weatherData && ( 
         <Alert variant="destructive" className="mb-4">
@@ -282,7 +301,7 @@ export default function MevcutKonumPage() {
           </ShadcnAlertDescription>
         </Alert>
       )}
-      {loading && weatherData && (
+      {loading && weatherData && ( // Show subtle loading only if updating and data already exists
         <div className="flex items-center text-sm text-muted-foreground mb-4">
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           Mevcut konum hava durumu güncelleniyor...
@@ -325,23 +344,23 @@ export default function MevcutKonumPage() {
                       weather_code: weatherData.daily.weather_code?.[index] ?? 0,
                       temperature_2m_max: weatherData.daily.temperature_2m_max?.[index] ?? 0,
                       temperature_2m_min: weatherData.daily.temperature_2m_min?.[index] ?? 0,
-                      apparent_temperature_max: weatherData.daily.apparent_temperature_max?.[index] ?? 0,
-                      apparent_temperature_min: weatherData.daily.apparent_temperature_min?.[index] ?? 0,
-                      sunrise: weatherData.daily.sunrise?.[index] ?? new Date().toISOString(),
-                      sunset: weatherData.daily.sunset?.[index] ?? new Date().toISOString(),
+                      apparent_temperature_max: weatherData.daily.apparent_temperature_max?.[index],
+                      apparent_temperature_min: weatherData.daily.apparent_temperature_min?.[index],
+                      sunrise: weatherData.daily.sunrise?.[index],
+                      sunset: weatherData.daily.sunset?.[index],
                       precipitation_sum: weatherData.daily.precipitation_sum?.[index] ?? 0,
                       rain_sum: weatherData.daily.rain_sum?.[index] ?? 0,
                       showers_sum: weatherData.daily.showers_sum?.[index] ?? 0,
                       snowfall_sum: weatherData.daily.snowfall_sum?.[index] ?? 0,
                       precipitation_hours: weatherData.daily.precipitation_hours?.[index] ?? 0,
-                      precipitation_probability_max: weatherData.daily.precipitation_probability_max?.[index] ?? 0,
+                      precipitation_probability_max: weatherData.daily.precipitation_probability_max?.[index],
                       wind_speed_10m_max: weatherData.daily.wind_speed_10m_max?.[index] ?? 0,
-                      wind_gusts_10m_max: weatherData.daily.wind_gusts_10m_max?.[index] ?? 0,
-                      wind_direction_10m_dominant: weatherData.daily.wind_direction_10m_dominant?.[index] ?? 0,
+                      wind_gusts_10m_max: weatherData.daily.wind_gusts_10m_max?.[index],
+                      wind_direction_10m_dominant: weatherData.daily.wind_direction_10m_dominant?.[index],
                       uv_index_max: weatherData.daily.uv_index_max?.[index],
                       uv_index_clear_sky_max: weatherData.daily.uv_index_clear_sky_max?.[index],
-                      shortwave_radiation_sum: weatherData.daily.shortwave_radiation_sum?.[index] ?? 0,
-                      et0_fao_evapotranspiration: weatherData.daily.et0_fao_evapotranspiration?.[index] ?? 0,
+                      shortwave_radiation_sum: weatherData.daily.shortwave_radiation_sum?.[index],
+                      et0_fao_evapotranspiration: weatherData.daily.et0_fao_evapotranspiration?.[index],
                     }}
                     hourlyDataForDay={getHourlyDataForDay(time, weatherData.hourly)}
                     isToday={isSameDay(parseISO(time), new Date())}
@@ -371,7 +390,7 @@ export default function MevcutKonumPage() {
               </div>
               <div className="p-4 bg-muted/30 rounded-lg shadow-sm">
                 <h4 className="font-semibold text-sm flex items-center"><Wind className="w-4 h-4 mr-2 text-primary" />Dominant Rüzgar Yönü (Günlük)</h4>
-                <p className="text-xs">{weatherData.daily?.wind_direction_10m_dominant?.[0] ?? 'N/A'}°</p>
+                <p className="text-xs">{weatherData.daily?.wind_direction_10m_dominant?.[0] !== null && weatherData.daily?.wind_direction_10m_dominant?.[0] !== undefined ? `${weatherData.daily.wind_direction_10m_dominant[0]}°` : 'N/A'}</p>
               </div>
                <div className="p-4 bg-muted/30 rounded-lg shadow-sm">
                 <h4 className="font-semibold text-sm flex items-center"><Sun className="w-4 h-4 mr-2 text-primary" />Kısa Dalga Radyasyon (Günlük)</h4>
@@ -398,7 +417,3 @@ export default function MevcutKonumPage() {
     </div>
   );
 }
-
-    
-
-    
