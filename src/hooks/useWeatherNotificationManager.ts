@@ -7,6 +7,7 @@ import { getWeatherData } from '@/lib/weatherApi';
 import type { StoredNotification } from '@/types/notifications';
 import { useStoredNotifications } from './useStoredNotifications';
 import { getWeatherInfo } from '@/lib/weatherIcons';
+import { useLocalStorage } from './useLocalStorage'; // Changed to named import
 
 const POLLING_INTERVAL = 4 * 60 * 60 * 1000; // 4 hours
 const NOTIFICATION_ENABLED_KEY = 'havadurumux-notifications-enabled';
@@ -17,7 +18,7 @@ const SEVERE_WEATHER_THRESHOLDS = {
   STRONG_GUST_KMH: 75,
   HEAVY_SNOW_CM: 5,
   STORM_CODES: [95, 96, 97, 99], // Added 97 for heavy TS
-  HAIL_CODES: [96, 99], // WMO codes from met.no mapping could differ
+  HAIL_CODES: [96, 99], 
   FOG_CODES: [45, 48],
   FREEZING_RAIN_CODES: [56, 57, 66, 67],
 };
@@ -32,8 +33,8 @@ interface WeatherAlert {
 }
 
 interface LastNotifiedAlert {
-  alertKey: string | null; // Unique key representing the alert condition (e.g., "Ankara / Çankaya::şiddetli_yağmur_uyarısı")
-  conditionDetailsSignature: string | null; // A signature of the specific details (e.g., "15mm")
+  alertKey: string | null; 
+  conditionDetailsSignature: string | null; 
   timestamp: number | null;
 }
 
@@ -48,8 +49,6 @@ export function useWeatherNotificationManager() {
   };
 
   const generateConditionDetailsSignature = (details: string): string => {
-    // Creates a simple signature from details to detect changes.
-    // For example, changes in rain amount or wind speed.
     return details.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
   };
 
@@ -79,7 +78,6 @@ export function useWeatherNotificationManager() {
         
         const potentialAlerts: Omit<WeatherAlert, 'title'>[] = [];
 
-        // Severe Weather Alerts from Current Data
         if (SEVERE_WEATHER_THRESHOLDS.STORM_CODES.includes(currentToday.weather_code)) {
           potentialAlerts.push({ locationName, condition: "fırtına_uyarısı", details: `Anlık: ${currentCodeInfo.description}`, type: 'alert', link });
         } else if (SEVERE_WEATHER_THRESHOLDS.HAIL_CODES.includes(currentToday.weather_code)) {
@@ -88,7 +86,6 @@ export function useWeatherNotificationManager() {
           potentialAlerts.push({ locationName, condition: "donan_yağmur_uyarısı", details: `Anlık: ${currentCodeInfo.description}`, type: 'alert', link });
         }
         
-        // Severe Weather Alerts from Daily Forecast
         if ((dailyToday.precipitation_sum?.[todayIndex] ?? 0) >= SEVERE_WEATHER_THRESHOLDS.HEAVY_RAIN_MM) {
           potentialAlerts.push({ locationName, condition: "şiddetli_yağmur_uyarısı", details: `Günlük Toplam Beklenen: ${dailyToday.precipitation_sum?.[todayIndex]?.toFixed(1)}mm`, type: 'alert', link });
         }
@@ -102,7 +99,6 @@ export function useWeatherNotificationManager() {
           potentialAlerts.push({ locationName, condition: "çok_şiddetli_rüzgar_hamlesi_uyarısı", details: `Günlük Max Hamle Beklenen: ${dailyToday.wind_gusts_10m_max?.[todayIndex]?.toFixed(1)}km/s`, type: 'alert', link });
         }
         
-        // Informational Notifications
         if (!potentialAlerts.some(pa => pa.condition.includes("yağmur"))) {
           if ((dailyToday.precipitation_probability_max?.[todayIndex] ?? 0) >= 50 && (dailyToday.precipitation_sum?.[todayIndex] ?? 0) > 0) {
             potentialAlerts.push({ locationName, condition: "yağmur_beklentisi", details: `Olasılık: %${dailyToday.precipitation_probability_max?.[todayIndex]}, Beklenen Miktar: ${dailyToday.precipitation_sum?.[todayIndex]?.toFixed(1)}mm. ${dailyWeatherCodeInfo.description}`, type: 'info', link });
@@ -154,14 +150,13 @@ export function useWeatherNotificationManager() {
             });
             console.log(`WeatherNotificationManager: Added in-app notification for ${alert.locationName}: ${alert.condition}`);
 
-            // System notification logic (relies on sw.js and AyarlarPage setup)
             if (typeof window !== 'undefined' && 'serviceWorker' in navigator && Notification.permission === 'granted') {
                 navigator.serviceWorker.ready.then(registration => {
                     registration.showNotification(alert.title, {
                         body: alert.details,
-                        icon: '/logo.png',
-                        badge: '/logo_badge.png', 
-                        data: { url: alert.link || '/' }
+                        icon: '/logo.png', // Ensure this icon exists in /public
+                        badge: '/logo_badge.png', // Ensure this badge exists in /public
+                        data: { url: window.location.origin + (alert.link || '/') }
                     }).catch(err => {
                         console.error('WeatherNotificationManager: Error showing system notification:', err);
                     });
@@ -179,7 +174,7 @@ export function useWeatherNotificationManager() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const enabled = localStorage.getItem(NOTIFICATION_ENABLED_KEY) === 'true';
-      const permission = Notification.permission; // Ensure this is checked
+      const permission = Notification.permission; 
       const managerShouldBeActive = enabled && permission === 'granted';
       
       if (isManagerActive !== managerShouldBeActive) {
@@ -192,7 +187,7 @@ export function useWeatherNotificationManager() {
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run once on mount to set initial state and check
+  }, []); 
 
   useEffect(() => {
     let intervalId: NodeJS.Timeout | null = null;

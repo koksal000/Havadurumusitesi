@@ -2,7 +2,7 @@
 'use client'; // Ensure this hook is treated as client-side
 
 import type { FavoriteLocation } from '@/types/weather';
-import useLocalStorage from './useLocalStorage';
+import { useLocalStorage } from './useLocalStorage'; // Changed to named import
 import { useToast } from '@/components/ui/use-toast';
 
 const FAVORITES_KEY = 'havadurumux-favorites';

@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import type { StoredNotification } from '@/types/notifications';
-import useLocalStorage from './useLocalStorage';
+import { useLocalStorage } from './useLocalStorage'; // Changed to named import
 
 const STORED_NOTIFICATIONS_KEY = 'havadurumux_all_notifications';
 const MAX_NOTIFICATIONS = 50;
