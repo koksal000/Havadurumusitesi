@@ -60,7 +60,7 @@ async function fetchFromMetNorway(lat: number, lon: number): Promise<WeatherData
     }
 
     const timeseries = rawData.properties.timeseries;
-    const currentRaw = timeseries[0];
+    const currentRaw = timeseries[0]; // Simplification: use the first timeseries entry as current
     const currentSymbolInfo = getSymbolInfo(currentRaw.data?.next_1_hours?.summary?.symbol_code || currentRaw.data?.next_6_hours?.summary?.symbol_code);
 
     const current: CurrentWeatherAPI = {
@@ -75,7 +75,9 @@ async function fetchFromMetNorway(lat: number, lon: number): Promise<WeatherData
       precipitation: currentRaw.data?.next_1_hours?.details?.precipitation_amount ?? 0,
       weather_code: currentSymbolInfo.wmo,
       is_day: currentSymbolInfo.is_day,
-      apparent_temperature: null, uv_index: null, visibility: null,
+      apparent_temperature: null, // To be filled by Open-Meteo
+      uv_index: null, // To be filled by Open-Meteo
+      visibility: null, // To be filled by Open-Meteo
       rain: currentSymbolInfo.is_rain ? (currentRaw.data?.next_1_hours?.details?.precipitation_amount ?? 0) : 0,
       showers: currentSymbolInfo.is_showers ? (currentRaw.data?.next_1_hours?.details?.precipitation_amount ?? 0) : 0,
       snowfall: currentSymbolInfo.is_snow ? (currentRaw.data?.next_1_hours?.details?.precipitation_amount ?? 0) : 0,
@@ -93,7 +95,7 @@ async function fetchFromMetNorway(lat: number, lon: number): Promise<WeatherData
     sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
 
     for (const entry of timeseries) {
-      if (parseISO(entry.time) > sevenDaysFromNow) break;
+      if (parseISO(entry.time) > sevenDaysFromNow) break; // Limit to 7 days for consistency with Open-Meteo
       const entryTime = entry.time;
       const details = entry.data?.instant?.details;
       const next1HourDetails = entry.data?.next_1_hours?.details;
@@ -107,17 +109,24 @@ async function fetchFromMetNorway(lat: number, lon: number): Promise<WeatherData
       hourly.weather_code.push(symbolInfo.wmo);
       hourly.cloud_cover!.push(details?.cloud_area_fraction ?? null);
       hourly.surface_pressure!.push(details?.air_pressure_at_sea_level ?? null);
-      hourly.pressure_msl!.push(details?.air_pressure_at_sea_level ?? null);
+      hourly.pressure_msl!.push(details?.air_pressure_at_sea_level ?? null); // MET.no uses sea level pressure
       hourly.wind_speed_10m.push(details?.wind_speed !== undefined ? details.wind_speed * M_S_TO_KM_H : null);
       hourly.wind_direction_10m.push(details?.wind_from_direction ?? null);
       hourly.wind_gusts_10m!.push(details?.wind_speed_of_gust !== undefined && details.wind_speed_of_gust !== null ? details.wind_speed_of_gust * M_S_TO_KM_H : null);
       hourly.is_day!.push(symbolInfo.is_day);
-      hourly.apparent_temperature!.push(null); hourly.precipitation_probability!.push(null);
-      hourly.uv_index!.push(null); hourly.visibility!.push(null);
+      
+      // Initialize fields to be supplemented by Open-Meteo
+      hourly.apparent_temperature!.push(null);
+      hourly.precipitation_probability!.push(null);
+      hourly.uv_index!.push(null);
+      hourly.visibility!.push(null);
+      hourly.soil_temperature_0cm!.push(null);
+      hourly.soil_moisture_0_1cm!.push(null);
+
+      // Rain, showers, snowfall based on symbol
       hourly.rain!.push(symbolInfo.is_rain ? (next1HourDetails?.precipitation_amount ?? 0) : 0);
       hourly.showers!.push(symbolInfo.is_showers ? (next1HourDetails?.precipitation_amount ?? 0) : 0);
       hourly.snowfall!.push(symbolInfo.is_snow ? (next1HourDetails?.precipitation_amount ?? 0) : 0);
-      hourly.soil_temperature_0cm!.push(null); hourly.soil_moisture_0_1cm!.push(null);
     }
     
     const daily: DailyWeather = {
@@ -133,8 +142,10 @@ async function fetchFromMetNorway(lat: number, lon: number): Promise<WeatherData
       const dayKey = formatISO(startOfDay(parseISO(isoTime)), { representation: 'date' });
       if (!dailyDataAggregator[dayKey]) dailyDataAggregator[dayKey] = [];
       dailyDataAggregator[dayKey].push({
-        temp: hourly.temperature_2m[index], precip: hourly.precipitation[index],
-        weather_code: hourly.weather_code[index], wind_speed: hourly.wind_speed_10m[index],
+        temp: hourly.temperature_2m[index],
+        precip: hourly.precipitation[index],
+        weather_code: hourly.weather_code[index],
+        wind_speed: hourly.wind_speed_10m[index],
         wind_gust: hourly.wind_gusts_10m![index],
         is_rain: getSymbolInfo(timeseries[index].data?.next_1_hours?.summary?.symbol_code).is_rain,
         is_snow: getSymbolInfo(timeseries[index].data?.next_1_hours?.summary?.symbol_code).is_snow,
@@ -145,40 +156,63 @@ async function fetchFromMetNorway(lat: number, lon: number): Promise<WeatherData
     Object.keys(dailyDataAggregator).sort().slice(0, 7).forEach(dayKey => {
       const dayHoursData = dailyDataAggregator[dayKey];
       daily.time.push(dayKey);
+      
       const temps = dayHoursData.map(h => h.temp).filter(t => t !== null) as number[];
       daily.temperature_2m_max.push(temps.length > 0 ? Math.max(...temps) : null);
       daily.temperature_2m_min.push(temps.length > 0 ? Math.min(...temps) : null);
+      
       const precips = dayHoursData.map(h => h.precip).filter(p => p !== null) as number[];
       const totalPrecip = precips.reduce((sum, p) => sum + p, 0);
       daily.precipitation_sum.push(totalPrecip > 0 ? totalPrecip : null);
       daily.rain_sum!.push(dayHoursData.filter(h=>h.is_rain).reduce((sum, p) => sum + (p.precip || 0), 0) || null);
       daily.showers_sum!.push(dayHoursData.filter(h=>h.is_showers).reduce((sum, p) => sum + (p.precip || 0), 0) || null);
-      daily.snowfall_sum!.push(dayHoursData.filter(h=>h.is_snow).reduce((sum, p) => sum + (p.precip || 0), 0) || null);
+      daily.snowfall_sum!.push(dayHoursData.filter(h=>h.is_snow).reduce((sum, p) => sum + (p.precip || 0), 0) || null); // MET.no precipitation is liquid equivalent for snow
       daily.precipitation_hours!.push(precips.filter(p => p > 0).length || null);
       
       const weatherCodes = dayHoursData.map(h => h.weather_code).filter(c => c !== null) as number[];
       if (weatherCodes.length > 0) {
-        const counts: Record<number, number> = {}; let maxCount = 0; let dominantCode = weatherCodes[0];
-        weatherCodes.forEach(code => { counts[code] = (counts[code] || 0) + 1; if (counts[code] > maxCount) { maxCount = counts[code]; dominantCode = code; }});
+        const counts: Record<number, number> = {};
+        let maxCount = 0;
+        let dominantCode = weatherCodes[0];
+        weatherCodes.forEach(code => {
+          counts[code] = (counts[code] || 0) + 1;
+          if (counts[code] > maxCount) {
+            maxCount = counts[code];
+            dominantCode = code;
+          }
+        });
         daily.weather_code.push(dominantCode);
-      } else { daily.weather_code.push(null); }
+      } else {
+        daily.weather_code.push(null);
+      }
+
       const windSpeeds = dayHoursData.map(h => h.wind_speed).filter(ws => ws !== null) as number[];
       daily.wind_speed_10m_max.push(windSpeeds.length > 0 ? Math.max(...windSpeeds) : null);
       const windGusts = dayHoursData.map(h => h.wind_gust).filter(wg => wg !== null) as number[];
       daily.wind_gusts_10m_max!.push(windGusts.length > 0 ? Math.max(...windGusts) : null);
 
-      daily.apparent_temperature_max!.push(null); daily.apparent_temperature_min!.push(null);
-      daily.sunrise!.push(null); daily.sunset!.push(null); daily.uv_index_max!.push(null);
-      daily.uv_index_clear_sky_max!.push(null); daily.precipitation_probability_max!.push(null);
-      daily.wind_direction_10m_dominant!.push(null); daily.shortwave_radiation_sum!.push(null);
+      // Initialize fields to be filled/overwritten by Open-Meteo
+      daily.apparent_temperature_max!.push(null);
+      daily.apparent_temperature_min!.push(null);
+      daily.sunrise!.push(null);
+      daily.sunset!.push(null);
+      daily.uv_index_max!.push(null);
+      daily.uv_index_clear_sky_max!.push(null);
+      daily.precipitation_probability_max!.push(null);
+      daily.wind_direction_10m_dominant!.push(null); // MET.no doesn't provide dominant daily direction directly
+      daily.shortwave_radiation_sum!.push(null);
       daily.et0_fao_evapotranspiration!.push(null);
     });
 
     return {
-      latitude: rawData.geometry.coordinates[1], longitude: rawData.geometry.coordinates[0],
+      latitude: rawData.geometry.coordinates[1],
+      longitude: rawData.geometry.coordinates[0],
       elevation: rawData.geometry.coordinates[2],
       generationtime_ms: rawData.properties.meta.updated_at ? new Date(rawData.properties.meta.updated_at).getTime() : undefined,
-      current, hourly, daily, api_source: "MET Norway",
+      current,
+      hourly,
+      daily,
+      api_source: "MET Norway", // Initial source
     };
   } catch (error) {
     console.error('Error fetching or processing weather data from MET.no:', error);
@@ -187,31 +221,24 @@ async function fetchFromMetNorway(lat: number, lon: number): Promise<WeatherData
 }
 
 async function fetchSupplementaryFromOpenMeteo(lat: number, lon: number, existingWeatherData: WeatherData): Promise<WeatherData> {
-  const hourly_params = [
+  const hourly_params_needed = [
     "apparent_temperature", "uv_index", "visibility", "precipitation_probability",
     "soil_temperature_0cm", "soil_moisture_0_1cm"
-  ].filter(p => { // Only request if largely missing in existing hourly data
-      const key = p as keyof HourlyWeather;
-      return !existingWeatherData.hourly[key] || (existingWeatherData.hourly[key] as (number|null)[])?.every(v => v === null);
-  }).join(',');
-
-  const daily_params = [
+  ];
+  const daily_params_needed = [
     "sunrise", "sunset", "uv_index_max", "uv_index_clear_sky_max", 
     "apparent_temperature_max", "apparent_temperature_min", "precipitation_probability_max",
-    "shortwave_radiation_sum", "et0_fao_evapotranspiration"
-  ].filter(p => { // Only request if largely missing in existing daily data
-      const key = p as keyof DailyWeather;
-      return !existingWeatherData.daily[key] || (existingWeatherData.daily[key] as (string|number|null)[])?.every(v => v === null);
-  }).join(',');
-
-  if (!hourly_params && !daily_params) {
-    return existingWeatherData; // Nothing to supplement
-  }
+    "wind_direction_10m_dominant", "shortwave_radiation_sum", "et0_fao_evapotranspiration"
+  ];
 
   let openMeteoUrl = `${OPEN_METEO_API_BASE_URL}?latitude=${lat}&longitude=${lon}&timezone=auto&forecast_days=7`;
-  if (hourly_params) openMeteoUrl += `&hourly=${hourly_params}`;
-  if (daily_params) openMeteoUrl += `&daily=${daily_params}`;
+  if (hourly_params_needed.length > 0) openMeteoUrl += `&hourly=${hourly_params_needed.join(',')}`;
+  if (daily_params_needed.length > 0) openMeteoUrl += `&daily=${daily_params_needed.join(',')}`;
   
+  // Add current weather parameters if needed, especially for apparent_temperature and uv_index
+  const current_params_needed = ["apparent_temperature", "uv_index", "visibility"];
+  openMeteoUrl += `&current=${current_params_needed.join(',')}`;
+
   try {
     const response = await fetch(openMeteoUrl);
     if (!response.ok) {
@@ -222,50 +249,90 @@ async function fetchSupplementaryFromOpenMeteo(lat: number, lon: number, existin
     }
     const openMeteoData = await response.json();
 
-    // Merge Current Data
-    if (openMeteoData.current) { // Open-Meteo compact might not have current, but forecast endpoint does
-        const omCurrent = openMeteoData.current_weather || openMeteoData.current; // handle different OM response structures
-        if (existingWeatherData.current.apparent_temperature === null && omCurrent.apparent_temperature !== undefined) existingWeatherData.current.apparent_temperature = omCurrent.apparent_temperature;
-        if (existingWeatherData.current.uv_index === null && omCurrent.uv_index !== undefined) existingWeatherData.current.uv_index = omCurrent.uv_index;
-        if (existingWeatherData.current.visibility === null && omCurrent.visibility !== undefined) existingWeatherData.current.visibility = omCurrent.visibility; // OM visibility is in meters
+    // Merge Current Data from Open-Meteo if MET.no didn't provide it
+    if (openMeteoData.current) {
+        const omCurrent = openMeteoData.current;
+        if (existingWeatherData.current.apparent_temperature === null && omCurrent.apparent_temperature !== undefined) {
+            existingWeatherData.current.apparent_temperature = omCurrent.apparent_temperature;
+        }
+        if (existingWeatherData.current.uv_index === null && omCurrent.uv_index !== undefined) {
+            existingWeatherData.current.uv_index = omCurrent.uv_index;
+        }
+        if (existingWeatherData.current.visibility === null && omCurrent.visibility !== undefined) {
+            existingWeatherData.current.visibility = omCurrent.visibility; // OM visibility is in meters
+        }
     }
 
-
-    // Merge Hourly Data
+    // Merge Hourly Data from Open-Meteo
     if (openMeteoData.hourly && openMeteoData.hourly.time) {
       existingWeatherData.hourly.time.forEach((metTimeISO, index) => {
         const metTime = parseISO(metTimeISO);
+        // Find corresponding Open-Meteo hourly data point
         const omHourlyIndex = openMeteoData.hourly.time.findIndex((omTimeISO: string) => parseISO(omTimeISO).getTime() === metTime.getTime());
 
         if (omHourlyIndex !== -1) {
-          if (hourly_params.includes("apparent_temperature") && existingWeatherData.hourly.apparent_temperature![index] === null) existingWeatherData.hourly.apparent_temperature![index] = openMeteoData.hourly.apparent_temperature?.[omHourlyIndex] ?? null;
-          if (hourly_params.includes("uv_index") && existingWeatherData.hourly.uv_index![index] === null) existingWeatherData.hourly.uv_index![index] = openMeteoData.hourly.uv_index?.[omHourlyIndex] ?? null;
-          if (hourly_params.includes("visibility") && existingWeatherData.hourly.visibility![index] === null) existingWeatherData.hourly.visibility![index] = openMeteoData.hourly.visibility?.[omHourlyIndex] ?? null;
-          if (hourly_params.includes("precipitation_probability") && existingWeatherData.hourly.precipitation_probability![index] === null) existingWeatherData.hourly.precipitation_probability![index] = openMeteoData.hourly.precipitation_probability?.[omHourlyIndex] ?? null;
-          if (hourly_params.includes("soil_temperature_0cm") && existingWeatherData.hourly.soil_temperature_0cm![index] === null) existingWeatherData.hourly.soil_temperature_0cm![index] = openMeteoData.hourly.soil_temperature_0cm?.[omHourlyIndex] ?? null;
-          if (hourly_params.includes("soil_moisture_0_1cm") && existingWeatherData.hourly.soil_moisture_0_1cm![index] === null) existingWeatherData.hourly.soil_moisture_0_1cm![index] = openMeteoData.hourly.soil_moisture_0_1cm?.[omHourlyIndex] ?? null;
+          if (existingWeatherData.hourly.apparent_temperature![index] === null && openMeteoData.hourly.apparent_temperature?.[omHourlyIndex] !== undefined) {
+            existingWeatherData.hourly.apparent_temperature![index] = openMeteoData.hourly.apparent_temperature[omHourlyIndex];
+          }
+          if (existingWeatherData.hourly.uv_index![index] === null && openMeteoData.hourly.uv_index?.[omHourlyIndex] !== undefined) {
+            existingWeatherData.hourly.uv_index![index] = openMeteoData.hourly.uv_index[omHourlyIndex];
+          }
+          if (existingWeatherData.hourly.visibility![index] === null && openMeteoData.hourly.visibility?.[omHourlyIndex] !== undefined) {
+            existingWeatherData.hourly.visibility![index] = openMeteoData.hourly.visibility[omHourlyIndex];
+          }
+          if (existingWeatherData.hourly.precipitation_probability![index] === null && openMeteoData.hourly.precipitation_probability?.[omHourlyIndex] !== undefined) {
+            existingWeatherData.hourly.precipitation_probability![index] = openMeteoData.hourly.precipitation_probability[omHourlyIndex];
+          }
+          if (existingWeatherData.hourly.soil_temperature_0cm![index] === null && openMeteoData.hourly.soil_temperature_0cm?.[omHourlyIndex] !== undefined) {
+            existingWeatherData.hourly.soil_temperature_0cm![index] = openMeteoData.hourly.soil_temperature_0cm[omHourlyIndex];
+          }
+          if (existingWeatherData.hourly.soil_moisture_0_1cm![index] === null && openMeteoData.hourly.soil_moisture_0_1cm?.[omHourlyIndex] !== undefined) {
+            existingWeatherData.hourly.soil_moisture_0_1cm![index] = openMeteoData.hourly.soil_moisture_0_1cm[omHourlyIndex];
+          }
         }
       });
     }
 
-    // Merge Daily Data
+    // Merge Daily Data from Open-Meteo
     if (openMeteoData.daily && openMeteoData.daily.time) {
       existingWeatherData.daily.time.forEach((metDateStr, index) => {
+        // Find corresponding Open-Meteo daily data point
         const omDailyIndex = openMeteoData.daily.time.findIndex((omDateStr: string) => omDateStr === metDateStr);
         if (omDailyIndex !== -1) {
-          if (daily_params.includes("sunrise") && existingWeatherData.daily.sunrise![index] === null) existingWeatherData.daily.sunrise![index] = openMeteoData.daily.sunrise?.[omDailyIndex] ?? null;
-          if (daily_params.includes("sunset") && existingWeatherData.daily.sunset![index] === null) existingWeatherData.daily.sunset![index] = openMeteoData.daily.sunset?.[omDailyIndex] ?? null;
-          if (daily_params.includes("uv_index_max") && existingWeatherData.daily.uv_index_max![index] === null) existingWeatherData.daily.uv_index_max![index] = openMeteoData.daily.uv_index_max?.[omDailyIndex] ?? null;
-          if (daily_params.includes("uv_index_clear_sky_max") && existingWeatherData.daily.uv_index_clear_sky_max![index] === null) existingWeatherData.daily.uv_index_clear_sky_max![index] = openMeteoData.daily.uv_index_clear_sky_max?.[omDailyIndex] ?? null;
-          if (daily_params.includes("apparent_temperature_max") && existingWeatherData.daily.apparent_temperature_max![index] === null) existingWeatherData.daily.apparent_temperature_max![index] = openMeteoData.daily.apparent_temperature_max?.[omDailyIndex] ?? null;
-          if (daily_params.includes("apparent_temperature_min") && existingWeatherData.daily.apparent_temperature_min![index] === null) existingWeatherData.daily.apparent_temperature_min![index] = openMeteoData.daily.apparent_temperature_min?.[omDailyIndex] ?? null;
-          if (daily_params.includes("precipitation_probability_max") && existingWeatherData.daily.precipitation_probability_max![index] === null) existingWeatherData.daily.precipitation_probability_max![index] = openMeteoData.daily.precipitation_probability_max?.[omDailyIndex] ?? null;
-          if (daily_params.includes("shortwave_radiation_sum") && existingWeatherData.daily.shortwave_radiation_sum![index] === null) existingWeatherData.daily.shortwave_radiation_sum![index] = openMeteoData.daily.shortwave_radiation_sum?.[omDailyIndex] ?? null;
-          if (daily_params.includes("et0_fao_evapotranspiration") && existingWeatherData.daily.et0_fao_evapotranspiration![index] === null) existingWeatherData.daily.et0_fao_evapotranspiration![index] = openMeteoData.daily.et0_fao_evapotranspiration?.[omDailyIndex] ?? null;
+          if (existingWeatherData.daily.sunrise![index] === null && openMeteoData.daily.sunrise?.[omDailyIndex] !== undefined) {
+            existingWeatherData.daily.sunrise![index] = openMeteoData.daily.sunrise[omDailyIndex];
+          }
+          if (existingWeatherData.daily.sunset![index] === null && openMeteoData.daily.sunset?.[omDailyIndex] !== undefined) {
+            existingWeatherData.daily.sunset![index] = openMeteoData.daily.sunset[omDailyIndex];
+          }
+          if (existingWeatherData.daily.uv_index_max![index] === null && openMeteoData.daily.uv_index_max?.[omDailyIndex] !== undefined) {
+            existingWeatherData.daily.uv_index_max![index] = openMeteoData.daily.uv_index_max[omDailyIndex];
+          }
+          if (existingWeatherData.daily.uv_index_clear_sky_max![index] === null && openMeteoData.daily.uv_index_clear_sky_max?.[omDailyIndex] !== undefined) {
+            existingWeatherData.daily.uv_index_clear_sky_max![index] = openMeteoData.daily.uv_index_clear_sky_max[omDailyIndex];
+          }
+          if (existingWeatherData.daily.apparent_temperature_max![index] === null && openMeteoData.daily.apparent_temperature_max?.[omDailyIndex] !== undefined) {
+            existingWeatherData.daily.apparent_temperature_max![index] = openMeteoData.daily.apparent_temperature_max[omDailyIndex];
+          }
+          if (existingWeatherData.daily.apparent_temperature_min![index] === null && openMeteoData.daily.apparent_temperature_min?.[omDailyIndex] !== undefined) {
+            existingWeatherData.daily.apparent_temperature_min![index] = openMeteoData.daily.apparent_temperature_min[omDailyIndex];
+          }
+          if (existingWeatherData.daily.precipitation_probability_max![index] === null && openMeteoData.daily.precipitation_probability_max?.[omDailyIndex] !== undefined) {
+            existingWeatherData.daily.precipitation_probability_max![index] = openMeteoData.daily.precipitation_probability_max[omDailyIndex];
+          }
+           if (existingWeatherData.daily.wind_direction_10m_dominant![index] === null && openMeteoData.daily.wind_direction_10m_dominant?.[omDailyIndex] !== undefined) {
+            existingWeatherData.daily.wind_direction_10m_dominant![index] = openMeteoData.daily.wind_direction_10m_dominant[omDailyIndex];
+          }
+          if (existingWeatherData.daily.shortwave_radiation_sum![index] === null && openMeteoData.daily.shortwave_radiation_sum?.[omDailyIndex] !== undefined) {
+            existingWeatherData.daily.shortwave_radiation_sum![index] = openMeteoData.daily.shortwave_radiation_sum[omDailyIndex];
+          }
+          if (existingWeatherData.daily.et0_fao_evapotranspiration![index] === null && openMeteoData.daily.et0_fao_evapotranspiration?.[omDailyIndex] !== undefined) {
+            existingWeatherData.daily.et0_fao_evapotranspiration![index] = openMeteoData.daily.et0_fao_evapotranspiration[omDailyIndex];
+          }
         }
       });
     }
-    existingWeatherData.api_source = "MET Norway / Open-Meteo";
+    existingWeatherData.api_source = "MET Norway / Open-Meteo"; // Update source
     return existingWeatherData;
 
   } catch (error) {
@@ -278,8 +345,8 @@ async function fetchSupplementaryFromOpenMeteo(lat: number, lon: number, existin
 export async function getWeatherData(lat: number, lon: number): Promise<WeatherData | null> {
   const metData = await fetchFromMetNorway(lat, lon);
   if (!metData) {
-    // Optionally, try Open-Meteo as a full fallback here if MET Norway fails completely
-    // For now, adhering to "supplement N/A" means MET Norway must succeed first.
+    // If MET Norway fails, we can't supplement, so return null.
+    // Optionally, you could implement a full fallback to Open-Meteo here if desired.
     return null;
   }
   
@@ -288,3 +355,5 @@ export async function getWeatherData(lat: number, lon: number): Promise<WeatherD
   
   return supplementedData;
 }
+
+    
