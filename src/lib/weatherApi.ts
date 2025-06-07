@@ -60,6 +60,7 @@ async function fetchFromMetNorway(lat: number, lon: number): Promise<WeatherData
     const timeseries = rawData.properties.timeseries;
     const currentRaw = timeseries[0];
     const currentSymbolInfo = getSymbolInfo(currentRaw.data?.next_1_hours?.summary?.symbol_code || currentRaw.data?.next_6_hours?.summary?.symbol_code);
+    const metCurrentGustMPS = currentRaw.data.instant.details.wind_speed_of_gust;
 
     const current: CurrentWeatherAPI = {
       time: currentRaw.time,
@@ -76,7 +77,7 @@ async function fetchFromMetNorway(lat: number, lon: number): Promise<WeatherData
       surface_pressure: currentRaw.data.instant.details.air_pressure_at_sea_level,
       wind_speed_10m: (currentRaw.data.instant.details.wind_speed ?? 0) * M_S_TO_KM_H,
       wind_direction_10m: currentRaw.data.instant.details.wind_from_direction,
-      wind_gusts_10m: currentRaw.data.instant.details.wind_speed_of_gust ? currentRaw.data.instant.details.wind_speed_of_gust * M_S_TO_KM_H : null,
+      wind_gusts_10m: metCurrentGustMPS !== undefined && metCurrentGustMPS !== null ? metCurrentGustMPS * M_S_TO_KM_H : null, // Initial value from MET, converted
       uv_index: null, // To be supplemented
       visibility: null, // To be supplemented
     };
@@ -96,6 +97,7 @@ async function fetchFromMetNorway(lat: number, lon: number): Promise<WeatherData
       const details = entry.data?.instant?.details;
       const next1HourDetails = entry.data?.next_1_hours?.details;
       const symbolInfo = getSymbolInfo(entry.data?.next_1_hours?.summary?.symbol_code || entry.data?.next_6_hours?.summary?.symbol_code);
+      const metHourlyGustMPS = details?.wind_speed_of_gust;
 
       hourly.time.push(entry.time);
       hourly.temperature_2m.push(details?.air_temperature ?? null);
@@ -104,10 +106,10 @@ async function fetchFromMetNorway(lat: number, lon: number): Promise<WeatherData
       hourly.weather_code.push(symbolInfo.wmo);
       hourly.cloud_cover!.push(details?.cloud_area_fraction ?? null);
       hourly.surface_pressure!.push(details?.air_pressure_at_sea_level ?? null);
-      hourly.pressure_msl!.push(details?.air_pressure_at_sea_level ?? null);
+      hourly.pressure_msl!.push(details?.air_pressure_at_sea_level ?? null); // Same as surface_pressure for MET
       hourly.wind_speed_10m.push(details?.wind_speed !== undefined ? details.wind_speed * M_S_TO_KM_H : null);
       hourly.wind_direction_10m.push(details?.wind_from_direction ?? null);
-      hourly.wind_gusts_10m!.push(details?.wind_speed_of_gust !== undefined && details.wind_speed_of_gust !== null ? details.wind_speed_of_gust * M_S_TO_KM_H : null);
+      hourly.wind_gusts_10m!.push(metHourlyGustMPS !== undefined && metHourlyGustMPS !== null ? metHourlyGustMPS * M_S_TO_KM_H : null); // Initial value from MET, converted
       hourly.is_day!.push(symbolInfo.is_day);
       hourly.rain!.push(symbolInfo.is_rain ? (next1HourDetails?.precipitation_amount ?? 0) : 0);
       hourly.showers!.push(symbolInfo.is_showers ? (next1HourDetails?.precipitation_amount ?? 0) : 0);
@@ -139,8 +141,8 @@ async function fetchFromMetNorway(lat: number, lon: number): Promise<WeatherData
         temp: hourly.temperature_2m[index],
         precip: hourly.precipitation[index],
         weather_code: hourly.weather_code[index],
-        wind_speed: hourly.wind_speed_10m[index],
-        wind_gust: hourly.wind_gusts_10m![index],
+        wind_speed_kmh: hourly.wind_speed_10m[index], // Already in km/h
+        wind_gust_kmh: hourly.wind_gusts_10m![index], // Already in km/h from MET hourly processing
         is_rain_symbol: getSymbolInfo(timeseries[index].data?.next_1_hours?.summary?.symbol_code).is_rain,
         is_snow_symbol: getSymbolInfo(timeseries[index].data?.next_1_hours?.summary?.symbol_code).is_snow,
         is_showers_symbol: getSymbolInfo(timeseries[index].data?.next_1_hours?.summary?.symbol_code).is_showers,
@@ -169,11 +171,11 @@ async function fetchFromMetNorway(lat: number, lon: number): Promise<WeatherData
         daily.weather_code.push(dominantCode);
       } else { daily.weather_code.push(null); }
 
-      const windSpeeds = dayHoursData.map(h => h.wind_speed).filter(ws => ws !== null) as number[];
-      daily.wind_speed_10m_max.push(windSpeeds.length > 0 ? Math.max(...windSpeeds) : null);
+      const windSpeedsKMH = dayHoursData.map(h => h.wind_speed_kmh).filter(ws => ws !== null) as number[];
+      daily.wind_speed_10m_max.push(windSpeedsKMH.length > 0 ? Math.max(...windSpeedsKMH) : null);
       
-      const windGusts = dayHoursData.map(h => h.wind_gust).filter(wg => wg !== null) as number[];
-      daily.wind_gusts_10m_max!.push(windGusts.length > 0 ? Math.max(...windGusts) : null);
+      const windGustsKMH = dayHoursData.map(h => h.wind_gust_kmh).filter(wg => wg !== null) as number[];
+      daily.wind_gusts_10m_max!.push(windGustsKMH.length > 0 ? Math.max(...windGustsKMH) : null); // Initial daily gust from MET data
 
       // Fields to be supplemented by Open-Meteo
       daily.apparent_temperature_max!.push(null); daily.apparent_temperature_min!.push(null);
@@ -197,17 +199,17 @@ async function fetchFromMetNorway(lat: number, lon: number): Promise<WeatherData
 
 async function fetchSupplementaryFromOpenMeteo(lat: number, lon: number, existingWeatherData: WeatherData): Promise<WeatherData> {
   const current_supplement_params = [
-    "apparent_temperature", "uv_index", "visibility", "rain", "showers", "snowfall", "wind_gusts_10m"
+    "apparent_temperature", "uv_index", "visibility", "rain", "showers", "snowfall", "wind_gusts_10m", "pressure_msl", "cloud_cover"
   ].join(',');
   const hourly_supplement_params = [
     "apparent_temperature", "uv_index", "visibility", "precipitation_probability",
-    "soil_temperature_0cm", "soil_moisture_0_1cm", "rain", "showers", "snowfall", "pressure_msl", "wind_gusts_10m"
+    "soil_temperature_0cm", "soil_moisture_0_1cm", "rain", "showers", "snowfall", "pressure_msl", "wind_gusts_10m", "cloud_cover"
   ].join(',');
   const daily_supplement_params = [
     "sunrise", "sunset", "uv_index_max", "uv_index_clear_sky_max",
     "apparent_temperature_max", "apparent_temperature_min", "precipitation_probability_max",
     "wind_direction_10m_dominant", "shortwave_radiation_sum", "et0_fao_evapotranspiration",
-    "rain_sum", "showers_sum", "snowfall_sum", "precipitation_hours", "wind_gusts_10m_max"
+    "rain_sum", "showers_sum", "snowfall_sum", "precipitation_hours", "wind_gusts_10m_max" // Note: Open-Meteo uses windgusts_10m_max in request, but response key might be wind_gusts_10m_max
   ].join(',');
 
   let openMeteoUrl = `${OPEN_METEO_API_BASE_URL}?latitude=${lat}&longitude=${lon}&timezone=auto&forecast_days=7`;
@@ -219,7 +221,7 @@ async function fetchSupplementaryFromOpenMeteo(lat: number, lon: number, existin
     const response = await fetch(openMeteoUrl);
     if (!response.ok) {
       console.error('Failed to fetch supplementary data from Open-Meteo:', response.status, await response.text());
-      return existingWeatherData;
+      return existingWeatherData; // Return original data if Open-Meteo fails
     }
     const openMeteoData = await response.json();
 
@@ -228,22 +230,20 @@ async function fetchSupplementaryFromOpenMeteo(lat: number, lon: number, existin
         const omCurrent = openMeteoData.current;
         const exCurrent = existingWeatherData.current;
 
-        if ((exCurrent.apparent_temperature === null || exCurrent.apparent_temperature === undefined) && omCurrent.apparent_temperature !== undefined && omCurrent.apparent_temperature !== null) {
-            exCurrent.apparent_temperature = omCurrent.apparent_temperature;
+        if (omCurrent.apparent_temperature !== undefined && omCurrent.apparent_temperature !== null) exCurrent.apparent_temperature = omCurrent.apparent_temperature;
+        if (omCurrent.uv_index !== undefined && omCurrent.uv_index !== null) exCurrent.uv_index = omCurrent.uv_index;
+        if (omCurrent.visibility !== undefined && omCurrent.visibility !== null) exCurrent.visibility = omCurrent.visibility;
+        if (omCurrent.pressure_msl !== undefined && omCurrent.pressure_msl !== null) exCurrent.surface_pressure = omCurrent.pressure_msl; // MET uses surface_pressure for sea level
+        if (omCurrent.cloud_cover !== undefined && omCurrent.cloud_cover !== null) exCurrent.cloud_cover = omCurrent.cloud_cover;
+
+        if (omCurrent.rain !== undefined && omCurrent.rain !== null && omCurrent.rain > 0) exCurrent.rain = omCurrent.rain;
+        if (omCurrent.showers !== undefined && omCurrent.showers !== null && omCurrent.showers > 0) exCurrent.showers = omCurrent.showers;
+        if (omCurrent.snowfall !== undefined && omCurrent.snowfall !== null && omCurrent.snowfall > 0) exCurrent.snowfall = omCurrent.snowfall;
+        
+        // Prioritize Open-Meteo for wind_gusts_10m if available
+        if (omCurrent.wind_gusts_10m !== undefined && omCurrent.wind_gusts_10m !== null) {
+            exCurrent.wind_gusts_10m = omCurrent.wind_gusts_10m; // Open-Meteo provides in km/h
         }
-        if ((exCurrent.uv_index === null || exCurrent.uv_index === undefined) && omCurrent.uv_index !== undefined && omCurrent.uv_index !== null) {
-            exCurrent.uv_index = omCurrent.uv_index;
-        }
-        if ((exCurrent.visibility === null || exCurrent.visibility === undefined) && omCurrent.visibility !== undefined && omCurrent.visibility !== null) {
-            exCurrent.visibility = omCurrent.visibility;
-        }
-        if ((exCurrent.wind_gusts_10m === null || exCurrent.wind_gusts_10m === undefined) && omCurrent.wind_gusts_10m !== undefined && omCurrent.wind_gusts_10m !== null) {
-            exCurrent.wind_gusts_10m = omCurrent.wind_gusts_10m; // Assumes Open-Meteo provides km/h
-        }
-        // More specific rain/showers/snowfall supplementation
-        if ((exCurrent.rain === null || exCurrent.rain === 0) && omCurrent.rain !== undefined && omCurrent.rain !== null && omCurrent.rain > 0) exCurrent.rain = omCurrent.rain;
-        if ((exCurrent.showers === null || exCurrent.showers === 0) && omCurrent.showers !== undefined && omCurrent.showers !== null && omCurrent.showers > 0) exCurrent.showers = omCurrent.showers;
-        if ((exCurrent.snowfall === null || exCurrent.snowfall === 0) && omCurrent.snowfall !== undefined && omCurrent.snowfall !== null && omCurrent.snowfall > 0) exCurrent.snowfall = omCurrent.snowfall;
     }
 
     // --- Merge Hourly Data ---
@@ -256,35 +256,24 @@ async function fetchSupplementaryFromOpenMeteo(lat: number, lon: number, existin
           const omHour = openMeteoData.hourly;
           const exHour = existingWeatherData.hourly;
 
-          if ((exHour.apparent_temperature![index] === null || exHour.apparent_temperature![index] === undefined) && omHour.apparent_temperature?.[omHourlyIndex] !== undefined && omHour.apparent_temperature?.[omHourlyIndex] !== null) {
-            exHour.apparent_temperature![index] = omHour.apparent_temperature[omHourlyIndex];
+          if (omHour.apparent_temperature?.[omHourlyIndex] !== undefined && omHour.apparent_temperature?.[omHourlyIndex] !== null) exHour.apparent_temperature![index] = omHour.apparent_temperature[omHourlyIndex];
+          if (omHour.uv_index?.[omHourlyIndex] !== undefined && omHour.uv_index?.[omHourlyIndex] !== null) exHour.uv_index![index] = omHour.uv_index[omHourlyIndex];
+          if (omHour.visibility?.[omHourlyIndex] !== undefined && omHour.visibility?.[omHourlyIndex] !== null) exHour.visibility![index] = omHour.visibility[omHourlyIndex];
+          if (omHour.precipitation_probability?.[omHourlyIndex] !== undefined && omHour.precipitation_probability?.[omHourlyIndex] !== null) exHour.precipitation_probability![index] = omHour.precipitation_probability[omHourlyIndex];
+          if (omHour.soil_temperature_0cm?.[omHourlyIndex] !== undefined && omHour.soil_temperature_0cm?.[omHourlyIndex] !== null) exHour.soil_temperature_0cm![index] = omHour.soil_temperature_0cm[omHourlyIndex];
+          if (omHour.soil_moisture_0_1cm?.[omHourlyIndex] !== undefined && omHour.soil_moisture_0_1cm?.[omHourlyIndex] !== null) exHour.soil_moisture_0_1cm![index] = omHour.soil_moisture_0_1cm[omHourlyIndex];
+          if (omHour.pressure_msl?.[omHourlyIndex] !== undefined && omHour.pressure_msl?.[omHourlyIndex] !== null) exHour.pressure_msl![index] = omHour.pressure_msl[omHourlyIndex];
+          if (omHour.cloud_cover?.[omHourlyIndex] !== undefined && omHour.cloud_cover?.[omHourlyIndex] !== null) exHour.cloud_cover![index] = omHour.cloud_cover[omHourlyIndex];
+          
+          if (omHour.rain?.[omHourlyIndex] !== undefined && omHour.rain?.[omHourlyIndex] !== null && omHour.rain[omHourlyIndex] > 0) exHour.rain![index] = omHour.rain[omHourlyIndex];
+          if (omHour.showers?.[omHourlyIndex] !== undefined && omHour.showers?.[omHourlyIndex] !== null && omHour.showers[omHourlyIndex] > 0) exHour.showers![index] = omHour.showers[omHourlyIndex];
+          if (omHour.snowfall?.[omHourlyIndex] !== undefined && omHour.snowfall?.[omHourlyIndex] !== null && omHour.snowfall[omHourlyIndex] > 0) exHour.snowfall![index] = omHour.snowfall[omHourlyIndex];
+          
+          // Prioritize Open-Meteo for hourly wind_gusts_10m if available
+          const omHourlyWindGust = omHour.wind_gusts_10m?.[omHourlyIndex];
+          if (omHourlyWindGust !== undefined && omHourlyWindGust !== null) {
+            exHour.wind_gusts_10m![index] = omHourlyWindGust; // Open-Meteo provides in km/h
           }
-          if ((exHour.uv_index![index] === null || exHour.uv_index![index] === undefined) && omHour.uv_index?.[omHourlyIndex] !== undefined && omHour.uv_index?.[omHourlyIndex] !== null) {
-            exHour.uv_index![index] = omHour.uv_index[omHourlyIndex];
-          }
-          if ((exHour.visibility![index] === null || exHour.visibility![index] === undefined) && omHour.visibility?.[omHourlyIndex] !== undefined && omHour.visibility?.[omHourlyIndex] !== null) {
-            exHour.visibility![index] = omHour.visibility[omHourlyIndex];
-          }
-          if ((exHour.precipitation_probability![index] === null || exHour.precipitation_probability![index] === undefined) && omHour.precipitation_probability?.[omHourlyIndex] !== undefined && omHour.precipitation_probability?.[omHourlyIndex] !== null) {
-            exHour.precipitation_probability![index] = omHour.precipitation_probability[omHourlyIndex];
-          }
-          if ((exHour.soil_temperature_0cm![index] === null || exHour.soil_temperature_0cm![index] === undefined) && omHour.soil_temperature_0cm?.[omHourlyIndex] !== undefined && omHour.soil_temperature_0cm?.[omHourlyIndex] !== null) {
-            exHour.soil_temperature_0cm![index] = omHour.soil_temperature_0cm[omHourlyIndex];
-          }
-          if ((exHour.soil_moisture_0_1cm![index] === null || exHour.soil_moisture_0_1cm![index] === undefined) && omHour.soil_moisture_0_1cm?.[omHourlyIndex] !== undefined && omHour.soil_moisture_0_1cm?.[omHourlyIndex] !== null) {
-            exHour.soil_moisture_0_1cm![index] = omHour.soil_moisture_0_1cm[omHourlyIndex];
-          }
-          if ((exHour.pressure_msl![index] === null || exHour.pressure_msl![index] === undefined) && omHour.pressure_msl?.[omHourlyIndex] !== undefined && omHour.pressure_msl?.[omHourlyIndex] !== null) {
-            exHour.pressure_msl![index] = omHour.pressure_msl[omHourlyIndex];
-          }
-           if ((exHour.wind_gusts_10m![index] === null || exHour.wind_gusts_10m![index] === undefined) && omHour.wind_gusts_10m?.[omHourlyIndex] !== undefined && omHour.wind_gusts_10m?.[omHourlyIndex] !== null) {
-            exHour.wind_gusts_10m![index] = omHour.wind_gusts_10m[omHourlyIndex];
-          }
-
-          // More specific rain/showers/snowfall supplementation for hourly
-          if ((exHour.rain![index] === null || exHour.rain![index] === 0) && omHour.rain?.[omHourlyIndex] !== undefined && omHour.rain?.[omHourlyIndex] !== null && omHour.rain[omHourlyIndex] > 0) exHour.rain![index] = omHour.rain[omHourlyIndex];
-          if ((exHour.showers![index] === null || exHour.showers![index] === 0) && omHour.showers?.[omHourlyIndex] !== undefined && omHour.showers?.[omHourlyIndex] !== null && omHour.showers[omHourlyIndex] > 0) exHour.showers![index] = omHour.showers[omHourlyIndex];
-          if ((exHour.snowfall![index] === null || exHour.snowfall![index] === 0) && omHour.snowfall?.[omHourlyIndex] !== undefined && omHour.snowfall?.[omHourlyIndex] !== null && omHour.snowfall[omHourlyIndex] > 0) exHour.snowfall![index] = omHour.snowfall[omHourlyIndex];
         }
       });
     }
@@ -297,34 +286,53 @@ async function fetchSupplementaryFromOpenMeteo(lat: number, lon: number, existin
           const omDaily = openMeteoData.daily;
           const exDaily = existingWeatherData.daily;
 
-          const fieldsToMerge: (keyof DailyWeather)[] = [
+          const fieldsToMergeIfNull: (keyof DailyWeather)[] = [
             'sunrise', 'sunset', 'uv_index_max', 'uv_index_clear_sky_max', 
             'apparent_temperature_max', 'apparent_temperature_min', 'precipitation_probability_max',
             'wind_direction_10m_dominant', 'shortwave_radiation_sum', 'et0_fao_evapotranspiration',
-            'rain_sum', 'showers_sum', 'snowfall_sum', 'precipitation_hours', 'wind_gusts_10m_max'
+            'precipitation_hours'
           ];
-
-          fieldsToMerge.forEach(field => {
-            if ((exDaily[field]![index] === null || exDaily[field]![index] === undefined) && (omDaily[field] as any)?.[omDailyIndex] !== undefined && (omDaily[field] as any)?.[omDailyIndex] !== null) {
-                (exDaily[field] as any)![index] = (omDaily[field] as any)![omDailyIndex];
+          fieldsToMergeIfNull.forEach(field => {
+            const omValue = (omDaily[field] as any)?.[omDailyIndex];
+            if ((exDaily[field]![index] === null || exDaily[field]![index] === undefined) && omValue !== undefined && omValue !== null) {
+                (exDaily[field] as any)![index] = omValue;
             }
           });
+
+          // For rain_sum, showers_sum, snowfall_sum, prioritize OpenMeteo if it has a positive value
+          const dailyRainSumOM = (omDaily.rain_sum as any)?.[omDailyIndex];
+          if (dailyRainSumOM !== undefined && dailyRainSumOM !== null && dailyRainSumOM > 0) (exDaily.rain_sum as any)![index] = dailyRainSumOM;
+          
+          const dailyShowersSumOM = (omDaily.showers_sum as any)?.[omDailyIndex];
+          if (dailyShowersSumOM !== undefined && dailyShowersSumOM !== null && dailyShowersSumOM > 0) (exDaily.showers_sum as any)![index] = dailyShowersSumOM;
+
+          const dailySnowfallSumOM = (omDaily.snowfall_sum as any)?.[omDailyIndex];
+          if (dailySnowfallSumOM !== undefined && dailySnowfallSumOM !== null && dailySnowfallSumOM > 0) (exDaily.snowfall_sum as any)![index] = dailySnowfallSumOM;
+
+          // Prioritize Open-Meteo for daily wind_gusts_10m_max if available
+          const omDailyWindGustMax = (omDaily.wind_gusts_10m_max as any)?.[omDailyIndex];
+          if (omDailyWindGustMax !== undefined && omDailyWindGustMax !== null) {
+            (exDaily.wind_gusts_10m_max as any)![index] = omDailyWindGustMax; // Open-Meteo provides in km/h
+          }
         }
       });
     }
-    existingWeatherData.api_source = "MET Norway / Open-Meteo";
+    existingWeatherData.api_source = "MET Norway / Open-Meteo"; // Update source if supplemented
     return existingWeatherData;
 
   } catch (error) {
     console.error('Error fetching or processing supplementary data from Open-Meteo:', error);
-    return existingWeatherData; 
+    return existingWeatherData; // Return original data if Open-Meteo processing fails
   }
 }
 
 export async function getWeatherData(lat: number, lon: number): Promise<WeatherData | null> {
   const metData = await fetchFromMetNorway(lat, lon);
   if (!metData) {
-    return null; // Primary source failed, return null
+    console.log("Primary API (MET Norway) failed. Fetching directly from Open-Meteo as fallback.");
+    // TODO: Implement a direct Open-Meteo fetch if MET fails entirely, mapping to WeatherData structure.
+    // For now, returning null as per original logic.
+    return null;
   }
   // Attempt to supplement with Open-Meteo data
   const supplementedData = await fetchSupplementaryFromOpenMeteo(lat, lon, metData);
