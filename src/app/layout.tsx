@@ -17,9 +17,17 @@ import {
   SidebarFooter
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
-import { CloudSun, Search, Map, Radar, Heart, Settings, Info, Mail, Home, Zap, Bell, Compass } from 'lucide-react';
+import { CloudSun, Search, Map, Radar, Heart, Settings, Info, Mail, Home, Zap, Bell, Compass, Download } from 'lucide-react'; // Added Download
 import { SoundProvider } from '@/contexts/SoundContext';
-import ClientSideWeatherInitializer from '@/components/layout/ClientSideWeatherInitializer'; // Updated import
+import ClientSideWeatherInitializer from '@/components/layout/ClientSideWeatherInitializer';
+import dynamic from 'next/dynamic';
+
+// Dynamically import WeatherNotificationInitializer only on the client-side
+// const WeatherNotificationInitializerComponent = dynamic(
+//   () => import('@/hooks/useWeatherNotificationManager').then(mod => mod.WeatherNotificationInitializer),
+//   { ssr: false }
+// );
+
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
@@ -90,6 +98,13 @@ export default function RootLayout({
                     </SidebarMenuItem>
                     <SidebarMenuItem>
                       <SidebarMenuButton asChild className="w-full justify-start text-base py-2.5">
+                        <a href="/havadurumux-offline.html" download="havadurumux-offline-surumu.html">
+                           <Download className="mr-2 h-5 w-5" />İnternetsiz Sürümü İndir (Konsept)
+                        </a>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton asChild className="w-full justify-start text-base py-2.5">
                         <Link href="/ayarlar"><Settings className="mr-2 h-5 w-5" />Ayarlar</Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -122,7 +137,7 @@ export default function RootLayout({
                     {children}
                   </main>
                   <Toaster />
-                  <ClientSideWeatherInitializer /> {/* Use the new client component */}
+                  <ClientSideWeatherInitializer />
                 </div>
               </SidebarInset>
             </SidebarProvider>

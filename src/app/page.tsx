@@ -3,7 +3,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { CloudSun, MapPin, Radar, Compass, Info, Mail, BarChart3 } from 'lucide-react';
+import { CloudSun, MapPin, Radar, Compass, Info, Mail, BarChart3, Download } from 'lucide-react'; // Added Download
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -48,12 +48,18 @@ export default function LandingPage() {
             />
           </div>
           
-          <div className="text-center mt-10">
+          <div className="text-center mt-10 space-y-4 sm:space-y-0 sm:space-x-4">
             <Button asChild size="lg" className="text-lg py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition-shadow">
               <Link href="/kesfet">
                 <Compass className="mr-2 h-6 w-6" />
                 Hava Durumunu Keşfetmeye Başla
               </Link>
+            </Button>
+            <Button asChild size="lg" variant="outline" className="text-lg py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition-shadow">
+              <a href="/havadurumux-offline.html" download="havadurumux-offline-surumu.html">
+                <Download className="mr-2 h-6 w-6" />
+                İnternetsiz Sürümü İndir (Konsept)
+              </a>
             </Button>
           </div>
         </CardContent>
