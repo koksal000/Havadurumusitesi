@@ -7,954 +7,1131 @@
     <title>HavaDurumuX - Çevrimdışı Sürüm (Konsept)</title>
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            line-height: 1.6;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 20px;
-            background-color: #f4f7f9;
+            background-color: #f0f8ff;
             color: #333;
-            transition: background-color 0.3s, color 0.3s;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         .container {
-            max-width: 900px;
-            margin: auto;
             background-color: #fff;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-        header {
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 900px;
             text-align: center;
-            margin-bottom: 25px;
-            border-bottom: 1px solid #e0e0e0;
-            padding-bottom: 15px;
         }
-        header h1 {
-            color: #2c3e50;
-            margin: 0;
+        h1, h2, h3 {
+            color: #87CEEB; /* Sky Blue */
         }
-        header p {
-            font-size: 0.9em;
-            color: #7f8c8d;
-        }
+        h1 { font-size: 2em; }
+        h2 { font-size: 1.5em; margin-top: 1.5em; }
+        h3 { font-size: 1.2em; margin-top: 1em; }
+
         select, button {
             padding: 10px 15px;
-            margin-top: 5px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
+            margin: 10px 5px;
             border-radius: 5px;
+            border: 1px solid #87CEEB;
+            background-color: #E6E6FA; /* Soft Lavender */
             font-size: 1em;
             cursor: pointer;
-            background-color: #fff;
+            transition: background-color 0.3s ease;
         }
-        button {
-            background-color: #3498db;
-            color: white;
-            border-color: #3498db;
-            transition: background-color 0.2s;
+        select:focus, button:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px #87CEEB;
         }
         button:hover {
-            background-color: #2980b9;
+            background-color: #d8d8f0;
         }
-        button:disabled {
-            background-color: #bdc3c7;
-            cursor: not-allowed;
-        }
-        .status-bar {
-            padding: 10px;
-            margin-bottom: 15px;
-            border-radius: 5px;
-            font-size: 0.9em;
-            text-align: center;
-        }
-        .status-bar.success { background-color: #e8f5e9; color: #2e7d32; }
-        .status-bar.error { background-color: #ffebee; color: #c62828; }
-        .status-bar.info { background-color: #e3f2fd; color: #1565c0; }
-
-        .weather-section {
-            margin-bottom: 20px;
+        .info-box {
+            background-color: #f0f8ff;
+            border: 1px solid #87CEEB;
             padding: 15px;
-            background-color: #f9f9f9;
-            border: 1px solid #eee;
-            border-radius: 8px;
-        }
-        .weather-section h2 {
-            margin-top: 0;
-            color: #34495e;
-            font-size: 1.3em;
-            border-bottom: 1px solid #eaeaea;
-            padding-bottom: 8px;
-        }
-        .current-weather { text-align: center; }
-        .current-weather .temp { font-size: 3em; font-weight: bold; color: #2c3e50; }
-        .current-weather .desc { font-size: 1.1em; color: #555; margin-bottom: 10px; }
-        .current-weather-details p { margin: 5px 0; font-size: 0.95em; }
-
-        .forecast-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 10px;
-        }
-        .forecast-item {
-            background-color: #fff;
-            padding: 10px;
+            margin-top: 20px;
             border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            font-size: 0.85em;
-            text-align: center;
+            text-align: left;
         }
-        .forecast-item .time { font-weight: bold; }
-        .forecast-item .temp { color: #e67e22; }
-        .forecast-item .precip { color: #3498db; }
-
-        .chart-container {
+        .current-weather {
+            border: 2px solid #87CEEB;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+        }
+        .current-weather h3 { margin-top: 0; }
+        .weather-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
             margin-top: 15px;
+            text-align: left;
+        }
+        .detail-item {
+            background-color: #eef;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        .detail-item strong { color: #555; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 0.9em;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #87CEEB;
+            color: white;
+        }
+        tr:nth-child(even) { background-color: #f2f2f2; }
+        .status-message {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #e6e6fa;
+            border: 1px solid #c0c0e0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .error-message {
+            color: red;
+            font-weight: bold;
+        }
+        .chart-container {
+            margin-top: 20px;
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 5px;
-            background-color: #fff;
         }
-        .chart-title { font-size: 0.9em; font-weight: bold; margin-bottom: 8px; text-align: center; }
-        .svg-chart { display: block; margin: auto; }
-        .svg-chart rect { transition: height 0.3s ease-out; }
-        .svg-chart text { font-size: 10px; fill: #555; }
-        
-        .dark-mode {
-            background-color: #2c3e50;
-            color: #ecf0f1;
+        .bar-chart svg {
+            width: 100%;
+            display: block;
         }
-        .dark-mode .container {
-            background-color: #34495e;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        .bar-chart .bar {
+            fill: #87CEEB;
+            transition: height 0.3s ease;
         }
-        .dark-mode header h1 { color: #ecf0f1; }
-        .dark-mode header p { color: #bdc3c7; }
-        .dark-mode select, .dark-mode button {
-            background-color: #566573;
-            color: #ecf0f1;
-            border-color: #707B7C;
+        .bar-chart .bar-text {
+            font-size: 10px;
+            fill: #555;
+            text-anchor: middle;
         }
-        .dark-mode button { background-color: #3498db; border-color: #3498db; }
-        .dark-mode button:hover { background-color: #2980b9; }
-        .dark-mode button:disabled { background-color: #7f8c8d; }
-        
-        .dark-mode .weather-section { background-color: #2c3e50; border-color: #4a6572; }
-        .dark-mode .weather-section h2 { color: #ecf0f1; border-bottom-color: #4a6572; }
-        .dark-mode .current-weather .temp { color: #ecf0f1; }
-        .dark-mode .current-weather .desc { color: #bdc3c7; }
-        .dark-mode .forecast-item { background-color: #34495e; box-shadow: 0 2px 5px rgba(0,0,0,0.15); color: #ecf0f1; }
-        .dark-mode .forecast-item .temp { color: #f39c12; }
-        .dark-mode .forecast-item .precip { color: #5dade2; }
-        .dark-mode .chart-container { background-color: #2c3e50; border-color: #4a6572;}
-        .dark-mode .svg-chart text { fill: #bdc3c7; }
-        .dark-mode .status-bar.success { background-color: #1e4620; color: #a5d6a7; }
-        .dark-mode .status-bar.error { background-color: #5e0000; color: #ef9a9a; }
-        .dark-mode .status-bar.info { background-color: #0d47a1; color: #90caf9; }
-
-        .icon-small { width: 24px; height: 24px; vertical-align: middle; margin-right: 5px; }
-        .warning {
-            background-color: #fff3cd;
-            color: #856404;
-            padding: 15px;
-            border: 1px solid #ffeeba;
-            border-radius: 5px;
-            margin-bottom: 20px;
+        .bar-chart .axis-text {
+            font-size: 9px;
+            fill: #777;
+            text-anchor: middle;
         }
-        .footer-note {
-            text-align: center; font-size: 0.8em; color: #7f8c8d; margin-top: 20px;
+        .hidden { display: none; }
+        .loader {
+            border: 5px solid #f3f3f3; /* Light grey */
+            border-top: 5px solid #87CEEB; /* Sky Blue */
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 10px auto;
         }
-        .dark-mode .footer-note { color: #bdc3c7; }
-
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>HavaDurumuX - Çevrimdışı Sürüm</h1>
-            <p>Bu sürüm, temel hava durumu bilgilerini internet bağlantısı olmadan sunmayı hedefler. Veriler periyodik olarak güncellenir.</p>
-            <button id="toggleDarkMode">Koyu Modu Aç/Kapat</button>
-        </header>
+        <h1>HavaDurumuX - Çevrimdışı Sürüm</h1>
+        <p>Bu sürüm, internet bağlantınız olmadığında bile hava durumu bilgilerine erişmenizi sağlar.</p>
+        <p>Veriler, periyodik olarak (yaklaşık 6 saatte bir) güncellenmeye çalışılır.</p>
+        <p style="color: red; font-weight: bold;">UYARI: Bu sürümdeki il koordinatları `turkey_locations.json` dosyasından alınmıştır. Eğer bu dosyadaki koordinatlar (özellikle 0.0, 0.0 olanlar) güncellenmemişse, bazı iller için doğru hava durumu verisi alınamayabilir!</p>
 
-        <div class="warning">
-            <strong>ÖNEMLİ NOT:</strong> Bu çevrimdışı sürüm bir konsept kanıtıdır.
-            Doğru hava durumu verileri için illerin/ilçelerin coğrafi koordinatlarının (`lat`, `lon`) aşağıdaki JavaScript kodunda yer alan `provinceLocationData` dizisi içinde **doğru ve eksiksiz** olarak tanımlanması **kritik önem taşımaktadır**. Birçok ilçe için varsayılan olarak 0.0, 0.0 atanmıştır, bu da API'nin doğru veri döndürmesini engelleyecektir. Lütfen bu koordinatları güncelleyiniz.
+        <div>
+            <label for="province-select">Bir İl Seçin:</label>
+            <select id="province-select"></select>
+            <button id="refresh-button">Tüm İllerin Verilerini Şimdi Yenile</button>
         </div>
+        <div id="status-message" class="status-message hidden"></div>
+        <div id="error-message" class="error-message hidden"></div>
+        <div id="loader" class="loader hidden"></div>
+        <div id="last-update-time"></div>
 
-        <select id="provinceSelect"></select>
-        <button id="updateAllDataButton">Tüm İllerin Verilerini Yenile (Yaklaşık 2-3 dk sürebilir)</button>
-        <button id="clearLocalDataButton" style="background-color: #e74c3c;">Yerel Verileri Temizle</button>
-        
-        <div id="statusBar" class="status-bar">Durum mesajları burada gösterilecek.</div>
-        <div id="lastUpdateTime" style="font-size: 0.8em; text-align: center; margin-bottom: 15px;"></div>
+        <div id="weather-content" class="hidden">
+            <h2 id="selected-province-name"></h2>
 
-        <div id="weatherDisplay" style="display: none;">
-            <div class="weather-section current-weather">
-                <h2 id="currentLocationName"></h2>
-                <p id="currentWeatherTime" style="font-size:0.9em;"></p>
-                <div id="currentWeatherIcon" style="margin: 10px 0;"></div>
-                <div id="currentTemperature" class="temp">--°C</div>
-                <p id="currentWeatherDescription" class="desc">--</p>
-                <div class="current-weather-details">
-                    <p>Hissedilen: <span id="currentApparentTemperature">--</span>°C</p>
-                    <p>Nem: <span id="currentHumidity">--</span>%</p>
-                    <p>Rüzgar: <span id="currentWindSpeed">--</span> km/s (<span id="currentWindDirection">--</span>)</p>
-                    <p>Rüzgar Hamlesi: <span id="currentWindGusts">--</span> km/s</p>
-                    <p>Basınç: <span id="currentPressure">--</span> hPa</p>
-                    <p>Görüş Mesafesi: <span id="currentVisibility">--</span> km</p>
-                    <p>UV İndeksi: <span id="currentUvIndex">--</span></p>
-                    <p>Yağış (1sa): <span id="currentPrecipitation">--</span> mm</p>
+            <div class="current-weather">
+                <h3>Şu Anki Hava Durumu (<span id="current-time">--:--</span>)</h3>
+                <p id="current-temp" style="font-size: 2.5em; font-weight: bold; margin: 10px 0;">--°C</p>
+                <p id="current-condition">--</p>
+                <div class="weather-details">
+                    <div class="detail-item"><strong>Hissedilen:</strong> <span id="current-apparent-temp">--</span>°C</div>
+                    <div class="detail-item"><strong>Nem:</strong> <span id="current-humidity">--</span>%</div>
+                    <div class="detail-item"><strong>Rüzgar:</strong> <span id="current-wind">--</span> km/s</div>
+                    <div class="detail-item"><strong>Rüzgar Hamlesi:</strong> <span id="current-wind-gust">--</span> km/s</div>
+                    <div class="detail-item"><strong>Basınç:</strong> <span id="current-pressure">--</span> hPa</div>
+                    <div class="detail-item"><strong>Görüş Mesafesi:</strong> <span id="current-visibility">--</span> km</div>
+                    <div class="detail-item"><strong>UV İndeksi:</strong> <span id="current-uv">--</span></div>
+                     <div class="detail-item"><strong>Yağış:</strong> <span id="current-precipitation">--</span> mm</div>
                 </div>
             </div>
 
-            <div class="weather-section">
-                <h2>Saatlik Tahmin (İlk 24 Saat)</h2>
-                <div id="hourlyForecast" class="forecast-grid"></div>
-                <div class="chart-container">
-                    <p class="chart-title">Saatlik Sıcaklık Değişimi (°C)</p>
-                    <svg id="hourlyTempChart" class="svg-chart" width="100%" height="150"></svg>
+            <div class="info-box">
+                <h3>Saatlik Tahminler (Önümüzdeki 24 Saat)</h3>
+                <div id="hourly-forecast-table-container"></div>
+                 <div class="chart-container">
+                    <h4>Saatlik Sıcaklık Grafiği (°C)</h4>
+                    <div id="hourly-temp-chart" class="bar-chart"></div>
                 </div>
-                <div class="chart-container">
-                    <p class="chart-title">Saatlik Yağış İhtimali (%)</p>
-                    <svg id="hourlyPrecipChart" class="svg-chart" width="100%" height="150"></svg>
+                 <div class="chart-container">
+                    <h4>Saatlik Yağış İhtimali (%)</h4>
+                    <div id="hourly-precip-prob-chart" class="bar-chart"></div>
                 </div>
             </div>
 
-            <div class="weather-section">
-                <h2>Günlük Tahmin (7 Gün)</h2>
-                <div id="dailyForecast" class="forecast-grid" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));"></div>
+            <div class="info-box">
+                <h3>Günlük Tahminler (Önümüzdeki 7 Gün)</h3>
+                <div id="daily-forecast-list"></div>
             </div>
         </div>
-         <div class="footer-note">
-            Hava durumu verileri MET Norway (yr.no) ve Open-Meteo API'lerinden sağlanmaktadır.
-        </div>
+        <p style="font-size: 0.8em; color: #777; margin-top: 30px;">Hava durumu verileri MET Norway ve Open-Meteo API'lerinden alınmaktadır. Bu çevrimdışı sürüm bir konsepttir ve ana uygulamadaki tüm özellikleri içermeyebilir.</p>
     </div>
 
     <script>
-        // --- CONFIGURATION ---
-        const MET_API_BASE_URL = 'https://api.met.no/weatherapi/locationforecast/2.0/compact';
+        const provinceSelect = document.getElementById('province-select');
+        const refreshButton = document.getElementById('refresh-button');
+        const statusMessageDiv = document.getElementById('status-message');
+        const errorMessageDiv = document.getElementById('error-message');
+        const loaderDiv = document.getElementById('loader');
+        const lastUpdateTimeDiv = document.getElementById('last-update-time');
+        const weatherContentDiv = document.getElementById('weather-content');
+        const selectedProvinceNameH2 = document.getElementById('selected-province-name');
+
+        const currentTempP = document.getElementById('current-temp');
+        const currentTimeSpan = document.getElementById('current-time');
+        const currentConditionP = document.getElementById('current-condition');
+        const currentApparentTempSpan = document.getElementById('current-apparent-temp');
+        const currentHumiditySpan = document.getElementById('current-humidity');
+        const currentWindSpan = document.getElementById('current-wind');
+        const currentWindGustSpan = document.getElementById('current-wind-gust');
+        const currentPressureSpan = document.getElementById('current-pressure');
+        const currentVisibilitySpan = document.getElementById('current-visibility');
+        const currentUVSpan = document.getElementById('current-uv');
+        const currentPrecipitationSpan = document.getElementById('current-precipitation');
+
+        const hourlyForecastTableContainer = document.getElementById('hourly-forecast-table-container');
+        const dailyForecastListDiv = document.getElementById('daily-forecast-list');
+        const hourlyTempChartDiv = document.getElementById('hourly-temp-chart');
+        const hourlyPrecipProbChartDiv = document.getElementById('hourly-precip-prob-chart');
+
+        const API_BASE_URL_MET = 'https://api.met.no/weatherapi/locationforecast/2.0/compact';
+        const API_USER_AGENT = 'HavaDurumuXOffline/1.0 mail@example.com'; // Kendi User-Agent'ınızı girin
         const OPEN_METEO_API_BASE_URL = 'https://api.open-meteo.com/v1/forecast';
-        const USER_AGENT = 'HavaDurumuXOffline/1.0 (havadurumuxsite@gmail.com)';
-        const BULK_UPDATE_INTERVAL_MS = 6 * 60 * 60 * 1000; // 6 hours
-        const REQUEST_DELAY_MS = 2000; // 2 seconds between requests during bulk update
-        const M_S_TO_KM_H = 3.6; // Conversion factor for m/s to km/h
+        const DATA_STALE_MS = 6 * 60 * 60 * 1000; // 6 saat
+        const M_S_TO_KM_H = 3.6;
 
-        // --- LOCATION DATA (Merkez İlçeler) ---
-        // !!! ÖNEMLİ: Aşağıdaki lat ve lon değerleri çoğunlukla 0.0, 0.0'dır.
-        // !!! Doğru hava durumu için bu koordinatların GÜNCELLENMESİ GEREKİR!
-        const turkeyLocationsRaw = {
-          "Adana": [{ "name": "Merkez", "lat": 37.00, "lon": 35.32 }], // Örnek: Adana Merkez koordinatları
-          "Adıyaman": [{ "name": "Merkez", "lat": 37.76, "lon": 38.27 }],
-          "Afyonkarahisar": [{ "name": "Merkez", "lat": 38.75, "lon": 30.53 }],
-          "Ağrı": [{ "name": "Merkez", "lat": 39.72, "lon": 43.05 }],
-          "Aksaray": [{ "name": "Merkez", "lat": 38.37, "lon": 34.03 }],
-          "Amasya": [{ "name": "Merkez", "lat": 40.65, "lon": 35.83 }],
-          "Ankara": [{ "name": "Çankaya", "lat": 39.92, "lon": 32.85 }], // JSON'dan
-          "Antalya": [{ "name": "Muratpaşa", "lat": 36.89, "lon": 30.70 }], // JSON'dan
-          "Ardahan": [{ "name": "Merkez", "lat": 41.11, "lon": 42.70 }],
-          "Artvin": [{ "name": "Merkez", "lat": 41.18, "lon": 41.82 }],
-          "Aydın": [{ "name": "Efeler", "lat": 37.84, "lon": 27.84 }], // Efeler, Aydın merkez
-          "Balıkesir": [{ "name": "Karesi", "lat": 39.65, "lon": 27.88 }], // Karesi, Balıkesir merkez
-          "Bartın": [{ "name": "Merkez", "lat": 41.63, "lon": 32.33 }],
-          "Batman": [{ "name": "Merkez", "lat": 37.88, "lon": 41.13 }],
-          "Bayburt": [{ "name": "Merkez", "lat": 40.25, "lon": 40.22 }],
-          "Bilecik": [{ "name": "Merkez", "lat": 40.14, "lon": 29.98 }],
-          "Bingöl": [{ "name": "Merkez", "lat": 38.88, "lon": 40.49 }],
-          "Bitlis": [{ "name": "Merkez", "lat": 38.40, "lon": 42.11 }],
-          "Bolu": [{ "name": "Merkez", "lat": 40.73, "lon": 31.60 }],
-          "Burdur": [{ "name": "Merkez", "lat": 37.72, "lon": 30.28 }],
-          "Bursa": [{ "name": "Osmangazi", "lat": 40.19, "lon": 29.06 }], // Osmangazi, Bursa merkez
-          "Çanakkale": [{ "name": "Merkez", "lat": 40.15, "lon": 26.41 }],
-          "Çankırı": [{ "name": "Merkez", "lat": 40.60, "lon": 33.61 }],
-          "Çorum": [{ "name": "Merkez", "lat": 40.55, "lon": 34.95 }],
-          "Denizli": [{ "name": "Merkezefendi", "lat": 37.78, "lon": 29.09 }], // Merkezefendi, Denizli merkez
-          "Diyarbakır": [{ "name": "Sur", "lat": 37.91, "lon": 40.23 }], // Sur, Diyarbakır merkez
-          "Düzce": [{ "name": "Merkez", "lat": 40.84, "lon": 31.15 }],
-          "Edirne": [{ "name": "Merkez", "lat": 41.67, "lon": 26.57 }],
-          "Elazığ": [{ "name": "Merkez", "lat": 38.67, "lon": 39.22 }],
-          "Erzincan": [{ "name": "Merkez", "lat": 39.74, "lon": 39.49 }],
-          "Erzurum": [{ "name": "Yakutiye", "lat": 39.90, "lon": 41.27 }], // Yakutiye, Erzurum merkez
-          "Eskişehir": [{ "name": "Odunpazarı", "lat": 39.77, "lon": 30.52 }], // Odunpazarı, Eskişehir merkez
-          "Gaziantep": [{ "name": "Şahinbey", "lat": 37.06, "lon": 37.37 }], // Şahinbey, Gaziantep merkez
-          "Giresun": [{ "name": "Merkez", "lat": 40.91, "lon": 38.39 }],
-          "Gümüşhane": [{ "name": "Merkez", "lat": 40.46, "lon": 39.48 }],
-          "Hakkari": [{ "name": "Merkez", "lat": 37.57, "lon": 43.74 }],
-          "Hatay": [{ "name": "Antakya", "lat": 36.20, "lon": 36.16 }], // Antakya, Hatay merkez
-          "Iğdır": [{ "name": "Merkez", "lat": 39.92, "lon": 44.04 }],
-          "Isparta": [{ "name": "Merkez", "lat": 37.76, "lon": 30.55 }],
-          "İstanbul": [{ "name": "Kadıköy", "lat": 40.99, "lon": 29.02 }], // JSON'dan
-          "İzmir": [{ "name": "Konak", "lat": 38.42, "lon": 27.14 }], // JSON'dan
-          "Kahramanmaraş": [{ "name": "Onikişubat", "lat": 37.57, "lon": 36.92 }], // Onikişubat, K.Maraş merkez
-          "Karabük": [{ "name": "Merkez", "lat": 41.20, "lon": 32.62 }],
-          "Karaman": [{ "name": "Merkez", "lat": 37.18, "lon": 33.21 }],
-          "Kars": [{ "name": "Merkez", "lat": 40.60, "lon": 43.09 }],
-          "Kastamonu": [{ "name": "Merkez", "lat": 41.37, "lon": 33.77 }],
-          "Kayseri": [{ "name": "Melikgazi", "lat": 38.72, "lon": 35.48 }], // Melikgazi, Kayseri merkez
-          "Kilis": [{ "name": "Merkez", "lat": 36.71, "lon": 37.11 }],
-          "Kırıkkale": [{ "name": "Merkez", "lat": 39.84, "lon": 33.51 }],
-          "Kırklareli": [{ "name": "Merkez", "lat": 41.73, "lon": 27.22 }],
-          "Kırşehir": [{ "name": "Merkez", "lat": 39.14, "lon": 34.16 }],
-          "Kocaeli": [{ "name": "İzmit", "lat": 40.76, "lon": 29.91 }], // İzmit, Kocaeli merkez
-          "Konya": [{ "name": "Selçuklu", "lat": 37.87, "lon": 32.49 }], // Selçuklu, Konya merkez
-          "Kütahya": [{ "name": "Merkez", "lat": 39.42, "lon": 29.98 }],
-          "Malatya": [{ "name": "Yeşilyurt", "lat": 38.35, "lon": 38.30 }], // Yeşilyurt, Malatya merkez
-          "Manisa": [{ "name": "Şehzadeler", "lat": 38.61, "lon": 27.42 }], // Şehzadeler, Manisa merkez
-          "Mardin": [{ "name": "Artuklu", "lat": 37.31, "lon": 40.73 }], // Artuklu, Mardin merkez
-          "Mersin": [{ "name": "Akdeniz", "lat": 36.80, "lon": 34.63 }], // Akdeniz, Mersin merkez
-          "Muğla": [{ "name": "Menteşe", "lat": 37.21, "lon": 28.36 }], // Menteşe, Muğla merkez
-          "Muş": [{ "name": "Merkez", "lat": 38.73, "lon": 41.49 }],
-          "Nevşehir": [{ "name": "Merkez", "lat": 38.62, "lon": 34.71 }],
-          "Niğde": [{ "name": "Merkez", "lat": 37.96, "lon": 34.67 }],
-          "Ordu": [{ "name": "Altınordu", "lat": 40.98, "lon": 37.87 }], // Altınordu, Ordu merkez
-          "Osmaniye": [{ "name": "Merkez", "lat": 37.07, "lon": 36.24 }],
-          "Rize": [{ "name": "Merkez", "lat": 41.02, "lon": 40.52 }],
-          "Sakarya": [{ "name": "Adapazarı", "lat": 40.78, "lon": 30.40 }], // Adapazarı, Sakarya merkez
-          "Samsun": [{ "name": "İlkadım", "lat": 41.28, "lon": 36.33 }], // İlkadım, Samsun merkez
-          "Şanlıurfa": [{ "name": "Eyyübiye", "lat": 37.15, "lon": 38.79 }], // Eyyübiye, Şanlıurfa merkez
-          "Siirt": [{ "name": "Merkez", "lat": 37.93, "lon": 41.94 }],
-          "Sinop": [{ "name": "Merkez", "lat": 42.02, "lon": 35.15 }],
-          "Şırnak": [{ "name": "Merkez", "lat": 37.51, "lon": 42.45 }],
-          "Sivas": [{ "name": "Merkez", "lat": 39.75, "lon": 37.01 }],
-          "Tekirdağ": [{ "name": "Süleymanpaşa", "lat": 40.97, "lon": 27.51 }], // Süleymanpaşa, Tekirdağ merkez
-          "Tokat": [{ "name": "Merkez", "lat": 40.32, "lon": 36.55 }],
-          "Trabzon": [{ "name": "Ortahisar", "lat": 41.00, "lon": 39.72 }], // Ortahisar, Trabzon merkez
-          "Tunceli": [{ "name": "Merkez", "lat": 39.10, "lon": 39.54 }],
-          "Uşak": [{ "name": "Merkez", "lat": 38.68, "lon": 29.40 }],
-          "Van": [{ "name": "İpekyolu", "lat": 38.50, "lon": 43.37 }], // İpekyolu, Van merkez
-          "Yalova": [{ "name": "Merkez", "lat": 40.65, "lon": 29.27 }],
-          "Yozgat": [{ "name": "Merkez", "lat": 39.82, "lon": 34.81 }],
-          "Zonguldak": [{ "name": "Merkez", "lat": 41.45, "lon": 31.79 }]
+        const DB_NAME = 'HavaDurumuX_Offline_DB_v2';
+        const DB_VERSION = 1;
+        const WEATHER_STORE_NAME = 'illerWeatherData';
+        let db;
+
+        // --- Tüm İller ve Merkez İlçe Koordinatları ---
+        // GERÇEK UYGULAMADA BU VERİNİN turkey_locations.json'DAN ALINMASI VE DOĞRU OLMASI GEREKİR
+        // Bu prototipte sadece birkaç örnek ve yapı gösterilmektedir.
+        const allProvincesData = {
+            "Adana": [{ "name": "Seyhan", "lat": 37.00, "lon": 35.32 }],
+            "Adıyaman": [{ "name": "Merkez", "lat": 37.76, "lon": 38.27 }],
+            "Afyonkarahisar": [{ "name": "Merkez", "lat": 38.75, "lon": 30.53 }],
+            "Ağrı": [{ "name": "Merkez", "lat": 39.72, "lon": 43.05 }],
+            "Amasya": [{ "name": "Merkez", "lat": 40.65, "lon": 35.83 }],
+            "Ankara": [{ "name": "Çankaya", "lat": 39.92, "lon": 32.85 }], // Merkez yok, Çankaya örnek
+            "Antalya": [{ "name": "Muratpaşa", "lat": 36.89, "lon": 30.70 }], // Merkez yok, Muratpaşa örnek
+            "Artvin": [{ "name": "Merkez", "lat": 41.18, "lon": 41.82 }],
+            "Aydın": [{ "name": "Efeler", "lat": 37.84, "lon": 27.84 }], // Efeler merkez ilçe oldu
+            "Balıkesir": [{ "name": "Karesi", "lat": 39.65, "lon": 27.88 }], // Karesi merkez ilçe oldu
+            "Bilecik": [{ "name": "Merkez", "lat": 40.14, "lon": 29.98 }],
+            "Bingöl": [{ "name": "Merkez", "lat": 38.88, "lon": 40.49 }],
+            "Bitlis": [{ "name": "Merkez", "lat": 38.40, "lon": 42.11 }],
+            "Bolu": [{ "name": "Merkez", "lat": 40.73, "lon": 31.60 }],
+            "Burdur": [{ "name": "Merkez", "lat": 37.72, "lon": 30.28 }],
+            "Bursa": [{ "name": "Osmangazi", "lat": 40.18, "lon": 29.06 }], // Osmangazi merkez ilçelerden biri
+            "Çanakkale": [{ "name": "Merkez", "lat": 40.15, "lon": 26.41 }],
+            "Çankırı": [{ "name": "Merkez", "lat": 40.60, "lon": 33.61 }],
+            "Çorum": [{ "name": "Merkez", "lat": 40.55, "lon": 34.95 }],
+            "Denizli": [{ "name": "Merkezefendi", "lat": 37.78, "lon": 29.09 }], // Merkezefendi merkez ilçe oldu
+            "Diyarbakır": [{ "name": "Sur", "lat": 37.91, "lon": 40.23 }], // Sur merkez ilçelerden biri
+            "Edirne": [{ "name": "Merkez", "lat": 41.67, "lon": 26.57 }],
+            "Elazığ": [{ "name": "Merkez", "lat": 38.67, "lon": 39.22 }],
+            "Erzincan": [{ "name": "Merkez", "lat": 39.74, "lon": 39.49 }],
+            "Erzurum": [{ "name": "Yakutiye", "lat": 39.90, "lon": 41.27 }], // Yakutiye merkez ilçe oldu
+            "Eskişehir": [{ "name": "Odunpazarı", "lat": 39.77, "lon": 30.52 }], // Odunpazarı merkez ilçelerden biri
+            "Gaziantep": [{ "name": "Şahinbey", "lat": 37.06, "lon": 37.38 }], // Şahinbey merkez ilçelerden biri
+            "Giresun": [{ "name": "Merkez", "lat": 40.91, "lon": 38.39 }],
+            "Gümüşhane": [{ "name": "Merkez", "lat": 40.46, "lon": 39.48 }],
+            "Hakkari": [{ "name": "Merkez", "lat": 37.57, "lon": 43.74 }],
+            "Hatay": [{ "name": "Antakya", "lat": 36.20, "lon": 36.16 }], // Antakya merkez ilçe oldu
+            "Isparta": [{ "name": "Merkez", "lat": 37.76, "lon": 30.55 }],
+            "Mersin": [{ "name": "Akdeniz", "lat": 36.81, "lon": 34.64 }], // Akdeniz merkez ilçe oldu (İçel)
+            "İstanbul": [{ "name": "Fatih", "lat": 41.01, "lon": 28.95 }], // Fatih tarihi merkez
+            "İzmir": [{ "name": "Konak", "lat": 38.42, "lon": 27.14 }], // Konak merkez ilçe oldu
+            "Kars": [{ "name": "Merkez", "lat": 40.60, "lon": 43.09 }],
+            "Kastamonu": [{ "name": "Merkez", "lat": 41.37, "lon": 33.78 }],
+            "Kayseri": [{ "name": "Melikgazi", "lat": 38.72, "lon": 35.48 }], // Melikgazi merkez ilçe oldu
+            "Kırklareli": [{ "name": "Merkez", "lat": 41.73, "lon": 27.22 }],
+            "Kırşehir": [{ "name": "Merkez", "lat": 39.14, "lon": 34.16 }],
+            "Kocaeli": [{ "name": "İzmit", "lat": 40.76, "lon": 29.91 }], // İzmit merkez ilçe oldu
+            "Konya": [{ "name": "Selçuklu", "lat": 37.87, "lon": 32.48 }], // Selçuklu merkez ilçe oldu
+            "Kütahya": [{ "name": "Merkez", "lat": 39.42, "lon": 29.98 }],
+            "Malatya": [{ "name": "Battalgazi", "lat": 38.35, "lon": 38.32 }], // Battalgazi merkez ilçe oldu
+            "Manisa": [{ "name": "Şehzadeler", "lat": 38.61, "lon": 27.42 }], // Şehzadeler merkez ilçe oldu
+            "Kahramanmaraş": [{ "name": "Onikişubat", "lat": 37.58, "lon": 36.93 }], // Onikişubat merkez ilçe oldu
+            "Mardin": [{ "name": "Artuklu", "lat": 37.31, "lon": 40.73 }], // Artuklu merkez ilçe oldu
+            "Muğla": [{ "name": "Menteşe", "lat": 37.21, "lon": 28.36 }], // Menteşe merkez ilçe oldu
+            "Muş": [{ "name": "Merkez", "lat": 38.73, "lon": 41.49 }],
+            "Nevşehir": [{ "name": "Merkez", "lat": 38.62, "lon": 34.71 }],
+            "Niğde": [{ "name": "Merkez", "lat": 37.96, "lon": 34.68 }],
+            "Ordu": [{ "name": "Altınordu", "lat": 40.98, "lon": 37.88 }], // Altınordu merkez ilçe oldu
+            "Rize": [{ "name": "Merkez", "lat": 41.02, "lon": 40.52 }],
+            "Sakarya": [{ "name": "Adapazarı", "lat": 40.78, "lon": 30.40 }], // Adapazarı merkez ilçe oldu
+            "Samsun": [{ "name": "İlkadım", "lat": 41.28, "lon": 36.33 }], // İlkadım merkez ilçe oldu
+            "Siirt": [{ "name": "Merkez", "lat": 37.93, "lon": 41.94 }],
+            "Sinop": [{ "name": "Merkez", "lat": 42.02, "lon": 35.15 }],
+            "Sivas": [{ "name": "Merkez", "lat": 39.75, "lon": 37.01 }],
+            "Tekirdağ": [{ "name": "Süleymanpaşa", "lat": 40.97, "lon": 27.51 }], // Süleymanpaşa merkez ilçe oldu
+            "Tokat": [{ "name": "Merkez", "lat": 40.32, "lon": 36.55 }],
+            "Trabzon": [{ "name": "Ortahisar", "lat": 41.00, "lon": 39.72 }], // Ortahisar merkez ilçe oldu
+            "Tunceli": [{ "name": "Merkez", "lat": 39.10, "lon": 39.54 }],
+            "Şanlıurfa": [{ "name": "Haliliye", "lat": 37.16, "lon": 38.79 }], // Haliliye merkez ilçe oldu
+            "Uşak": [{ "name": "Merkez", "lat": 38.68, "lon": 29.40 }],
+            "Van": [{ "name": "İpekyolu", "lat": 38.50, "lon": 43.37 }], // İpekyolu merkez ilçe oldu
+            "Yozgat": [{ "name": "Merkez", "lat": 39.82, "lon": 34.81 }],
+            "Zonguldak": [{ "name": "Merkez", "lat": 41.45, "lon": 31.79 }],
+            "Aksaray": [{ "name": "Merkez", "lat": 38.37, "lon": 34.03 }],
+            "Bayburt": [{ "name": "Merkez", "lat": 40.25, "lon": 40.22 }],
+            "Karaman": [{ "name": "Merkez", "lat": 37.18, "lon": 33.21 }],
+            "Kırıkkale": [{ "name": "Merkez", "lat": 39.84, "lon": 33.51 }],
+            "Batman": [{ "name": "Merkez", "lat": 37.88, "lon": 41.13 }],
+            "Şırnak": [{ "name": "Merkez", "lat": 37.51, "lon": 42.46 }],
+            "Bartın": [{ "name": "Merkez", "lat": 41.63, "lon": 32.33 }],
+            "Ardahan": [{ "name": "Merkez", "lat": 41.11, "lon": 42.70 }],
+            "Iğdır": [{ "name": "Merkez", "lat": 39.92, "lon": 44.04 }],
+            "Yalova": [{ "name": "Merkez", "lat": 40.65, "lon": 29.27 }],
+            "Karabük": [{ "name": "Merkez", "lat": 41.20, "lon": 32.62 }],
+            "Kilis": [{ "name": "Merkez", "lat": 36.71, "lon": 37.11 }],
+            "Osmaniye": [{ "name": "Merkez", "lat": 37.07, "lon": 36.24 }],
+            "Düzce": [{ "name": "Merkez", "lat": 40.84, "lon": 31.15 }]
         };
+        // ----- End İl Verileri -----
 
-        const provinceLocationData = Object.entries(turkeyLocationsRaw).map(([province, districts]) => {
-            const merkezDistrict = districts.find(d => d.name.toLowerCase().includes("merkez") || d.name.toLowerCase().includes(province.toLowerCase()) || districts.length === 1);
-            // Özel durumlar (JSON'dan gelen temsili merkezler)
-            if (province === "Ankara") return { name: `${province} / Çankaya`, province: province, district: "Çankaya", lat: 39.92, lon: 32.85 };
-            if (province === "İstanbul") return { name: `${province} / Kadıköy`, province: province, district: "Kadıköy", lat: 40.99, lon: 29.02 };
-            if (province === "İzmir") return { name: `${province} / Konak`, province: province, district: "Konak", lat: 38.42, lon: 27.14 };
-            if (province === "Antalya") return { name: `${province} / Muratpaşa`, province: province, district: "Muratpaşa", lat: 36.89, lon: 30.70 };
-
-            if (merkezDistrict) {
-                return { name: `${province} / ${merkezDistrict.name}`, province: province, district: merkezDistrict.name, lat: merkezDistrict.lat, lon: merkezDistrict.lon };
-            }
-            // Eğer "Merkez" yoksa ve özel durum değilse, ilk ilçeyi al (veya o ili atla)
-            // Bu örnekte, eğer "Merkez" yoksa ve özel bir durum değilse, o ili atlayacağız.
-            // Veya JSON dosyanızda her il için temsili bir "merkez ilçe" olduğundan emin olmalısınız.
-            // Bu prototip için, koordinatları 0 olanlar da listeye eklenecek ama uyarı gösterilecek.
-            const firstDistrict = districts[0];
-            if(firstDistrict) {
-                 return { name: `${province} / ${firstDistrict.name} (Merkez Değil/Belirsiz)`, province: province, district: firstDistrict.name, lat: firstDistrict.lat, lon: firstDistrict.lon };
-            }
-            return null;
-
-        }).filter(p => p !== null).sort((a, b) => a.province.localeCompare(b.province, 'tr'));
-
-
-        // --- DOM ELEMENTS ---
-        const provinceSelect = document.getElementById('provinceSelect');
-        const updateAllDataButton = document.getElementById('updateAllDataButton');
-        const clearLocalDataButton = document.getElementById('clearLocalDataButton');
-        const statusBar = document.getElementById('statusBar');
-        const lastUpdateTimeEl = document.getElementById('lastUpdateTime');
-        const weatherDisplay = document.getElementById('weatherDisplay');
-        const currentLocationNameEl = document.getElementById('currentLocationName');
-        const currentWeatherTimeEl = document.getElementById('currentWeatherTime');
-        const currentWeatherIconEl = document.getElementById('currentWeatherIcon');
-        const currentTemperatureEl = document.getElementById('currentTemperature');
-        const currentWeatherDescriptionEl = document.getElementById('currentWeatherDescription');
-        const currentApparentTemperatureEl = document.getElementById('currentApparentTemperature');
-        const currentHumidityEl = document.getElementById('currentHumidity');
-        const currentWindSpeedEl = document.getElementById('currentWindSpeed');
-        const currentWindDirectionEl = document.getElementById('currentWindDirection');
-        const currentWindGustsEl = document.getElementById('currentWindGusts');
-        const currentPressureEl = document.getElementById('currentPressure');
-        const currentVisibilityEl = document.getElementById('currentVisibility');
-        const currentUvIndexEl = document.getElementById('currentUvIndex');
-        const currentPrecipitationEl = document.getElementById('currentPrecipitation');
-        const hourlyForecastEl = document.getElementById('hourlyForecast');
-        const dailyForecastEl = document.getElementById('dailyForecast');
-        const hourlyTempChartEl = document.getElementById('hourlyTempChart');
-        const hourlyPrecipChartEl = document.getElementById('hourlyPrecipChart');
-        const toggleDarkModeButton = document.getElementById('toggleDarkMode');
-
-        // --- STATE ---
-        let currentSelectedProvinceKey = null;
-        let temperatureAnimationInterval = null;
-
-        // --- WEATHER ICON MAPPING (Simplified) ---
-        const weatherCodeMap = {
-            0: { description: 'Açık', icon: '☀️' }, 1: { description: 'Parçalı Bulutlu', icon: '🌤️' },
-            2: { description: 'Bulutlu', icon: '☁️' }, 3: { description: 'Çok Bulutlu', icon: '🌥️' },
-            45: { description: 'Sisli', icon: '🌫️' }, 48: { description: 'Kırağı Sisi', icon: '🌫️' },
-            51: { description: 'Hafif Çisenti', icon: '🌦️' }, 53: { description: 'Orta Çisenti', icon: '🌦️' },
-            55: { description: 'Yoğun Çisenti', icon: '🌧️' }, 56: { description: 'Hafif Donan Çisenti', icon: '🌨️' },
-            57: { description: 'Yoğun Donan Çisenti', icon: '🌨️' }, 61: { description: 'Hafif Yağmurlu', icon: '🌧️' },
-            63: { description: 'Orta Yağmurlu', icon: '🌧️' }, 65: { description: 'Şiddetli Yağmurlu', icon: '🌧️' },
-            66: { description: 'Hafif Donan Yağmur', icon: '🌨️' }, 67: { description: 'Yoğun Donan Yağmur', icon: '🌨️' },
-            71: { description: 'Hafif Kar', icon: '🌨️' }, 73: { description: 'Orta Kar', icon: '❄️' },
-            75: { description: 'Yoğun Kar', icon: '❄️' }, 77: { description: 'Kar Taneleri', icon: '❄️' },
-            80: { description: 'Hafif Sağanak', icon: '🌦️' }, 81: { description: 'Orta Sağanak', icon: '🌧️' },
-            82: { description: 'Şiddetli Sağanak', icon: '⛈️' }, 85: { description: 'Hafif Kar Sağanağı', icon: '🌨️' },
-            86: { description: 'Yoğun Kar Sağanağı', icon: '❄️' }, 95: { description: 'Gök Gürültülü Fırtına', icon: '⛈️' },
-            96: { description: 'Hafif Dolu ile Fırtına', icon: '⛈️🧊' }, 99: { description: 'Yoğun Dolu ile Fırtına', icon: '⛈️🧊' }
-        };
-
-        function getWeatherInfo(code, isDay = true) {
-            const info = weatherCodeMap[code];
-            if (info) {
-                if (code === 0 && !isDay) return { description: 'Açık (Gece)', icon: '🌙' };
-                return info;
-            }
-            return { description: 'Bilinmiyor', icon: '❓' };
-        }
-        
-        function getWindDirectionSymbol(degrees) {
-            if (degrees === null || degrees === undefined) return 'N/A';
-            const directions = ['K', 'KKD', 'KD', 'DKD', 'D', 'DGD', 'GD', 'GGD', 'G', 'GGB', 'GB', 'BGB', 'B', 'BKB', 'KB', 'KKB'];
-            return directions[Math.round(degrees / 22.5) % 16];
+        function logMessage(message) {
+            console.log(message);
+            statusMessageDiv.textContent = message;
+            statusMessageDiv.className = 'status-message'; // Reset to default class
         }
 
-        // --- DARK MODE ---
-        function applyDarkModePreference() {
-            if (localStorage.getItem('havadurumux-offline-dark-mode') === 'true') {
-                document.body.classList.add('dark-mode');
-            } else {
-                document.body.classList.remove('dark-mode');
-            }
-        }
-        toggleDarkModeButton.addEventListener('click', () => {
-            document.body.classList.toggle('dark-mode');
-            localStorage.setItem('havadurumux-offline-dark-mode', document.body.classList.contains('dark-mode'));
-        });
-
-        // --- API SERVICE ---
-        async function fetchWeatherDataFromMET(lat, lon) {
-            const url = `${MET_API_BASE_URL}?lat=${lat}&lon=${lon}`;
-            try {
-                const response = await fetch(url, { headers: { 'User-Agent': USER_AGENT } });
-                if (!response.ok) {
-                    throw new Error(`MET API Error: ${response.status} ${response.statusText}`);
-                }
-                return await response.json();
-            } catch (error) {
-                console.error("Error fetching from MET API:", error);
-                throw error;
-            }
-        }
-        
-        async function fetchWeatherDataFromOpenMeteo(lat, lon) {
-            const params = new URLSearchParams({
-                latitude: lat,
-                longitude: lon,
-                current: 'apparent_temperature,visibility,uv_index,wind_gusts_10m,precipitation,relative_humidity_2m,surface_pressure,cloud_cover',
-                hourly: 'apparent_temperature,precipitation_probability,visibility,uv_index,wind_gusts_10m,soil_temperature_0cm,soil_moisture_0_1cm,pressure_msl,rain,showers,snowfall,cloud_cover',
-                daily: 'sunrise,sunset,uv_index_max,precipitation_probability_max,wind_gusts_10m_max,apparent_temperature_max,apparent_temperature_min,rain_sum,showers_sum,snowfall_sum,precipitation_hours',
-                forecast_days: 7, // Max forecast days matching MET, adjust if needed
-                timezone: 'auto'
-            });
-            const url = `${OPEN_METEO_API_BASE_URL}?${params.toString()}`;
-            try {
-                const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error(`OpenMeteo API Error: ${response.status}`);
-                }
-                return await response.json();
-            } catch (error) {
-                console.error("Error fetching from OpenMeteo API:", error);
-                return null; // Return null if OpenMeteo fails, MET data will still be used
-            }
+        function logError(message) {
+            console.error(message);
+            errorMessageDiv.textContent = message;
+            errorMessageDiv.className = 'error-message';
+            errorMessageDiv.classList.remove('hidden');
         }
 
+        function showLoader(show) {
+            loaderDiv.classList.toggle('hidden', !show);
+        }
 
-        function processWeatherData(metData, openMeteoData, provinceKey) {
-            if (!metData || !metData.properties || !metData.properties.timeseries) {
-                console.error("Invalid MET data structure for", provinceKey, metData);
-                return null;
-            }
-            const timeseries = metData.properties.timeseries;
-            const forecastUntil = new Date();
-            forecastUntil.setHours(forecastUntil.getHours() + 66);
+        // --- IndexedDB Functions ---
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-            const relevantTimeseries = timeseries.filter(ts => new Date(ts.time) <= forecastUntil);
+                request.onupgradeneeded = (event) => {
+                    const dbInstance = event.target.result;
+                    if (!dbInstance.objectStoreNames.contains(WEATHER_STORE_NAME)) {
+                        dbInstance.createObjectStore(WEATHER_STORE_NAME, { keyPath: 'provinceKey' });
+                    }
+                };
 
-            const now = new Date();
-            let currentDataPoint = relevantTimeseries.find(ts => new Date(ts.time) >= now) || relevantTimeseries[relevantTimeseries.length - 1];
-             if (!currentDataPoint && relevantTimeseries.length > 0) { // Fallback to latest if no future point
-                currentDataPoint = relevantTimeseries[relevantTimeseries.length -1];
-             }
+                request.onsuccess = (event) => {
+                    db = event.target.result;
+                    logMessage('Çevrimdışı veritabanı hazır.');
+                    resolve(db);
+                };
 
-
-            const omCurrent = openMeteoData?.current || {};
-            const omHourly = openMeteoData?.hourly || {};
-            const omDaily = openMeteoData?.daily || {};
-
-            const current = {
-                time: currentDataPoint.time,
-                temperature_2m: currentDataPoint.data.instant.details.air_temperature,
-                apparent_temperature: omCurrent.apparent_temperature ?? currentDataPoint.data.instant.details.air_temperature, // Fallback
-                relative_humidity_2m: currentDataPoint.data.instant.details.relative_humidity,
-                is_day: new Date(currentDataPoint.time).getHours() > 6 && new Date(currentDataPoint.time).getHours() < 20 ? 1:0, // Simple day check
-                precipitation: omCurrent.precipitation ?? currentDataPoint.data.next_1_hours?.details?.precipitation_amount ?? 0,
-                weather_code: getWeatherInfo(currentDataPoint.data.next_1_hours?.summary?.symbol_code || currentDataPoint.data.next_6_hours?.summary?.symbol_code).wmoCode || 0, // Simplified
-                cloud_cover: omCurrent.cloud_cover ?? currentDataPoint.data.instant.details.cloud_area_fraction,
-                surface_pressure: omCurrent.surface_pressure ?? currentDataPoint.data.instant.details.air_pressure_at_sea_level,
-                wind_speed_10m: (currentDataPoint.data.instant.details.wind_speed * M_S_TO_KM_H).toFixed(1),
-                wind_direction_10m: currentDataPoint.data.instant.details.wind_from_direction,
-                wind_gusts_10m: omCurrent.wind_gusts_10m ? omCurrent.wind_gusts_10m.toFixed(1) : 'N/A',
-                visibility: omCurrent.visibility ? (omCurrent.visibility / 1000).toFixed(1) : 'N/A',
-                uv_index: omCurrent.uv_index ?? 'N/A',
-            };
-
-            const hourly = relevantTimeseries.map((ts, index) => {
-                const omHourIndex = omHourly.time?.findIndex(omt => new Date(omt).getTime() === new Date(ts.time).getTime());
-                const omHourData = omHourIndex !== -1 && omHourly.temperature_2m ? {
-                    apparent_temperature: omHourly.apparent_temperature[omHourIndex],
-                    precipitation_probability: omHourly.precipitation_probability[omHourIndex],
-                    visibility: omHourly.visibility[omHourIndex],
-                    uv_index: omHourly.uv_index[omHourIndex],
-                    wind_gusts_10m: omHourly.wind_gusts_10m[omHourIndex],
-                    cloud_cover: omHourly.cloud_cover[omHourIndex],
-                    pressure_msl: omHourly.pressure_msl[omHourIndex],
-                } : {};
-
-                return {
-                    time: ts.time,
-                    temperature_2m: ts.data.instant.details.air_temperature,
-                    apparent_temperature: omHourData.apparent_temperature ?? ts.data.instant.details.air_temperature,
-                    relative_humidity_2m: ts.data.instant.details.relative_humidity,
-                    precipitation_probability: omHourData.precipitation_probability ?? 0, // default 0 if not from OM
-                    precipitation: ts.data.next_1_hours?.details?.precipitation_amount ?? 0,
-                    weather_code: getWeatherInfo(ts.data.next_1_hours?.summary?.symbol_code || ts.data.next_6_hours?.summary?.symbol_code).wmoCode || 0,
-                    wind_speed_10m: (ts.data.instant.details.wind_speed * M_S_TO_KM_H),
-                    wind_direction_10m: ts.data.instant.details.wind_from_direction,
-                    wind_gusts_10m: omHourData.wind_gusts_10m,
-                    cloud_cover: omHourData.cloud_cover ?? ts.data.instant.details.cloud_area_fraction,
-                    pressure_msl: omHourData.pressure_msl ?? ts.data.instant.details.air_pressure_at_sea_level,
+                request.onerror = (event) => {
+                    logError('Veritabanı hatası: ' + event.target.errorCode);
+                    reject(event.target.errorCode);
                 };
             });
+        }
 
-            const daily = [];
-            if(omDaily.time && omDaily.time.length > 0) {
-                for (let i = 0; i < Math.min(omDaily.time.length, 7); i++) {
-                    daily.push({
-                        time: omDaily.time[i],
-                        weather_code: omDaily.weather_code ? omDaily.weather_code[i] : getWeatherInfo(hourly.find(h => h.time.startsWith(omDaily.time[i]))?.weather_code).wmoCode || 0, // Fallback
-                        temperature_2m_max: omDaily.temperature_2m_max ? omDaily.temperature_2m_max[i] : null,
-                        temperature_2m_min: omDaily.temperature_2m_min ? omDaily.temperature_2m_min[i] : null,
-                        apparent_temperature_max: omDaily.apparent_temperature_max ? omDaily.apparent_temperature_max[i] : null,
-                        apparent_temperature_min: omDaily.apparent_temperature_min ? omDaily.apparent_temperature_min[i] : null,
-                        sunrise: omDaily.sunrise ? omDaily.sunrise[i] : null,
-                        sunset: omDaily.sunset ? omDaily.sunset[i] : null,
-                        uv_index_max: omDaily.uv_index_max ? omDaily.uv_index_max[i] : null,
-                        precipitation_sum: omDaily.precipitation_sum ? omDaily.precipitation_sum[i] : null,
-                        precipitation_probability_max: omDaily.precipitation_probability_max ? omDaily.precipitation_probability_max[i] : null,
-                        wind_gusts_10m_max: omDaily.wind_gusts_10m_max ? omDaily.wind_gusts_10m_max[i] : null,
-                        rain_sum: omDaily.rain_sum ? omDaily.rain_sum[i] : null,
-                        showers_sum: omDaily.showers_sum ? omDaily.showers_sum[i] : null,
-                        snowfall_sum: omDaily.snowfall_sum ? omDaily.snowfall_sum[i] : null,
-                        precipitation_hours: omDaily.precipitation_hours ? omDaily.precipitation_hours[i] : null,
-                    });
-                }
-            } else { // Fallback if OpenMeteo daily fails, derive from MET hourly
-                const dailyAggregated = {};
-                hourly.forEach(h => {
-                    const day = h.time.split('T')[0];
-                    if (!dailyAggregated[day]) {
-                        dailyAggregated[day] = {
-                            temps: [], precips: [], codes: [], windSpeeds: [], gusts: []
-                        };
-                    }
-                    dailyAggregated[day].temps.push(h.temperature_2m);
-                    dailyAggregated[day].precips.push(h.precipitation);
-                    dailyAggregated[day].codes.push(h.weather_code);
-                    dailyAggregated[day].windSpeeds.push(h.wind_speed_10m);
-                    if(h.wind_gusts_10m) dailyAggregated[day].gusts.push(h.wind_gusts_10m);
+        function saveDataToDB(provinceKey, data, timestamp) {
+            if (!db) return Promise.reject('Veritabanı başlatılmadı.');
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([WEATHER_STORE_NAME], 'readwrite');
+                const store = transaction.objectStore(WEATHER_STORE_NAME);
+                const request = store.put({ provinceKey, data, lastUpdated: timestamp });
+                request.onsuccess = () => resolve();
+                request.onerror = (event) => {
+                    logError(`Veri kaydetme hatası (${provinceKey}): ${event.target.errorCode}`);
+                    reject(event.target.errorCode);
+                };
+            });
+        }
 
-                });
+        function getDataFromDB(provinceKey) {
+            if (!db) return Promise.reject('Veritabanı başlatılmadı.');
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([WEATHER_STORE_NAME], 'readonly');
+                const store = transaction.objectStore(WEATHER_STORE_NAME);
+                const request = store.get(provinceKey);
+                request.onsuccess = (event) => resolve(event.target.result);
+                request.onerror = (event) => {
+                    logError(`Veri okuma hatası (${provinceKey}): ${event.target.errorCode}`);
+                    reject(event.target.errorCode);
+                };
+            });
+        }
+        // --- End IndexedDB Functions ---
 
-                Object.keys(dailyAggregated).slice(0, 7).forEach(dayKey => {
-                    const dayData = dailyAggregated[dayKey];
-                    const dominantCode = dayData.codes.sort((a,b) => dayData.codes.filter(v => v===a).length - dayData.codes.filter(v => v===b).length).pop();
-                    daily.push({
-                        time: dayKey,
-                        weather_code: dominantCode,
-                        temperature_2m_max: Math.max(...dayData.temps),
-                        temperature_2m_min: Math.min(...dayData.temps),
-                        precipitation_sum: dayData.precips.reduce((a,b) => a+b, 0),
-                        // ... (sunrise/sunset etc. would still be missing here)
-                    });
-                });
+        async function fetchCombinedWeatherData(lat, lon) {
+            let metData = null;
+            try {
+                const metResponse = await fetch(`${API_BASE_URL_MET}?lat=${lat}&lon=${lon}`, { headers: { 'User-Agent': API_USER_AGENT } });
+                if (!metResponse.ok) throw new Error(`MET Norway API error: ${metResponse.status}`);
+                metData = await metResponse.json();
+            } catch (error) {
+                console.error("MET Norway fetch error:", error);
+                // MET Norway başarısız olursa null dönebiliriz veya sadece OpenMeteo'ya güvenebiliriz.
+                // Bu örnekte, MET Norway'den temel veri almayı bekliyoruz.
             }
 
+            if (!metData || !metData.properties || !metData.properties.timeseries) {
+                 console.error("MET Norway'den geçerli veri alınamadı.");
+                 // Sadece OpenMeteo'dan veri çekmeyi deneyebiliriz
+                 return fetchOnlyOpenMeteoData(lat, lon);
+            }
 
+            // MET Norway verilerini işle
+            const processedMetData = processMetNorwayData(metData);
+            
+            // OpenMeteo'dan tamamlayıcı verileri çek
+            return fetchSupplementaryFromOpenMeteo(lat, lon, processedMetData);
+        }
+        
+        async function fetchOnlyOpenMeteoData(lat, lon) {
+            const params = new URLSearchParams({
+                latitude: lat.toString(),
+                longitude: lon.toString(),
+                current: "temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,rain,showers,snowfall,weather_code,cloud_cover,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m,uv_index,visibility",
+                hourly: "temperature_2m,relative_humidity_2m,apparent_temperature,precipitation_probability,precipitation,rain,showers,snowfall,weather_code,surface_pressure,cloud_cover,visibility,wind_speed_10m,wind_direction_10m,wind_gusts_10m,uv_index,is_day,pressure_msl",
+                daily: "weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,sunrise,sunset,uv_index_max,precipitation_sum,rain_sum,showers_sum,snowfall_sum,precipitation_hours,precipitation_probability_max,wind_speed_10m_max,wind_gusts_10m_max,wind_direction_10m_dominant",
+                forecast_days: "7", // 66 saatlik veri için ~3 gün yeterli, 7 gün daha kapsamlı
+                timezone: "auto"
+            });
+
+            try {
+                const response = await fetch(`${OPEN_METEO_API_BASE_URL}?${params.toString()}`);
+                if (!response.ok) throw new Error(`Open-Meteo API error: ${response.status}`);
+                const data = await response.json();
+                return processOnlyOpenMeteoData(data); // OpenMeteo verisini WeatherData formatına dönüştür
+            } catch (error) {
+                logError(`Sadece OpenMeteo'dan veri çekme hatası: ${error.message}`);
+                return null;
+            }
+        }
+
+        function processOnlyOpenMeteoData(data) {
+            if (!data || !data.current || !data.hourly || !data.daily) return null;
+
+            const current = {
+                time: data.current.time,
+                temperature_2m: data.current.temperature_2m,
+                relative_humidity_2m: data.current.relative_humidity_2m,
+                apparent_temperature: data.current.apparent_temperature,
+                is_day: data.current.is_day,
+                precipitation: data.current.precipitation,
+                rain: data.current.rain,
+                showers: data.current.showers,
+                snowfall: data.current.snowfall,
+                weather_code: data.current.weather_code,
+                cloud_cover: data.current.cloud_cover,
+                surface_pressure: data.current.surface_pressure,
+                wind_speed_10m: data.current.wind_speed_10m,
+                wind_direction_10m: data.current.wind_direction_10m,
+                wind_gusts_10m: data.current.wind_gusts_10m,
+                uv_index: data.current.uv_index,
+                visibility: data.current.visibility,
+            };
+
+            const hourly = {
+                time: data.hourly.time.slice(0, 66), // İlk 66 saat
+                temperature_2m: data.hourly.temperature_2m.slice(0, 66),
+                relative_humidity_2m: data.hourly.relative_humidity_2m.slice(0, 66),
+                apparent_temperature: data.hourly.apparent_temperature.slice(0, 66),
+                precipitation_probability: data.hourly.precipitation_probability.slice(0, 66),
+                precipitation: data.hourly.precipitation.slice(0, 66),
+                rain: data.hourly.rain.slice(0, 66),
+                showers: data.hourly.showers.slice(0, 66),
+                snowfall: data.hourly.snowfall.slice(0, 66),
+                weather_code: data.hourly.weather_code.slice(0, 66),
+                surface_pressure: data.hourly.surface_pressure ? data.hourly.surface_pressure.slice(0, 66) : Array(66).fill(null),
+                pressure_msl: data.hourly.pressure_msl ? data.hourly.pressure_msl.slice(0, 66) : Array(66).fill(null),
+                cloud_cover: data.hourly.cloud_cover.slice(0, 66),
+                visibility: data.hourly.visibility.slice(0, 66),
+                wind_speed_10m: data.hourly.wind_speed_10m.slice(0, 66),
+                wind_direction_10m: data.hourly.wind_direction_10m.slice(0, 66),
+                wind_gusts_10m: data.hourly.wind_gusts_10m.slice(0, 66),
+                uv_index: data.hourly.uv_index.slice(0, 66),
+                is_day: data.hourly.is_day.slice(0, 66),
+                soil_temperature_0cm: data.hourly.soil_temperature_0cm ? data.hourly.soil_temperature_0cm.slice(0, 66) : Array(66).fill(null),
+                soil_moisture_0_1cm: data.hourly.soil_moisture_0_1cm ? data.hourly.soil_moisture_0_1cm.slice(0, 66) : Array(66).fill(null),
+            };
+
+            const daily = {
+                time: data.daily.time,
+                weather_code: data.daily.weather_code,
+                temperature_2m_max: data.daily.temperature_2m_max,
+                temperature_2m_min: data.daily.temperature_2m_min,
+                apparent_temperature_max: data.daily.apparent_temperature_max,
+                apparent_temperature_min: data.daily.apparent_temperature_min,
+                sunrise: data.daily.sunrise,
+                sunset: data.daily.sunset,
+                uv_index_max: data.daily.uv_index_max,
+                precipitation_sum: data.daily.precipitation_sum,
+                rain_sum: data.daily.rain_sum,
+                showers_sum: data.daily.showers_sum,
+                snowfall_sum: data.daily.snowfall_sum,
+                precipitation_hours: data.daily.precipitation_hours,
+                precipitation_probability_max: data.daily.precipitation_probability_max,
+                wind_speed_10m_max: data.daily.wind_speed_10m_max,
+                wind_gusts_10m_max: data.daily.wind_gusts_10m_max,
+                wind_direction_10m_dominant: data.daily.wind_direction_10m_dominant,
+                uv_index_clear_sky_max: data.daily.uv_index_clear_sky_max ? data.daily.uv_index_clear_sky_max : Array(data.daily.time.length).fill(null),
+                shortwave_radiation_sum: data.daily.shortwave_radiation_sum ? data.daily.shortwave_radiation_sum : Array(data.daily.time.length).fill(null),
+                et0_fao_evapotranspiration: data.daily.et0_fao_evapotranspiration ? data.daily.et0_fao_evapotranspiration : Array(data.daily.time.length).fill(null),
+            };
+            
             return {
-                latitude: metData.geometry.coordinates[1],
-                longitude: metData.geometry.coordinates[0],
-                current,
-                hourly,
-                daily,
-                fetchedAt: new Date().toISOString()
+                latitude: data.latitude, longitude: data.longitude, elevation: data.elevation,
+                generationtime_ms: data.generationtime_ms,
+                current, hourly, daily,
+                api_source: "Open-Meteo",
             };
         }
 
 
-        // --- LOCALSTORAGE SERVICE ---
-        function saveDataToLocalStorage(provinceKey, data) {
+        function processMetNorwayData(metData) {
+            const timeseries = metData.properties.timeseries;
+            const currentRaw = timeseries[0];
+            const currentSymbolInfo = getMetSymbolInfo(currentRaw.data?.next_1_hours?.summary?.symbol_code || currentRaw.data?.next_6_hours?.summary?.symbol_code);
+
+            const current = {
+                time: currentRaw.time,
+                temperature_2m: currentRaw.data.instant.details.air_temperature,
+                relative_humidity_2m: currentRaw.data.instant.details.relative_humidity,
+                apparent_temperature: null, // OpenMeteo'dan gelecek
+                is_day: currentSymbolInfo.is_day,
+                precipitation: currentRaw.data?.next_1_hours?.details?.precipitation_amount ?? 0,
+                rain: currentSymbolInfo.is_rain ? (currentRaw.data?.next_1_hours?.details?.precipitation_amount ?? 0) : 0,
+                showers: currentSymbolInfo.is_showers ? (currentRaw.data?.next_1_hours?.details?.precipitation_amount ?? 0) : 0,
+                snowfall: currentSymbolInfo.is_snow ? (currentRaw.data?.next_1_hours?.details?.precipitation_amount ?? 0) : 0, // miktar
+                weather_code: currentSymbolInfo.wmo,
+                cloud_cover: currentRaw.data.instant.details.cloud_area_fraction,
+                surface_pressure: currentRaw.data.instant.details.air_pressure_at_sea_level,
+                wind_speed_10m: (currentRaw.data.instant.details.wind_speed ?? 0) * M_S_TO_KM_H,
+                wind_direction_10m: currentRaw.data.instant.details.wind_from_direction,
+                wind_gusts_10m: null, // OpenMeteo'dan gelecek
+                uv_index: null, // OpenMeteo'dan
+                visibility: null, // OpenMeteo'dan
+            };
+
+            const hourly = {
+                time: [], temperature_2m: [], relative_humidity_2m: [], apparent_temperature: [], precipitation_probability: [],
+                precipitation: [], rain: [], showers: [], snowfall: [], weather_code: [], surface_pressure: [],
+                cloud_cover: [], visibility: [], wind_speed_10m: [], wind_direction_10m: [],
+                wind_gusts_10m: [], uv_index: [], soil_temperature_0cm: [], soil_moisture_0_1cm: [], pressure_msl: [], is_day: []
+            };
+
+            const sixtySixHoursLater = new Date(new Date(timeseries[0].time).getTime() + 66 * 60 * 60 * 1000);
+
+            for (const entry of timeseries) {
+                if (new Date(entry.time) > sixtySixHoursLater) break; // Sadece ilk 66 saat
+
+                const details = entry.data?.instant?.details;
+                const next1HourDetails = entry.data?.next_1_hours?.details;
+                const symbolInfo = getMetSymbolInfo(entry.data?.next_1_hours?.summary?.symbol_code || entry.data?.next_6_hours?.summary?.symbol_code);
+
+                hourly.time.push(entry.time);
+                hourly.temperature_2m.push(details?.air_temperature ?? null);
+                hourly.relative_humidity_2m.push(details?.relative_humidity ?? null);
+                hourly.precipitation.push(next1HourDetails?.precipitation_amount ?? null);
+                hourly.weather_code.push(symbolInfo.wmo);
+                hourly.cloud_cover.push(details?.cloud_area_fraction ?? null);
+                hourly.surface_pressure.push(details?.air_pressure_at_sea_level ?? null);
+                hourly.pressure_msl.push(details?.air_pressure_at_sea_level ?? null); // MET için aynı
+                hourly.wind_speed_10m.push(details?.wind_speed !== undefined ? details.wind_speed * M_S_TO_KM_H : null);
+                hourly.wind_direction_10m.push(details?.wind_from_direction ?? null);
+                hourly.is_day.push(symbolInfo.is_day);
+                hourly.rain.push(symbolInfo.is_rain ? (next1HourDetails?.precipitation_amount ?? 0) : 0);
+                hourly.showers.push(symbolInfo.is_showers ? (next1HourDetails?.precipitation_amount ?? 0) : 0);
+                hourly.snowfall.push(symbolInfo.is_snow ? (next1HourDetails?.precipitation_amount ?? 0) : 0);
+
+                // OpenMeteo'dan gelecek alanlar için null ata
+                hourly.apparent_temperature.push(null);
+                hourly.precipitation_probability.push(null);
+                hourly.wind_gusts_10m.push(null);
+                hourly.uv_index.push(null);
+                hourly.visibility.push(null);
+                hourly.soil_temperature_0cm.push(null);
+                hourly.soil_moisture_0_1cm.push(null);
+            }
+
+            // MET Norway için günlük verileri saatlikten türet (OpenMeteo bunları daha iyi sağlar)
+            const daily = {
+                time: [], weather_code: [], temperature_2m_max: [], temperature_2m_min: [], precipitation_sum: [],
+                rain_sum: [], showers_sum: [], snowfall_sum: [], precipitation_hours: [], wind_speed_10m_max: [],
+                apparent_temperature_max: [], apparent_temperature_min: [], sunrise: [], sunset: [],
+                uv_index_max: [], uv_index_clear_sky_max: [], precipitation_probability_max: [],
+                wind_gusts_10m_max: [], wind_direction_10m_dominant: [], shortwave_radiation_sum: [],
+                et0_fao_evapotranspiration: []
+            };
+            // Bu basit çevrimdışı sürümde günlük türetme karmaşık olabilir, OpenMeteo'ya bırakalım.
+            // İlk 7 gün için null dizileri oluşturalım.
+            const uniqueDays = [...new Set(hourly.time.map(t => t.substring(0, 10)))].slice(0, 7);
+            uniqueDays.forEach(day => {
+                daily.time.push(day);
+                Object.keys(daily).forEach(key => {
+                    if (key !== 'time' && Array.isArray(daily[key])) {
+                        daily[key].push(null);
+                    }
+                });
+            });
+            
+            return {
+                latitude: metData.geometry.coordinates[1], longitude: metData.geometry.coordinates[0],
+                elevation: metData.geometry.coordinates[2],
+                current, hourly, daily, api_source: "MET Norway",
+            };
+        }
+
+        async function fetchSupplementaryFromOpenMeteo(lat, lon, existingWeatherData) {
+            if (!existingWeatherData) return null; // MET Norway'den veri gelmediyse OpenMeteo'ya gitme
+
+            const params = new URLSearchParams({
+                latitude: lat.toString(),
+                longitude: lon.toString(),
+                current: "apparent_temperature,uv_index,visibility,wind_gusts_10m,rain,showers,snowfall,pressure_msl,cloud_cover",
+                hourly: "apparent_temperature,precipitation_probability,wind_gusts_10m,uv_index,visibility,soil_temperature_0cm,soil_moisture_0_1cm,rain,showers,snowfall,pressure_msl,cloud_cover",
+                daily: "apparent_temperature_max,apparent_temperature_min,sunrise,sunset,uv_index_max,uv_index_clear_sky_max,precipitation_probability_max,wind_gusts_10m_max,wind_direction_10m_dominant,shortwave_radiation_sum,et0_fao_evapotranspiration,rain_sum,showers_sum,snowfall_sum,precipitation_hours",
+                forecast_days: "7",
+                timezone: "auto"
+            });
+            
             try {
-                localStorage.setItem(`offline_weather_${provinceKey}`, JSON.stringify(data));
-            } catch (e) {
-                console.error("Error saving to localStorage (quota likely exceeded):", e);
-                updateStatus("Yerel depolama dolu, eski veriler gösteriliyor olabilir.", true);
+                const response = await fetch(`${OPEN_METEO_API_BASE_URL}?${params.toString()}`);
+                if (!response.ok) throw new Error(`Open-Meteo API error: ${response.status}`);
+                const omData = await response.json();
+
+                // ANLIK VERİ BİRLEŞTİRME
+                if (omData.current) {
+                    const exCurrent = existingWeatherData.current;
+                    exCurrent.apparent_temperature = omData.current.apparent_temperature ?? exCurrent.apparent_temperature;
+                    exCurrent.uv_index = omData.current.uv_index ?? exCurrent.uv_index;
+                    exCurrent.visibility = omData.current.visibility ?? exCurrent.visibility;
+                    exCurrent.wind_gusts_10m = omData.current.wind_gusts_10m ?? null; // Öncelik OpenMeteo
+                    if (omData.current.pressure_msl !== undefined) exCurrent.surface_pressure = omData.current.pressure_msl; // MET.no'nun sea_level'ı zaten bu. OM daha doğru olabilir.
+                    if (omData.current.cloud_cover !== undefined) exCurrent.cloud_cover = omData.current.cloud_cover;
+
+                    // Yağış türleri için OpenMeteo'yu tercih et, MET Norway 0 ise
+                    if (exCurrent.rain === 0 && omData.current.rain > 0) exCurrent.rain = omData.current.rain;
+                    if (exCurrent.showers === 0 && omData.current.showers > 0) exCurrent.showers = omData.current.showers;
+                    if (exCurrent.snowfall === 0 && omData.current.snowfall > 0) exCurrent.snowfall = omData.current.snowfall;
+                     // Genel precipitation, OM'den gelmiyorsa MET'i koru, OM'de varsa onu kullan.
+                    exCurrent.precipitation = omData.current.precipitation ?? exCurrent.precipitation;
+                }
+
+                // SAATLİK VERİ BİRLEŞTİRME
+                if (omData.hourly && omData.hourly.time) {
+                    existingWeatherData.hourly.time.forEach((metTimeISO, index) => {
+                        const metTime = new Date(metTimeISO);
+                        const omHourlyIndex = omData.hourly.time.findIndex(omTimeISO => new Date(omTimeISO).getTime() === metTime.getTime());
+
+                        if (omHourlyIndex !== -1) {
+                            const exHour = existingWeatherData.hourly;
+                            exHour.apparent_temperature[index] = omData.hourly.apparent_temperature?.[omHourlyIndex] ?? exHour.apparent_temperature[index];
+                            exHour.precipitation_probability[index] = omData.hourly.precipitation_probability?.[omHourlyIndex] ?? exHour.precipitation_probability[index];
+                            exHour.wind_gusts_10m[index] = omData.hourly.wind_gusts_10m?.[omHourlyIndex] ?? null; // Öncelik OM
+                            exHour.uv_index[index] = omData.hourly.uv_index?.[omHourlyIndex] ?? exHour.uv_index[index];
+                            exHour.visibility[index] = omData.hourly.visibility?.[omHourlyIndex] ?? exHour.visibility[index];
+                            exHour.soil_temperature_0cm[index] = omData.hourly.soil_temperature_0cm?.[omHourlyIndex] ?? exHour.soil_temperature_0cm[index];
+                            exHour.soil_moisture_0_1cm[index] = omData.hourly.soil_moisture_0_1cm?.[omHourlyIndex] ?? exHour.soil_moisture_0_1cm[index];
+                            if (omData.hourly.pressure_msl?.[omHourlyIndex] !== undefined) exHour.pressure_msl[index] = omData.hourly.pressure_msl[omHourlyIndex];
+                            if (omData.hourly.cloud_cover?.[omHourlyIndex] !== undefined) exHour.cloud_cover[index] = omData.hourly.cloud_cover[omHourlyIndex];
+                            
+                            if (exHour.rain[index] === 0 && omData.hourly.rain?.[omHourlyIndex] > 0) exHour.rain[index] = omData.hourly.rain[omHourlyIndex];
+                            if (exHour.showers[index] === 0 && omData.hourly.showers?.[omHourlyIndex] > 0) exHour.showers[index] = omData.hourly.showers[omHourlyIndex];
+                            if (exHour.snowfall[index] === 0 && omData.hourly.snowfall?.[omHourlyIndex] > 0) exHour.snowfall[index] = omData.hourly.snowfall[omHourlyIndex];
+                             exHour.precipitation[index] = omData.hourly.precipitation?.[omHourlyIndex] ?? exHour.precipitation[index];
+                        }
+                    });
+                }
+                
+                // GÜNLÜK VERİ BİRLEŞTİRME (OpenMeteo'yu tercih et)
+                if (omData.daily && omData.daily.time) {
+                    const exDaily = existingWeatherData.daily;
+                    exDaily.time = omData.daily.time.slice(0, 7); // OM'den gelen günleri kullan
+                    
+                    const dailyFieldsToTakeFromOM = [
+                        'weather_code', 'temperature_2m_max', 'temperature_2m_min', 'apparent_temperature_max', 
+                        'apparent_temperature_min', 'sunrise', 'sunset', 'uv_index_max', 'uv_index_clear_sky_max',
+                        'precipitation_sum', 'rain_sum', 'showers_sum', 'snowfall_sum', 'precipitation_hours', 
+                        'precipitation_probability_max', 'wind_speed_10m_max', 'wind_gusts_10m_max', 
+                        'wind_direction_10m_dominant', 'shortwave_radiation_sum', 'et0_fao_evapotranspiration'
+                    ];
+
+                    dailyFieldsToTakeFromOM.forEach(field => {
+                        if (omData.daily[field]) {
+                            exDaily[field] = omData.daily[field].slice(0, 7).map(val => val ?? null);
+                        } else {
+                             exDaily[field] = Array(7).fill(null);
+                        }
+                    });
+                }
+                existingWeatherData.api_source = "MET Norway / Open-Meteo";
+                return existingWeatherData;
+
+            } catch (error) {
+                logError(`OpenMeteo tamamlama hatası: ${error.message}`);
+                return existingWeatherData; // Hata durumunda MET verisini döndür
             }
         }
 
-        function loadDataFromLocalStorage(provinceKey) {
-            const data = localStorage.getItem(`offline_weather_${provinceKey}`);
-            return data ? JSON.parse(data) : null;
-        }
-
-        function getLastBulkUpdateTime() {
-            return localStorage.getItem('offline_lastBulkUpdateTime');
-        }
-
-        function setLastBulkUpdateTime() {
-            localStorage.setItem('offline_lastBulkUpdateTime', new Date().toISOString());
+        const metSymbolToWMOCode = {
+            'clearsky_day': { wmo: 0 }, 'clearsky_night': { wmo: 0 },
+            'fair_day': { wmo: 1 }, 'fair_night': { wmo: 1 },
+            'partlycloudy_day': { wmo: 2 }, 'partlycloudy_night': { wmo: 2 },
+            'cloudy': { wmo: 3 },
+            'lightrainshowers_day': { wmo: 80, is_showers: true, is_rain: true }, 'lightrainshowers_night': { wmo: 80, is_showers: true, is_rain: true },
+            'rainshowers_day': { wmo: 81, is_showers: true, is_rain: true }, 'rainshowers_night': { wmo: 81, is_showers: true, is_rain: true },
+            'heavyrainshowers_day': { wmo: 82, is_showers: true, is_rain: true }, 'heavyrainshowers_night': { wmo: 82, is_showers: true, is_rain: true },
+            'lightrainshowersandthunder_day': { wmo: 95, is_showers: true, is_rain: true }, 'lightrainshowersandthunder_night': { wmo: 95, is_showers: true, is_rain: true },
+            'rainshowersandthunder_day': { wmo: 95, is_showers: true, is_rain: true }, 'rainshowersandthunder_night': { wmo: 95, is_showers: true, is_rain: true },
+            'heavyrainshowersandthunder_day': { wmo: 97, is_showers: true, is_rain: true }, 'heavyrainshowersandthunder_night': { wmo: 97, is_showers: true, is_rain: true },
+            'lightsleetshowers_day': { wmo: 83, is_showers: true }, 'lightsleetshowers_night': { wmo: 83, is_showers: true }, // Sleet/karla karışık yağmur
+            'sleetshowers_day': { wmo: 83, is_showers: true }, 'sleetshowers_night': { wmo: 83, is_showers: true },
+            'heavysleetshowers_day': { wmo: 84, is_showers: true }, 'heavysleetshowers_night': { wmo: 84, is_showers: true },
+            'lightsnowshowers_day': { wmo: 85, is_showers: true, is_snow: true }, 'lightsnowshowers_night': { wmo: 85, is_showers: true, is_snow: true },
+            'snowshowers_day': { wmo: 85, is_showers: true, is_snow: true }, 'snowshowers_night': { wmo: 85, is_showers: true, is_snow: true },
+            'heavysnowshowers_day': { wmo: 86, is_showers: true, is_snow: true }, 'heavysnowshowers_night': { wmo: 86, is_showers: true, is_snow: true },
+            'lightrain': { wmo: 61, is_rain: true }, 'rain': { wmo: 63, is_rain: true }, 'heavyrain': { wmo: 65, is_rain: true },
+            'lightrainandthunder': { wmo: 95, is_rain: true }, 'rainandthunder': { wmo: 95, is_rain: true }, 'heavyrainandthunder': { wmo: 97, is_rain: true },
+            'lightsleet': { wmo: 67 }, 'sleet': { wmo: 67 }, 'heavysleet': { wmo: 67 },
+            'lightsnow': { wmo: 71, is_snow: true }, 'snow': { wmo: 73, is_snow: true }, 'heavysnow': { wmo: 75, is_snow: true },
+            'lightsnowandthunder': { wmo: 95, is_snow: true }, 'snowandthunder': { wmo: 95, is_snow: true }, 'heavysnowandthunder': { wmo: 97, is_snow: true },
+            'fog': { wmo: 45 },
+            'default': { wmo: 0 } // Bilinmeyen veya eşleşmeyen durumlar için
+        };
+        function getMetSymbolInfo(symbolCode) {
+            if (!symbolCode) return { ...metSymbolToWMOCode['default'], is_day: 1 };
+            const mapping = metSymbolToWMOCode[symbolCode.toLowerCase()] || metSymbolToWMOCode['default'];
+            const is_day = symbolCode.toLowerCase().includes('_day') ? 1 : (symbolCode.toLowerCase().includes('_night') ? 0 : 1); // Gündüz/geceyi sembolden çıkar
+            return { ...mapping, is_day };
         }
         
-        clearLocalDataButton.addEventListener('click', () => {
-            if (confirm("Tüm kaydedilmiş hava durumu verilerini silmek istediğinizden emin misiniz?")) {
-                provinceLocationData.forEach(pData => {
-                    localStorage.removeItem(`offline_weather_${pData.province}_${pData.district}`);
-                });
-                localStorage.removeItem('offline_lastBulkUpdateTime');
-                localStorage.removeItem('offline_selectedProvinceKey');
-                updateStatus("Tüm yerel veriler silindi.", false);
-                weatherDisplay.style.display = 'none';
-                lastUpdateTimeEl.textContent = 'Son Güncelleme: Henüz yok';
-                currentSelectedProvinceKey = provinceLocationData[0]?.name; // Reset to first province
-                if (provinceSelect.options.length > 0) provinceSelect.value = currentSelectedProvinceKey;
-                checkAndLoadDataForProvince(currentSelectedProvinceKey);
-            }
-        });
+        const WMO_CODE_DESCRIPTIONS = {
+            0: 'Açık', 1: 'Az Bulutlu', 2: 'Parçalı Bulutlu', 3: 'Çok Bulutlu',
+            45: 'Sisli', 48: 'Kırağı Sisi',
+            51: 'Hafif Çisenti', 53: 'Orta Çisenti', 55: 'Yoğun Çisenti',
+            56: 'Hafif Donan Çisenti', 57: 'Yoğun Donan Çisenti',
+            61: 'Hafif Yağmurlu', 63: 'Orta Yağmurlu', 65: 'Şiddetli Yağmurlu',
+            66: 'Hafif Donan Yağmur', 67: 'Yoğun Donan Yağmur',
+            71: 'Hafif Kar Yağışlı', 73: 'Orta Kar Yağışlı', 75: 'Yoğun Kar Yağışlı',
+            77: 'Kar Taneleri',
+            80: 'Hafif Sağanak Yağmur', 81: 'Orta Sağanak Yağmur', 82: 'Şiddetli Sağanak Yağmur',
+            83: 'Hafif Karla Karışık Yağmur Sağanağı', 84: 'Şiddetli Karla Karışık Yağmur Sağanağı',
+            85: 'Hafif Kar Sağanağı', 86: 'Yoğun Kar Sağanağı',
+            95: 'Gök Gürültülü Fırtına',
+            96: 'Hafif Dolu ile Fırtına', 97: 'Şiddetli Gök Gürültülü Fırtına', 99: 'Yoğun Dolu ile Fırtına'
+        };
 
-        // --- UI SERVICE ---
-        function updateStatus(message, isError = false) {
-            statusBar.textContent = message;
-            statusBar.className = 'status-bar'; // Reset
-            if (isError) statusBar.classList.add('error');
-            else statusBar.classList.add('info');
+        function getWeatherDescription(code) {
+            return WMO_CODE_DESCRIPTIONS[code] || 'Bilinmiyor';
         }
 
-        function displayWeatherData(data, locationDisplayName) {
-            if (!data) {
-                updateStatus(`${locationDisplayName} için hava durumu verisi bulunamadı.`, true);
-                weatherDisplay.style.display = 'none';
+        function getWindDirection(degrees) {
+            if (degrees === null || degrees === undefined) return 'N/A';
+            const directions = ['K', 'KKD', 'KD', 'DKD', 'D', 'DGD', 'GD', 'GGD', 'G', 'GGB', 'GB', 'BGB', 'B', 'BKB', 'KB', 'KKB'];
+            const index = Math.round(degrees / 22.5) % 16;
+            return directions[index];
+        }
+        
+        function formatTime(dateString, formatStr = 'HH:mm') {
+            if (!dateString) return "N/A";
+            try {
+                return new Date(dateString).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', hour12: false });
+            } catch (e) {
+                return "N/A";
+            }
+        }
+         function formatDate(dateString, formatStr = { day: 'numeric', month: 'short' }) {
+            if (!dateString) return "N/A";
+            try {
+                 return new Date(dateString).toLocaleDateString('tr-TR', formatStr);
+            } catch (e) {
+                return "N/A";
+            }
+        }
+
+        function displayWeatherData(provinceName, weatherData) {
+            if (!weatherData) {
+                logError(`${provinceName} için hava durumu verisi bulunamadı.`);
+                weatherContentDiv.classList.add('hidden');
                 return;
             }
-            weatherDisplay.style.display = 'block';
-            updateStatus(`${locationDisplayName} için hava durumu gösteriliyor. Son API Çekme: ${new Date(data.fetchedAt).toLocaleString('tr-TR')}`, false);
 
-            // Current Weather
-            const { current, hourly, daily } = data;
-            currentLocationNameEl.textContent = locationDisplayName;
-            currentWeatherTimeEl.textContent = `Tahmin Zamanı: ${new Date(current.time).toLocaleString('tr-TR', { weekday: 'long', hour: '2-digit', minute: '2-digit' })}`;
+            selectedProvinceNameH2.textContent = provinceName;
+            const { current, hourly, daily } = weatherData;
+
+            // Anlık hava durumu
+            const currentDateTime = new Date(current.time);
+            currentTimeSpan.textContent = formatTime(current.time);
             
-            const currentWInfo = getWeatherInfo(current.weather_code, current.is_day);
-            currentWeatherIconEl.innerHTML = `<span style="font-size: 3em;" title="${currentWInfo.description}">${currentWInfo.icon}</span>`;
-            currentWeatherDescriptionEl.textContent = currentWInfo.description;
+            let displayTemp = parseFloat(current.temperature_2m).toFixed(1);
+            currentTempP.textContent = `${displayTemp}°C`;
+            currentConditionP.textContent = getWeatherDescription(current.weather_code);
+            currentApparentTempSpan.textContent = current.apparent_temperature !== null ? parseFloat(current.apparent_temperature).toFixed(1) : 'N/A';
+            currentHumiditySpan.textContent = current.relative_humidity_2m !== null ? parseFloat(current.relative_humidity_2m).toFixed(0) : 'N/A';
+            currentWindSpan.textContent = `${current.wind_speed_10m !== null ? parseFloat(current.wind_speed_10m).toFixed(1) : 'N/A'} (${getWindDirection(current.wind_direction_10m)})`;
+            currentWindGustSpan.textContent = current.wind_gusts_10m !== null ? parseFloat(current.wind_gusts_10m).toFixed(1) : 'N/A';
+            currentPressureSpan.textContent = current.surface_pressure !== null ? parseFloat(current.surface_pressure).toFixed(0) : 'N/A';
+            currentVisibilitySpan.textContent = current.visibility !== null ? (parseFloat(current.visibility) / 1000).toFixed(1) : 'N/A';
+            currentUVSpan.textContent = current.uv_index !== null ? parseFloat(current.uv_index).toFixed(1) : 'N/A';
+            currentPrecipitationSpan.textContent = current.precipitation !== null ? parseFloat(current.precipitation).toFixed(1) : 'N/A';
 
-            // Kademeli sıcaklık
-            if (temperatureAnimationInterval) clearInterval(temperatureAnimationInterval);
-            let displayTemp = parseFloat(current.temperature_2m);
-            currentTemperatureEl.textContent = `${displayTemp.toFixed(1)}°C`;
 
-            const currentHourIndex = hourly.findIndex(h => new Date(h.time) >= new Date(current.time));
-            const nextHourData = hourly[currentHourIndex + 1];
+            // Kademeli sıcaklık değişimi (basit simülasyon)
+            let tempAnimationInterval;
+            clearInterval(tempAnimationInterval);
 
-            if (nextHourData) {
-                const tempDiff = parseFloat(nextHourData.temperature_2m) - displayTemp;
-                const steps = 60 * 2; // 2 steps per minute for an hour transition (adjust for smoother/faster)
-                const increment = tempDiff / steps;
-                let currentStep = 0;
-                temperatureAnimationInterval = setInterval(() => {
-                    if (currentStep < steps) {
-                        displayTemp += increment;
-                        currentTemperatureEl.textContent = `${displayTemp.toFixed(1)}°C`;
-                        currentStep++;
-                    } else {
-                        clearInterval(temperatureAnimationInterval);
-                        currentTemperatureEl.textContent = `${parseFloat(nextHourData.temperature_2m).toFixed(1)}°C`; // Ensure final value
+            const currentHourIndex = hourly.time.findIndex(t => new Date(t) >= currentDateTime);
+            if (currentHourIndex !== -1 && currentHourIndex + 1 < hourly.time.length) {
+                const tempNow = parseFloat(current.temperature_2m);
+                const tempNextHour = parseFloat(hourly.temperature_2m[currentHourIndex + 1]);
+                if (!isNaN(tempNow) && !isNaN(tempNextHour)) {
+                    let animatedTemp = tempNow;
+                    const diff = tempNextHour - tempNow;
+                    const steps = Math.abs(diff) / 0.1; // Her 0.1 derece için bir adım
+                    const intervalTime = (60 * 60 * 1000) / (steps || 1); // Bir saat içinde tamamlanacak şekilde
+
+                    if (steps > 0) {
+                         tempAnimationInterval = setInterval(() => {
+                            if ((diff > 0 && animatedTemp >= tempNextHour) || (diff < 0 && animatedTemp <= tempNextHour)) {
+                                clearInterval(tempAnimationInterval);
+                                currentTempP.textContent = `${parseFloat(tempNextHour).toFixed(1)}°C`; // Son değeri ayarla
+                                return;
+                            }
+                            animatedTemp += (diff > 0 ? 0.1 : -0.1);
+                            currentTempP.textContent = `${animatedTemp.toFixed(1)}°C`;
+                        }, Math.max(intervalTime, 500)); // Çok hızlı olmasın diye min 500ms
                     }
-                }, 30000 / steps); // Total 30 seconds for transition (adjust as needed)
+                }
             }
 
 
-            currentApparentTemperatureEl.textContent = current.apparent_temperature?.toFixed(1) ?? 'N/A';
-            currentHumidityEl.textContent = current.relative_humidity_2m?.toFixed(0) ?? 'N/A';
-            currentWindSpeedEl.textContent = current.wind_speed_10m ?? 'N/A';
-            currentWindDirectionEl.textContent = getWindDirectionSymbol(current.wind_direction_10m);
-            currentWindGustsEl.textContent = current.wind_gusts_10m ?? 'N/A';
-            currentPressureEl.textContent = current.surface_pressure?.toFixed(0) ?? 'N/A';
-            currentVisibilityEl.textContent = current.visibility ?? 'N/A';
-            currentUvIndexEl.textContent = current.uv_index ?? 'N/A';
-            currentPrecipitationEl.textContent = current.precipitation?.toFixed(1) ?? 'N/A';
-
-
-            // Hourly Forecast
-            hourlyForecastEl.innerHTML = ''; // Clear previous
-            hourly.slice(0, 24).forEach(hour => {
-                const hourEl = document.createElement('div');
-                hourEl.classList.add('forecast-item');
-                const hourTime = new Date(hour.time);
-                const wInfo = getWeatherInfo(hour.weather_code, hourTime.getHours() > 6 && hourTime.getHours() < 20);
-                hourEl.innerHTML = `
-                    <div class="time">${hourTime.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}</div>
-                    <div style="font-size: 1.5em;" title="${wInfo.description}">${wInfo.icon}</div>
-                    <div class="temp">${hour.temperature_2m?.toFixed(1) ?? 'N/A'}°C</div>
-                    <div class="desc" style="font-size:0.8em;">${wInfo.description}</div>
-                    <div class="precip" title="Yağış İhtimali">💧 ${hour.precipitation_probability?.toFixed(0) ?? 'N/A'}%</div>
-                    <div class="precip" title="Yağış Miktarı">☔ ${hour.precipitation?.toFixed(1) ?? 'N/A'}mm</div>
-                `;
-                hourlyForecastEl.appendChild(hourEl);
-            });
+            // Saatlik tahminler
+            hourlyForecastTableContainer.innerHTML = ''; // Temizle
+            const hourlyTable = document.createElement('table');
+            hourlyTable.innerHTML = `
+                <thead>
+                    <tr>
+                        <th>Saat</th>
+                        <th>Sıcaklık</th>
+                        <th>Hissedilen</th>
+                        <th>Durum</th>
+                        <th>Yağış İht. (%)</th>
+                        <th>Yağış (mm)</th>
+                        <th>Rüzgar (km/s)</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>`;
+            const hourlyTbody = hourlyTable.querySelector('tbody');
             
-            // Daily Forecast
-            dailyForecastEl.innerHTML = '';
-            daily.forEach(day => {
-                const dayEl = document.createElement('div');
-                dayEl.classList.add('forecast-item');
-                const date = new Date(day.time);
-                const wInfo = getWeatherInfo(day.weather_code, true); // Assume day for daily icon
-                dayEl.innerHTML = `
-                    <div class="time">${date.toLocaleDateString('tr-TR', { weekday: 'short', day: 'numeric', month: 'short' })}</div>
-                    <div style="font-size: 1.8em;" title="${wInfo.description}">${wInfo.icon}</div>
-                    <div>${wInfo.description}</div>
-                    <div class="temp">Max: ${day.temperature_2m_max?.toFixed(1) ?? 'N/A'}°C</div>
-                    <div class="temp">Min: ${day.temperature_2m_min?.toFixed(1) ?? 'N/A'}°C</div>
-                    <div class="precip" title="Yağış İhtimali">💧 ${day.precipitation_probability_max?.toFixed(0) ?? 'N/A'}%</div>
-                    <div class="precip" title="Toplam Yağış">☔ ${day.precipitation_sum?.toFixed(1) ?? 'N/A'}mm</div>
+            const displayHourlyCount = Math.min(hourly.time.length, 24); // En fazla 24 saat göster
+            for (let i = 0; i < displayHourlyCount; i++) {
+                const row = hourlyTbody.insertRow();
+                row.insertCell().textContent = formatTime(hourly.time[i]);
+                row.insertCell().textContent = `${hourly.temperature_2m[i] !== null ? hourly.temperature_2m[i].toFixed(1) : 'N/A'}°C`;
+                row.insertCell().textContent = `${hourly.apparent_temperature[i] !== null ? hourly.apparent_temperature[i].toFixed(1) : 'N/A'}°C`;
+                row.insertCell().textContent = getWeatherDescription(hourly.weather_code[i]);
+                row.insertCell().textContent = hourly.precipitation_probability[i] !== null ? hourly.precipitation_probability[i].toFixed(0) : 'N/A';
+                row.insertCell().textContent = hourly.precipitation[i] !== null ? hourly.precipitation[i].toFixed(1) : 'N/A';
+                row.insertCell().textContent = `${hourly.wind_speed_10m[i] !== null ? hourly.wind_speed_10m[i].toFixed(1) : 'N/A'}`;
+            }
+            hourlyForecastTableContainer.appendChild(hourlyTable);
+
+            // Günlük tahminler
+            dailyForecastListDiv.innerHTML = ''; // Temizle
+            daily.time.forEach((day, index) => {
+                const dayDiv = document.createElement('div');
+                dayDiv.style.borderBottom = '1px solid #eee';
+                dayDiv.style.padding = '10px 0';
+                dayDiv.innerHTML = `
+                    <strong>${formatDate(day, { weekday: 'long', day: 'numeric', month: 'short' })}:</strong>
+                    ${getWeatherDescription(daily.weather_code[index])},
+                    Max: ${daily.temperature_2m_max[index] !== null ? daily.temperature_2m_max[index].toFixed(1) : 'N/A'}°C,
+                    Min: ${daily.temperature_2m_min[index] !== null ? daily.temperature_2m_min[index].toFixed(1) : 'N/A'}°C,
+                    Yağış: ${daily.precipitation_sum[index] !== null ? daily.precipitation_sum[index].toFixed(1) : 'N/A'}mm
+                    (İht: ${daily.precipitation_probability_max[index] !== null ? daily.precipitation_probability_max[index].toFixed(0) : 'N/A'}%)
                 `;
-                dailyForecastEl.appendChild(dayEl);
+                dailyForecastListDiv.appendChild(dayDiv);
             });
 
-            // Charts
-            createBarChart(hourlyTempChartEl, hourly.slice(0, 24).map(h => ({ label: new Date(h.time).getHours() + ':00', value: h.temperature_2m })), 'Sıcaklık (°C)', '#e67e22');
-            createBarChart(hourlyPrecipChartEl, hourly.slice(0, 24).map(h => ({ label: new Date(h.time).getHours() + ':00', value: h.precipitation_probability })), 'Yağış İhtimali (%)', '#3498db', 100);
+            // Basit SVG Grafikleri
+            createBarChart(hourlyTempChartDiv, hourly.temperature_2m.slice(0, 24).map(t => t ?? 0), hourly.time.slice(0, 24).map(t => formatTime(t, 'HH')), '°C');
+            createBarChart(hourlyPrecipProbChartDiv, hourly.precipitation_probability.slice(0, 24).map(p => p ?? 0), hourly.time.slice(0, 24).map(t => formatTime(t, 'HH')), '%');
+
+            weatherContentDiv.classList.remove('hidden');
+            errorMessageDiv.classList.add('hidden');
         }
 
-        function createBarChart(svgElement, data, unit, color, maxValue = null) {
-            svgElement.innerHTML = ''; // Clear previous chart
-            const chartWidth = svgElement.clientWidth || 300;
-            const chartHeight = svgElement.clientHeight || 150;
+        function createBarChart(container, data, labels, unit = '') {
+            container.innerHTML = '';
+            if (!data || data.length === 0) {
+                container.textContent = 'Grafik için veri yok.';
+                return;
+            }
+            const svgNS = "http://www.w3.org/2000/svg";
+            const svg = document.createElementNS(svgNS, "svg");
+            const chartHeight = 150;
+            const chartWidth = container.clientWidth || 600; // Get parent width
             const barPadding = 5;
             const barWidth = (chartWidth - (data.length + 1) * barPadding) / data.length;
-            
-            const values = data.map(d => d.value === null || d.value === undefined ? 0 : d.value);
-            const yMax = maxValue !== null ? maxValue : (Math.max(...values) > 0 ? Math.max(...values) : 10); // Ensure yMax is not 0
-            const yMin = Math.min(...values) < 0 ? Math.min(...values) : 0; // Handle negative temps
-            const yRange = yMax - yMin;
+            const maxValue = Math.max(0,...data.map(d => Math.abs(d))); // Handle negative temps by taking absolute for scale
+            const minValue = Math.min(0,...data);
+            const dataRange = maxValue - Math.min(0, minValue); // Adjust for potential negative min values
+            const scale = dataRange > 0 ? (chartHeight - 30) / dataRange : 1; // 30px for labels
+            const zeroLineY = maxValue > 0 ? chartHeight - 15 - (maxValue * scale) : chartHeight - 15;
 
-            data.forEach((d, i) => {
-                const barHeight = yRange === 0 ? 0 : ((d.value - yMin) / yRange) * (chartHeight - 20); // -20 for labels
+
+            svg.setAttribute("height", chartHeight.toString());
+            svg.setAttribute("viewBox", `0 0 ${chartWidth} ${chartHeight}`);
+
+            // Zero line
+            const line = document.createElementNS(svgNS, "line");
+            line.setAttribute("x1", "0");
+            line.setAttribute("y1", zeroLineY.toString());
+            line.setAttribute("x2", chartWidth.toString());
+            line.setAttribute("y2", zeroLineY.toString());
+            line.setAttribute("stroke", "#ccc");
+            svg.appendChild(line);
+
+
+            data.forEach((value, i) => {
+                const barHeight = Math.abs(value) * scale;
                 const x = barPadding + i * (barWidth + barPadding);
-                const y = chartHeight - 15 - barHeight; // -15 for x-axis labels
+                let y;
 
-                const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-                rect.setAttribute('x', x);
-                rect.setAttribute('y', y);
-                rect.setAttribute('width', barWidth);
-                rect.setAttribute('height', Math.max(0, barHeight)); // Ensure non-negative height
-                rect.setAttribute('fill', color);
-                rect.setAttribute('rx', '3');
-                rect.setAttribute('ry', '3');
-                svgElement.appendChild(rect);
-
-                const textLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                textLabel.setAttribute('x', x + barWidth / 2);
-                textLabel.setAttribute('y', chartHeight - 5);
-                textLabel.setAttribute('text-anchor', 'middle');
-                textLabel.textContent = d.label;
-                svgElement.appendChild(textLabel);
+                const rect = document.createElementNS(svgNS, "rect");
+                rect.setAttribute("x", x.toString());
                 
-                const textValue = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                textValue.setAttribute('x', x + barWidth / 2);
-                textValue.setAttribute('y', y - 3);
-                textValue.setAttribute('text-anchor', 'middle');
-                textValue.setAttribute('font-size', '9px');
-                textValue.textContent = d.value?.toFixed(0) + (unit.includes('%') ? '%' : '°');
-                svgElement.appendChild(textValue);
+                if (value >= 0) {
+                    y = zeroLineY - barHeight;
+                    rect.setAttribute("fill", "#87CEEB");
+                } else {
+                    y = zeroLineY; // Start at zero line for negative values
+                    rect.setAttribute("fill", "#FFB6C1"); // LightPink for negative
+                }
+                rect.setAttribute("y", y.toString());
+                rect.setAttribute("width", barWidth.toString());
+                rect.setAttribute("height", barHeight.toString());
+                rect.classList.add("bar");
+                svg.appendChild(rect);
+
+                const textValue = document.createElementNS(svgNS, "text");
+                textValue.setAttribute("x", (x + barWidth / 2).toString());
+                textValue.setAttribute("y", (value >= 0 ? y - 3 : y + barHeight + 10).toString());
+                textValue.textContent = `${value.toFixed(0)}${unit}`;
+                textValue.classList.add("bar-text");
+                svg.appendChild(textValue);
+
+                if (labels && labels[i]) {
+                    const textLabel = document.createElementNS(svgNS, "text");
+                    textLabel.setAttribute("x", (x + barWidth / 2).toString());
+                    textLabel.setAttribute("y", (chartHeight - 5).toString());
+                    textLabel.textContent = labels[i];
+                    textLabel.classList.add("axis-text");
+                    svg.appendChild(textLabel);
+                }
             });
+            container.appendChild(svg);
         }
 
-        // --- APP LOGIC ---
-        async function checkAndLoadDataForProvince(provinceKeyToLoad) {
-            const location = provinceLocationData.find(p => p.name === provinceKeyToLoad);
-            if (!location) {
-                updateStatus(`Seçilen konum (${provinceKeyToLoad}) bulunamadı.`, true);
-                return;
-            }
-            
-            if (location.lat === 0.0 && location.lon === 0.0) {
-                updateStatus(`${location.name} için geçerli koordinat bulunamadı. Lütfen HTML dosyasındaki koordinatları güncelleyin.`, true);
-                 weatherDisplay.style.display = 'none';
-                return;
-            }
 
-            let data = loadDataFromLocalStorage(`${location.province}_${location.district}`);
-            const now = new Date().getTime();
-
-            if (data && (now - new Date(data.fetchedAt).getTime()) < BULK_UPDATE_INTERVAL_MS) {
-                updateStatus(`${location.name} için yerel veriler kullanılıyor.`, false);
-                displayWeatherData(data, location.name);
-            } else {
-                updateStatus(`${location.name} için MET Norway ve OpenMeteo API'lerinden veri çekiliyor...`, false);
-                try {
-                    const metData = await fetchWeatherDataFromMET(location.lat, location.lon);
-                    const openMeteoData = await fetchWeatherDataFromOpenMeteo(location.lat, location.lon);
-                    
-                    const processedData = processWeatherData(metData, openMeteoData, `${location.province}_${location.district}`);
-                    if (processedData) {
-                        saveDataToLocalStorage(`${location.province}_${location.district}`, processedData);
-                        displayWeatherData(processedData, location.name);
-                    } else {
-                         updateStatus(`${location.name} için veri işlenemedi.`, true);
-                    }
-                } catch (error) {
-                    updateStatus(`${location.name} için veri çekilemedi: ${error.message}. Yerel veri varsa o gösteriliyor.`, true);
-                    if(data) displayWeatherData(data, location.name); // Show stale data if fetch fails
-                    else weatherDisplay.style.display = 'none';
+        async function fetchAndStoreWeatherDataForProvince(provinceName, districtInfo) {
+            logMessage(`${provinceName} için veri çekiliyor...`);
+            showLoader(true);
+            try {
+                if (districtInfo.lat === 0 && districtInfo.lon === 0) {
+                    throw new Error(`${provinceName} için geçerli koordinat bulunamadı. Lütfen JSON dosyasını kontrol edin.`);
                 }
+                const weatherData = await fetchCombinedWeatherData(districtInfo.lat, districtInfo.lon);
+                if (weatherData) {
+                    await saveDataToDB(provinceName, weatherData, new Date().toISOString());
+                    logMessage(`${provinceName} için veriler başarıyla çekildi ve kaydedildi.`);
+                    return weatherData;
+                } else {
+                    throw new Error(`${provinceName} için hava durumu verisi alınamadı.`);
+                }
+            } catch (error) {
+                logError(`Hata (${provinceName}): ${error.message}`);
+                return null;
+            } finally {
+                showLoader(false);
+            }
+        }
+
+        async function loadWeatherForSelectedProvince() {
+            const selectedProvinceName = provinceSelect.value;
+            if (!selectedProvinceName) return;
+
+            showLoader(true);
+            logMessage(`${selectedProvinceName} için veriler yükleniyor...`);
+            try {
+                const storedData = await getDataFromDB(selectedProvinceName);
+                let weatherDataToDisplay;
+
+                if (storedData && (new Date().getTime() - new Date(storedData.lastUpdated).getTime() < DATA_STALE_MS)) {
+                    logMessage(`${selectedProvinceName} için kaydedilmiş güncel veri bulundu.`);
+                    weatherDataToDisplay = storedData.data;
+                } else {
+                    logMessage(storedData ? `${selectedProvinceName} için kaydedilmiş veri eski, yenisi çekiliyor...` : `${selectedProvinceName} için kaydedilmiş veri yok, yenisi çekiliyor...`);
+                    const provinceEntry = allProvincesData[selectedProvinceName];
+                    if (provinceEntry && provinceEntry[0]) { // Sadece ilk (merkez) ilçeyi al
+                        weatherDataToDisplay = await fetchAndStoreWeatherDataForProvince(selectedProvinceName, provinceEntry[0]);
+                    } else {
+                        throw new Error(`${selectedProvinceName} için ilçe bilgisi bulunamadı.`);
+                    }
+                }
+
+                if (weatherDataToDisplay) {
+                    displayWeatherData(selectedProvinceName, weatherDataToDisplay);
+                } else {
+                     weatherContentDiv.classList.add('hidden'); // Veri yoksa içeriği gizle
+                }
+            } catch (error) {
+                logError(`Hata (${selectedProvinceName}): ${error.message}`);
+                weatherContentDiv.classList.add('hidden');
+            } finally {
+                showLoader(false);
             }
         }
         
-        let isBulkUpdating = false;
-        async function initiateBulkUpdate() {
-            if (isBulkUpdating) {
-                updateStatus("Toplu güncelleme zaten devam ediyor.", true);
-                return;
-            }
-            isBulkUpdating = true;
-            updateAllDataButton.disabled = true;
-            updateStatus("Tüm iller için toplu veri güncelleme başlatıldı...", false);
+        async function fetchAllProvincesData(forceRefresh = false) {
+            logMessage('Tüm iller için veri güncelleme işlemi başlatılıyor...');
+            showLoader(true);
             let successCount = 0;
             let errorCount = 0;
+            const provinces = Object.keys(allProvincesData);
 
-            for (let i = 0; i < provinceLocationData.length; i++) {
-                const loc = provinceLocationData[i];
-                if (loc.lat === 0.0 && loc.lon === 0.0) {
-                    console.warn(`Skipping ${loc.name} due to 0.0 coordinates.`);
-                    errorCount++;
-                    updateStatus(`(${i+1}/${provinceLocationData.length}) ${loc.name} için koordinat yok, atlanıyor...`, true);
-                    await new Promise(resolve => setTimeout(resolve, 50)); // Short delay for UI
-                    continue;
-                }
-
-                updateStatus(`(${i+1}/${provinceLocationData.length}) ${loc.name} için veri çekiliyor...`, false);
-                try {
-                    const metData = await fetchWeatherDataFromMET(loc.lat, loc.lon);
-                    const openMeteoData = await fetchWeatherDataFromOpenMeteo(loc.lat, loc.lon);
-                    const processedData = processWeatherData(metData, openMeteoData, `${loc.province}_${loc.district}`);
-                    
-                    if (processedData) {
-                        saveDataToLocalStorage(`${loc.province}_${loc.district}`, processedData);
-                        successCount++;
-                    } else {
+            for (let i = 0; i < provinces.length; i++) {
+                const provinceName = provinces[i];
+                const provinceEntry = allProvincesData[provinceName];
+                if (provinceEntry && provinceEntry[0]) { // Sadece ilk (merkez) ilçe
+                     logMessage(`(${i+1}/${provinces.length}) ${provinceName} için veri işleniyor...`);
+                     try {
+                        const storedData = await getDataFromDB(provinceName);
+                        if (forceRefresh || !storedData || (new Date().getTime() - new Date(storedData.lastUpdated).getTime() >= DATA_STALE_MS)) {
+                            if (forceRefresh) logMessage(`${provinceName} için zorunlu yenileme.`);
+                            else if (!storedData) logMessage(`${provinceName} için kaydedilmiş veri yok.`);
+                            else logMessage(`${provinceName} için veri eski.`);
+                            
+                            await fetchAndStoreWeatherDataForProvince(provinceName, provinceEntry[0]);
+                            successCount++;
+                            await new Promise(resolve => setTimeout(resolve, 1500)); // API rate limit için bekleme
+                        } else {
+                            logMessage(`${provinceName} için güncel veri mevcut, atlanıyor.`);
+                            successCount++; // Zaten güncelse başarılı say
+                        }
+                    } catch (e) {
+                        logError(`${provinceName} için veri çekme/kaydetme hatası: ${e.message}`);
                         errorCount++;
                     }
-                } catch (error) {
-                    console.error(`Error fetching for ${loc.name}:`, error);
-                    errorCount++;
-                }
-                if (i < provinceLocationData.length - 1) {
-                    await new Promise(resolve => setTimeout(resolve, REQUEST_DELAY_MS));
                 }
             }
-            setLastBulkUpdateTime();
-            updateStatus(`Toplu güncelleme tamamlandı. Başarılı: ${successCount}, Hatalı: ${errorCount}.`, false);
-            lastUpdateTimeEl.textContent = `Tüm Veriler Son Güncelleme: ${new Date().toLocaleString('tr-TR')}`;
-            // Reload data for current selection if it was part of the bulk update
-            if (currentSelectedProvinceKey) {
-                checkAndLoadDataForProvince(currentSelectedProvinceKey);
+            localStorage.setItem('lastBulkUpdateTime', new Date().toISOString());
+            updateLastBulkRefreshTime();
+            logMessage(`Tüm iller için güncelleme tamamlandı. Başarılı: ${successCount}, Hatalı: ${errorCount}`);
+            showLoader(false);
+            // İşlem bittikten sonra seçili olan ilin verilerini yeniden yükle (eğer güncellendiyse)
+            if (provinceSelect.value) {
+                await loadWeatherForSelectedProvince();
             }
-            isBulkUpdating = false;
-            updateAllDataButton.disabled = false;
         }
-
-        function populateProvinces() {
-            provinceLocationData.forEach(pData => {
-                if(pData){ // Ensure pData is not null
-                    const option = document.createElement('option');
-                    option.value = pData.name; // Use combined name as value for simplicity
-                    option.textContent = pData.name;
-                    provinceSelect.appendChild(option);
-                }
-            });
-        }
-
-        provinceSelect.addEventListener('change', (event) => {
-            currentSelectedProvinceKey = event.target.value;
-            localStorage.setItem('offline_selectedProvinceKey', currentSelectedProvinceKey);
-            if (temperatureAnimationInterval) clearInterval(temperatureAnimationInterval); // Clear animation on province change
-            checkAndLoadDataForProvince(currentSelectedProvinceKey);
-        });
-
-        updateAllDataButton.addEventListener('click', initiateBulkUpdate);
-
-        function initApp() {
-            applyDarkModePreference();
-            populateProvinces();
-            
-            const lastSelected = localStorage.getItem('offline_selectedProvinceKey');
-            currentSelectedProvinceKey = lastSelected || (provinceLocationData[0] ? provinceLocationData[0].name : null);
-
-            if (currentSelectedProvinceKey && provinceSelect.options.length > 0) {
-                 // Check if the value exists in options
-                let valueExists = false;
-                for(let i=0; i < provinceSelect.options.length; i++){
-                    if(provinceSelect.options[i].value === currentSelectedProvinceKey){
-                        valueExists = true;
-                        break;
-                    }
-                }
-                if(valueExists) {
-                    provinceSelect.value = currentSelectedProvinceKey;
-                } else {
-                     currentSelectedProvinceKey = provinceLocationData[0] ? provinceLocationData[0].name : null; // fallback to first
-                     if(currentSelectedProvinceKey) provinceSelect.value = currentSelectedProvinceKey;
-                }
-            }
-
-
-            const lastUpdateTimestamp = getLastBulkUpdateTime();
-            if (lastUpdateTimestamp) {
-                lastUpdateTimeEl.textContent = `Tüm Veriler Son Güncelleme: ${new Date(lastUpdateTimestamp).toLocaleString('tr-TR')}`;
-                if (new Date().getTime() - new Date(lastUpdateTimestamp).getTime() > BULK_UPDATE_INTERVAL_MS) {
-                    updateStatus("Veriler 6 saatten eski, toplu güncelleme önerilir.", false);
-                    // Optionally, auto-trigger update if user preference allows (not implemented here)
-                    // initiateBulkUpdate(); 
-                } else {
-                     if(currentSelectedProvinceKey) checkAndLoadDataForProvince(currentSelectedProvinceKey);
-                }
+        
+        function updateLastBulkRefreshTime() {
+            const lastBulkUpdate = localStorage.getItem('lastBulkUpdateTime');
+            if (lastBulkUpdate) {
+                lastUpdateTimeDiv.textContent = `Tüm veriler en son ${new Date(lastBulkUpdate).toLocaleString('tr-TR')} tarihinde güncellendi.`;
             } else {
-                lastUpdateTimeEl.textContent = 'Tüm Veriler Son Güncelleme: Henüz yok. Lütfen güncelleyin.';
-                // First time load, prompt for update or auto-start
-                updateStatus("İlk kullanım. Tüm il verilerini çekmek için 'Tüm İllerin Verilerini Yenile' butonuna tıklayın.", false);
-                // initiateBulkUpdate(); // Optionally auto-start on first load
+                lastUpdateTimeDiv.textContent = 'Veriler henüz toplu olarak güncellenmedi.';
             }
-            
-            if(!lastUpdateTimestamp && provinceLocationData.length > 0 && currentSelectedProvinceKey) {
-                 // If no bulk update ever, and there's a selected province, try to load its data.
-                 // This handles the case where the user has never done a bulk update but selected a province.
-                 checkAndLoadDataForProvince(currentSelectedProvinceKey);
-            }
-
-
         }
 
-        // --- INITIALIZATION ---
-        document.addEventListener('DOMContentLoaded', initApp);
+        async function initializeApp() {
+            try {
+                await initDB(); // Veritabanını başlat
+                
+                // İl seçiciyi doldur
+                Object.keys(allProvincesData).sort((a, b) => a.localeCompare(b, 'tr')).forEach(provinceName => {
+                    const option = document.createElement('option');
+                    option.value = provinceName;
+                    option.textContent = provinceName;
+                    provinceSelect.appendChild(option);
+                });
+
+                // Kayıtlı son seçili ili yükle veya varsayılan olarak Kütahya'yı seç
+                const lastSelectedProvince = localStorage.getItem('lastSelectedOfflineProvince') || 'Kütahya';
+                if (allProvincesData[lastSelectedProvince]) {
+                    provinceSelect.value = lastSelectedProvince;
+                } else if (Object.keys(allProvincesData).length > 0) {
+                    provinceSelect.value = Object.keys(allProvincesData)[0]; // İlk ili seç
+                }
+
+                provinceSelect.addEventListener('change', () => {
+                    localStorage.setItem('lastSelectedOfflineProvince', provinceSelect.value);
+                    loadWeatherForSelectedProvince();
+                });
+                refreshButton.addEventListener('click', () => fetchAllProvincesData(true)); // true ile zorunlu yenileme
+
+                updateLastBulkRefreshTime();
+                const lastBulkUpdate = localStorage.getItem('lastBulkUpdateTime');
+                if (!lastBulkUpdate || (new Date().getTime() - new Date(lastBulkUpdate).getTime() >= DATA_STALE_MS)) {
+                    await fetchAllProvincesData(false); // Periyodik toplu güncelleme (eğer eskiyse)
+                } else {
+                     logMessage('Veriler güncel, toplu güncelleme atlanıyor.');
+                     if (provinceSelect.value) { // Eğer güncelse direkt seçili ili yükle
+                        await loadWeatherForSelectedProvince();
+                     }
+                }
+
+            } catch (error) {
+                logError('Uygulama başlatılırken bir hata oluştu: ' + error.message);
+                statusMessageDiv.textContent = 'Uygulama başlatılamadı. Lütfen konsolu kontrol edin.';
+                statusMessageDiv.className = 'error-message';
+            }
+        }
+
+        initializeApp();
 
     </script>
 </body>
 </html>
-
-    
