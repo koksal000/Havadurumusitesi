@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -32,10 +31,12 @@
         }
 
         [data-theme="dark"] {
-            --light-gray: #1A1D29;
-            --dark-navy: #F8FAFC;
+            --light-gray: #1E293B; /* Adjusted dark theme background */
+            --dark-navy: #F1F5F9;   /* Adjusted dark theme text */
             --border-color: #334155;
             --medium-gray: #94A3B8;
+            --primary-blue: #3B82F6;
+            --secondary-blue: #60A5FA;
         }
 
         * {
@@ -46,7 +47,7 @@
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--light-gray); /* Default light theme background */
             color: var(--dark-navy);
             min-height: 100vh;
             transition: var(--transition);
@@ -54,23 +55,24 @@
         }
 
         [data-theme="dark"] body {
-            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
-            color: var(--light-gray);
+            background: #0F172A; /* Dark theme background */
+            color: var(--dark-navy);
         }
 
+        /* Enhanced Header */
         .header {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.85); /* Slightly more opaque */
+            backdrop-filter: blur(15px);
             border-bottom: 1px solid var(--border-color);
             position: sticky;
             top: 0;
             z-index: 1000;
-            padding: 1.5rem 0;
+            padding: 1rem 0; /* Adjusted padding */
             box-shadow: var(--shadow-medium);
         }
 
         [data-theme="dark"] .header {
-            background: rgba(26, 29, 41, 0.95);
+            background: rgba(26, 32, 44, 0.85); /* Dark theme header */
         }
 
         .header-content {
@@ -79,39 +81,41 @@
             align-items: center;
             max-width: 1400px;
             margin: 0 auto;
-            padding: 0 2rem;
+            padding: 0 1.5rem; /* Adjusted padding */
         }
 
         .logo-section {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 0.8rem; /* Adjusted gap */
         }
 
         .logo-icon {
-            width: 60px;
-            height: 60px;
+            width: 50px; /* Adjusted size */
+            height: 50px;
             background: var(--gradient-primary);
-            border-radius: 16px;
+            border-radius: 12px; /* Adjusted radius */
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.8rem;
+            font-size: 1.5rem; /* Adjusted size */
             color: white;
             box-shadow: var(--shadow-medium);
         }
 
         .logo-text h1 {
-            font-size: 1.8rem;
+            font-size: 1.5rem; /* Adjusted size */
             font-weight: 800;
-            background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: var(--primary-blue);
             margin: 0;
         }
+         [data-theme="dark"] .logo-text h1 {
+            color: var(--secondary-blue);
+        }
+
 
         .logo-text p {
-            font-size: 0.9rem;
+            font-size: 0.8rem; /* Adjusted size */
             color: var(--medium-gray);
             margin: 0;
             font-weight: 500;
@@ -119,223 +123,292 @@
 
         .header-controls {
             display: flex;
-            gap: 1rem;
+            gap: 0.8rem; /* Adjusted gap */
             align-items: center;
         }
 
         .theme-toggle, .location-btn, .refresh-btn {
             background: var(--light-gray);
-            border: 2px solid var(--border-color);
+            border: 1px solid var(--border-color); /* Adjusted border */
             color: var(--dark-navy);
-            padding: 0.8rem 1.2rem;
-            border-radius: 12px;
+            padding: 0.6rem 1rem; /* Adjusted padding */
+            border-radius: 10px; /* Adjusted radius */
             cursor: pointer;
             transition: var(--transition);
             font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.4rem; /* Adjusted gap */
+            font-size: 0.9rem;
         }
+        [data-theme="dark"] .theme-toggle, 
+        [data-theme="dark"] .location-btn,
+        [data-theme="dark"] .refresh-btn {
+            background: #334155; /* Darker background for buttons in dark mode */
+            color: #E2E8F0;       /* Lighter text for buttons in dark mode */
+            border-color: #475569; /* Adjusted border for dark mode */
+        }
+
 
         .theme-toggle:hover, .location-btn:hover, .refresh-btn:hover {
             background: var(--primary-blue);
             color: white;
             border-color: var(--primary-blue);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-medium);
+            transform: translateY(-1px); /* Subtle hover effect */
+            box-shadow: var(--shadow-light);
         }
 
+        [data-theme="dark"] .theme-toggle:hover, 
+        [data-theme="dark"] .location-btn:hover,
+        [data-theme="dark"] .refresh-btn:hover {
+            background: var(--secondary-blue); /* Hover for dark mode */
+            border-color: var(--secondary-blue);
+        }
+
+
+        /* Enhanced Search Container */
         .search-section {
             max-width: 1400px;
-            margin: 3rem auto;
-            padding: 0 2rem;
+            margin: 2rem auto; /* Adjusted margin */
+            padding: 0 1.5rem;
         }
 
         .search-container {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 24px;
-            padding: 2.5rem;
+            background: white;
+            border-radius: 20px; /* Adjusted radius */
+            padding: 2rem; /* Adjusted padding */
             box-shadow: var(--shadow-large);
             border: 1px solid var(--border-color);
         }
 
         [data-theme="dark"] .search-container {
-            background: rgba(26, 29, 41, 0.95);
+            background: #1E293B; /* Dark theme search container */
         }
 
         .search-header {
             text-align: center;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem; /* Adjusted margin */
         }
 
         .search-header h2 {
-            font-size: 2rem;
+            font-size: 1.8rem; /* Adjusted size */
             font-weight: 700;
             color: var(--dark-navy);
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.4rem;
+        }
+         [data-theme="dark"] .search-header h2 {
+            color: var(--dark-navy); /* Ensure dark mode text color */
         }
 
         .search-header p {
             color: var(--medium-gray);
-            font-size: 1.1rem;
+            font-size: 1rem; /* Adjusted size */
         }
 
         .search-input-group {
             position: relative;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
         }
 
         .search-input {
             width: 100%;
-            padding: 1.2rem 1.5rem 1.2rem 3.5rem;
-            border: 2px solid var(--border-color);
-            border-radius: 16px;
-            font-size: 1.1rem;
+            padding: 1rem 1.2rem 1rem 3rem; /* Adjusted padding */
+            border: 1px solid var(--border-color);
+            border-radius: 12px; /* Adjusted radius */
+            font-size: 1rem;
             background: var(--light-gray);
             color: var(--dark-navy);
             transition: var(--transition);
             font-weight: 500;
         }
+        [data-theme="dark"] .search-input {
+             background: #334155;
+             color: #E2E8F0;
+             border-color: #475569;
+        }
+
 
         .search-input:focus {
             outline: none;
             border-color: var(--primary-blue);
-            box-shadow: 0 0 0 4px rgba(0, 102, 204, 0.1);
-            transform: translateY(-2px);
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1); /* Adjusted shadow */
         }
 
         .search-icon {
             position: absolute;
-            left: 1.2rem;
+            left: 1rem; /* Adjusted position */
             top: 50%;
             transform: translateY(-50%);
             color: var(--medium-gray);
-            font-size: 1.2rem;
+            font-size: 1.1rem; /* Adjusted size */
         }
 
         .quick-actions {
             display: flex;
-            gap: 1rem;
+            gap: 0.8rem; /* Adjusted gap */
             justify-content: center;
             flex-wrap: wrap;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
         }
 
         .quick-action-btn {
             background: var(--light-gray);
-            border: 2px solid var(--border-color);
+            border: 1px solid var(--border-color);
             color: var(--dark-navy);
-            padding: 0.8rem 1.5rem;
-            border-radius: 12px;
+            padding: 0.6rem 1.2rem; /* Adjusted padding */
+            border-radius: 10px; /* Adjusted radius */
             cursor: pointer;
             transition: var(--transition);
             font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.4rem;
+            font-size: 0.9rem;
         }
+        [data-theme="dark"] .quick-action-btn {
+            background: #334155;
+            color: #E2E8F0;
+            border-color: #475569;
+        }
+
 
         .quick-action-btn:hover {
             background: var(--primary-blue);
             color: white;
             border-color: var(--primary-blue);
-            transform: translateY(-2px);
+            transform: translateY(-1px);
+        }
+         [data-theme="dark"] .quick-action-btn:hover {
+            background: var(--secondary-blue);
+            border-color: var(--secondary-blue);
         }
 
+
+        /* Province Grid Container */
         .province-grid-container {
-            background: rgba(255, 255, 255, 0.98);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 2rem;
-            margin-top: 2rem;
-            box-shadow: var(--shadow-large);
-            max-height: 600px;
+            background: white;
+            border-radius: 16px; /* Adjusted radius */
+            padding: 1.5rem; /* Adjusted padding */
+            margin-top: 1.5rem;
+            box-shadow: var(--shadow-medium); /* Adjusted shadow */
+            max-height: 500px; /* Adjusted height */
             overflow-y: auto;
             border: 1px solid var(--border-color);
         }
 
         [data-theme="dark"] .province-grid-container {
-            background: rgba(26, 29, 41, 0.98);
+            background: #1E293B; /* Dark theme province grid */
         }
 
         .province-grid-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
-            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.8rem; /* Adjusted padding */
+            border-bottom: 1px solid var(--border-color); /* Adjusted border */
         }
 
         .province-grid-title {
-            font-size: 1.5rem;
+            font-size: 1.3rem; /* Adjusted size */
             font-weight: 700;
             color: var(--dark-navy);
         }
-
-        .province-count {
-            background: var(--gradient-primary);
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 0.9rem;
+        [data-theme="dark"] .province-grid-title {
+             color: var(--dark-navy);
         }
 
+        .province-count {
+            background: var(--primary-blue);
+            color: white;
+            padding: 0.4rem 0.8rem; /* Adjusted padding */
+            border-radius: 16px; /* Adjusted radius */
+            font-weight: 600;
+            font-size: 0.8rem; /* Adjusted size */
+        }
+        [data-theme="dark"] .province-count {
+            background: var(--secondary-blue);
+        }
+
+
+        /* Region Filters */
         .region-filters {
             display: flex;
             flex-wrap: wrap;
-            gap: 0.8rem;
+            gap: 0.6rem; /* Adjusted gap */
             justify-content: center;
-            margin-bottom: 2rem;
-            padding: 1rem;
+            margin-bottom: 1.5rem;
+            padding: 0.8rem; /* Adjusted padding */
             background: var(--light-gray);
-            border-radius: 16px;
+            border-radius: 12px; /* Adjusted radius */
             border: 1px solid var(--border-color);
+        }
+         [data-theme="dark"] .region-filters {
+            background: #334155;
+            border-color: #475569;
         }
 
         .region-filter {
-            padding: 0.8rem 1.5rem;
-            border: 2px solid var(--border-color);
-            border-radius: 25px;
+            padding: 0.6rem 1.2rem; /* Adjusted padding */
+            border: 1px solid var(--border-color);
+            border-radius: 20px; /* Adjusted radius */
             background: white;
             color: var(--dark-navy);
             cursor: pointer;
             transition: var(--transition);
             font-weight: 600;
-            font-size: 0.9rem;
+            font-size: 0.8rem; /* Adjusted size */
         }
+        [data-theme="dark"] .region-filter {
+            background: #475569;
+            color: #E2E8F0;
+            border-color: #64748B;
+        }
+
 
         .region-filter:hover {
             background: var(--primary-blue);
             color: white;
             border-color: var(--primary-blue);
-            transform: translateY(-2px);
         }
+         [data-theme="dark"] .region-filter:hover {
+             background: var(--secondary-blue);
+             border-color: var(--secondary-blue);
+         }
 
         .region-filter.active {
             background: var(--primary-blue);
             color: white;
             border-color: var(--primary-blue);
         }
+         [data-theme="dark"] .region-filter.active {
+             background: var(--secondary-blue);
+             border-color: var(--secondary-blue);
+         }
 
+
+        /* Enhanced Province Grid */
         .province-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 1.2rem;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Adjusted minmax */
+            gap: 1rem; /* Adjusted gap */
         }
 
         .province-item {
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-            border: 2px solid var(--border-color);
-            border-radius: 16px;
-            padding: 1.5rem;
+            background: var(--light-gray);
+            border: 1px solid var(--border-color);
+            border-radius: 12px; /* Adjusted radius */
+            padding: 1.2rem; /* Adjusted padding */
             cursor: pointer;
             transition: var(--transition);
             position: relative;
             overflow: hidden;
         }
+         [data-theme="dark"] .province-item {
+            background: #334155;
+            border-color: #475569;
+        }
+
 
         .province-item::before {
             content: '';
@@ -344,8 +417,11 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
-            transition: left 0.6s;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s; /* Adjusted speed */
+        }
+        [data-theme="dark"] .province-item::before {
+             background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
         }
 
         .province-item:hover::before {
@@ -353,104 +429,144 @@
         }
 
         .province-item:hover {
-            transform: translateY(-5px) scale(1.02);
-            background: var(--gradient-primary);
+            transform: translateY(-3px) scale(1.01); /* Adjusted transform */
+            background: var(--primary-blue);
             color: white;
             border-color: var(--primary-blue);
-            box-shadow: var(--shadow-large);
+            box-shadow: var(--shadow-medium); /* Adjusted shadow */
         }
+        [data-theme="dark"] .province-item:hover {
+            background: var(--secondary-blue);
+            border-color: var(--secondary-blue);
+        }
+
 
         .province-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1rem;
+            margin-bottom: 0.8rem; /* Adjusted margin */
         }
 
         .province-name {
-            font-size: 1.3rem;
+            font-size: 1.1rem; /* Adjusted size */
             font-weight: 700;
             margin: 0;
         }
+        .province-item:hover .province-name {
+            color: white;
+        }
+
 
         .province-plate {
             background: var(--primary-blue);
             color: white;
-            padding: 0.3rem 0.8rem;
-            border-radius: 8px;
+            padding: 0.2rem 0.6rem; /* Adjusted padding */
+            border-radius: 6px; /* Adjusted radius */
             font-weight: 600;
-            font-size: 0.9rem;
+            font-size: 0.8rem; /* Adjusted size */
         }
+         [data-theme="dark"] .province-plate {
+             background: var(--secondary-blue);
+         }
+        .province-item:hover .province-plate {
+            background: white;
+            color: var(--primary-blue);
+        }
+         [data-theme="dark"] .province-item:hover .province-plate {
+            color: var(--secondary-blue);
+        }
+
 
         .province-info {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            margin-bottom: 1rem;
+            grid-template-columns: 1fr; /* Simpler layout */
+            gap: 0.5rem; /* Adjusted gap */
+            margin-bottom: 0.8rem;
         }
 
         .info-item {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            font-size: 0.9rem;
+            gap: 0.4rem; /* Adjusted gap */
+            font-size: 0.8rem; /* Adjusted size */
             color: var(--medium-gray);
         }
 
         .province-item:hover .info-item {
-            color: rgba(255, 255, 255, 0.9);
+            color: rgba(255, 255, 255, 0.8); /* Adjusted color */
         }
+         .info-item i {
+            width: 16px; /* Ensure icon consistency */
+            text-align: center;
+        }
+
 
         .province-stats {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding-top: 1rem;
+            padding-top: 0.8rem;
             border-top: 1px solid var(--border-color);
         }
 
         .province-item:hover .province-stats {
-            border-color: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.2); /* Adjusted color */
         }
 
         .province-population {
-            font-size: 0.9rem;
+            font-size: 0.8rem; /* Adjusted size */
             font-weight: 600;
+        }
+        .province-item:hover .province-population {
+            color: white;
         }
 
         .weather-preview {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            font-size: 0.9rem;
+            gap: 0.4rem; /* Adjusted gap */
+            font-size: 0.8rem; /* Adjusted size */
             font-weight: 600;
         }
+        .province-item:hover .weather-preview {
+            color: white;
+        }
 
+        /* Loading Animation */
         .loading-container {
             display: none;
             text-align: center;
-            padding: 4rem 2rem;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
-            margin: 2rem auto;
-            max-width: 600px;
-            box-shadow: var(--shadow-large);
+            padding: 3rem 1.5rem; /* Adjusted padding */
+            background: white;
+            border-radius: 16px; /* Adjusted radius */
+            margin: 1.5rem auto;
+            max-width: 500px; /* Adjusted width */
+            box-shadow: var(--shadow-medium);
         }
+        [data-theme="dark"] .loading-container {
+            background: #1E293B;
+        }
+
 
         .loading-container.active {
             display: block;
         }
 
         .loading-spinner {
-            width: 60px;
-            height: 60px;
-            border: 4px solid var(--border-color);
-            border-left: 4px solid var(--primary-blue);
+            width: 50px; /* Adjusted size */
+            height: 50px;
+            border: 3px solid var(--border-color); /* Adjusted border */
+            border-left: 3px solid var(--primary-blue);
             border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 2rem;
+            animation: spin 0.8s linear infinite; /* Adjusted speed */
+            margin: 0 auto 1.5rem; /* Adjusted margin */
         }
+         [data-theme="dark"] .loading-spinner {
+            border-color: #475569;
+            border-left-color: var(--secondary-blue);
+        }
+
 
         @keyframes spin {
             0% { transform: rotate(0deg); }
@@ -458,39 +574,26 @@
         }
 
         .loading-text {
-            font-size: 1.2rem;
+            font-size: 1.1rem; /* Adjusted size */
             font-weight: 600;
             color: var(--dark-navy);
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.4rem;
+        }
+         [data-theme="dark"] .loading-text {
+            color: var(--dark-navy);
         }
 
         .loading-subtext {
             color: var(--medium-gray);
-            font-size: 1rem;
-        }
-         .progress-bar-container {
-            width: 80%;
-            background-color: var(--border-color);
-            border-radius: 10px;
-            margin: 1rem auto;
-            overflow: hidden;
-        }
-        .progress-bar {
-            width: 0%;
-            height: 20px;
-            background-color: var(--success-green);
-            text-align: center;
-            line-height: 20px;
-            color: white;
-            transition: width 0.5s ease-in-out;
-            font-size: 0.8rem;
+            font-size: 0.9rem; /* Adjusted size */
         }
 
+        /* Weather Display */
         .weather-display {
             display: none;
             max-width: 1400px;
             margin: 0 auto;
-            padding: 0 2rem 4rem;
+            padding: 0 1.5rem 3rem; /* Adjusted padding */
         }
 
         .weather-display.active {
@@ -500,301 +603,451 @@
         .current-weather {
             background: var(--gradient-primary);
             color: white;
-            border-radius: 24px;
-            padding: 3rem;
-            margin-bottom: 2rem;
+            border-radius: 20px; /* Adjusted radius */
+            padding: 2.5rem; /* Adjusted padding */
+            margin-bottom: 1.5rem;
             text-align: center;
             position: relative;
             overflow: hidden;
             box-shadow: var(--shadow-large);
         }
+        [data-theme="dark"] .current-weather {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b0764 100%); /* Dark theme gradient */
+        }
+
 
         .current-weather::before {
             content: '';
             position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-            animation: float 6s ease-in-out infinite;
+            top: -40%; /* Adjusted position */
+            right: -40%;
+            width: 180%; /* Adjusted size */
+            height: 180%;
+            background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 60%); /* Adjusted opacity */
+            animation: float 7s ease-in-out infinite; /* Adjusted speed */
         }
 
         @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
+            0%, 100% { transform: translateY(0px) translateX(0px); }
+            50% { transform: translateY(-15px) translateX(5px); } /* Adjusted movement */
         }
 
         .weather-location {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 1rem;
-            margin-bottom: 2rem;
+            gap: 0.8rem; /* Adjusted gap */
+            margin-bottom: 1.5rem;
         }
 
         .weather-location h2 {
-            font-size: 2.5rem;
-            font-weight: 800;
+            font-size: 2rem; /* Adjusted size */
+            font-weight: 700; /* Adjusted weight */
             margin: 0;
         }
+        .weather-location i {
+            font-size: 1.5rem; /* Adjusted size */
+        }
+        #currentCountry {
+            font-size: 1rem;
+            opacity: 0.8;
+            margin-left: 0.5rem;
+        }
+
 
         .weather-main {
             display: grid;
-            grid-template-columns: 1fr auto 1fr;
+            grid-template-columns: auto 1fr auto; /* Adjusted for better centering */
             align-items: center;
-            gap: 3rem;
-            margin-bottom: 2rem;
+            gap: 1.5rem; /* Adjusted gap */
+            margin-bottom: 1.5rem;
         }
 
         .weather-icon-main {
-            font-size: 6rem;
+            font-size: 4.5rem; /* Adjusted size */
             text-align: center;
         }
 
         .weather-temp {
-            font-size: 5rem;
+            font-size: 4rem; /* Adjusted size */
             font-weight: 300;
             line-height: 1;
             text-align: center;
+            margin: 0 1rem; /* Add some margin */
         }
-        .weather-temp-animation {
-            transition: opacity 0.5s ease-in-out;
+        .weather-temp sup {
+            font-size: 2rem;
+            vertical-align: super;
         }
+
 
         .weather-desc {
             text-align: center;
         }
 
         .weather-desc h3 {
-            font-size: 1.5rem;
+            font-size: 1.3rem; /* Adjusted size */
             font-weight: 600;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.3rem; /* Adjusted margin */
         }
-
-        .weather-details-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); /* Adjusted minmax for more items */
-            gap: 1.5rem;
-            margin-top: 2rem;
-        }
-
-        .detail-card {
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
-            padding: 1.5rem;
-            text-align: center;
-            transition: var(--transition);
-        }
-
-        .detail-card:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: scale(1.05);
-        }
-
-        .detail-icon {
-            font-size: 1.8rem; /* Slightly smaller icon */
-            margin-bottom: 0.8rem; /* Reduced margin */
-        }
-
-        .detail-value {
-            font-size: 1.3rem; /* Slightly smaller value */
-            font-weight: 700;
-            margin-bottom: 0.3rem; /* Reduced margin */
-        }
-
-        .detail-label {
-            font-size: 0.8rem; /* Slightly smaller label */
+        .weather-desc p {
+            font-size: 0.9rem;
             opacity: 0.9;
         }
 
+
+        .weather-details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); /* Adjusted minmax */
+            gap: 1rem; /* Adjusted gap */
+            margin-top: 1.5rem;
+        }
+
+        .detail-card {
+            background: rgba(255, 255, 255, 0.15); /* Adjusted opacity */
+            backdrop-filter: blur(8px); /* Adjusted blur */
+            border-radius: 12px; /* Adjusted radius */
+            padding: 1.2rem; /* Adjusted padding */
+            text-align: center;
+            transition: var(--transition);
+        }
+        [data-theme="dark"] .detail-card {
+            background: rgba(255, 255, 255, 0.05); /* Darker for dark mode */
+        }
+
+
+        .detail-card:hover {
+            background: rgba(255, 255, 255, 0.25); /* Adjusted hover opacity */
+            transform: scale(1.03); /* Adjusted scale */
+        }
+
+        .detail-icon {
+            font-size: 1.5rem; /* Adjusted size */
+            margin-bottom: 0.8rem; /* Adjusted margin */
+            opacity: 0.8;
+        }
+
+        .detail-value {
+            font-size: 1.3rem; /* Adjusted size */
+            font-weight: 600; /* Adjusted weight */
+            margin-bottom: 0.3rem;
+        }
+
+        .detail-label {
+            font-size: 0.8rem; /* Adjusted size */
+            opacity: 0.8;
+        }
+
+        /* Navigation Tabs */
         .weather-tabs {
             display: flex;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 16px;
-            padding: 0.5rem;
-            margin-bottom: 2rem;
+            background: white;
+            border-radius: 12px; /* Adjusted radius */
+            padding: 0.4rem; /* Adjusted padding */
+            margin-bottom: 1.5rem;
             box-shadow: var(--shadow-medium);
             overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+        [data-theme="dark"] .weather-tabs {
+            background: #1E293B; /* Dark theme tabs background */
+            border-color: #334155;
         }
 
         .weather-tab {
             flex: 1;
-            min-width: 120px;
-            padding: 1rem 1.5rem;
+            min-width: 100px; /* Adjusted width */
+            padding: 0.8rem 1.2rem; /* Adjusted padding */
             border: none;
             background: none;
             color: var(--dark-navy);
             font-weight: 600;
-            border-radius: 12px;
+            border-radius: 8px; /* Adjusted radius */
             cursor: pointer;
             transition: var(--transition);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
+            gap: 0.4rem;
+            font-size: 0.9rem;
+        }
+         [data-theme="dark"] .weather-tab {
+            color: var(--dark-navy);
         }
 
+
         .weather-tab:hover {
-            background: rgba(0, 102, 204, 0.1);
+            background: var(--light-gray);
+            color: var(--primary-blue);
+        }
+        [data-theme="dark"] .weather-tab:hover {
+            background: #334155;
+            color: var(--secondary-blue);
         }
 
         .weather-tab.active {
             background: var(--primary-blue);
-            color: white;
+            color: white !important;
+        }
+        [data-theme="dark"] .weather-tab.active {
+            background: var(--secondary-blue);
         }
 
+
+        /* Tab Content */
         .tab-content {
             display: none;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 2rem;
-            box-shadow: var(--shadow-large);
+            background: white;
+            border-radius: 16px; /* Adjusted radius */
+            padding: 1.5rem; /* Adjusted padding */
+            box-shadow: var(--shadow-medium);
+            border: 1px solid var(--border-color);
         }
         [data-theme="dark"] .tab-content {
-             background: rgba(26, 29, 41, 0.95);
+            background: #1E293B;
+            border-color: #334155;
         }
-
 
         .tab-content.active {
             display: block;
         }
+        .tab-content h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary-blue);
+        }
+        [data-theme="dark"] .tab-content h3 {
+            color: var(--secondary-blue);
+        }
 
+
+        /* Forecast Items */
         .forecast-scroll {
             display: flex;
-            gap: 1.5rem;
+            gap: 1rem; /* Adjusted gap */
             overflow-x: auto;
-            padding: 1rem 0;
+            padding: 0.8rem 0; /* Adjusted padding */
         }
 
         .forecast-item {
-            min-width: 180px; /* Adjusted width */
+            min-width: 150px; /* Adjusted width */
             background: var(--light-gray);
-            border: 2px solid var(--border-color);
-            border-radius: 16px;
-            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 12px; /* Adjusted radius */
+            padding: 1.2rem; /* Adjusted padding */
             text-align: center;
             transition: var(--transition);
         }
-         [data-theme="dark"] .forecast-item {
-            background: #2a2f45; /* Darker background for items in dark mode */
+        [data-theme="dark"] .forecast-item {
+            background: #334155;
+            border-color: #475569;
         }
 
 
         .forecast-item:hover {
-            transform: translateY(-5px);
+            transform: translateY(-3px);
             border-color: var(--primary-blue);
-            box-shadow: var(--shadow-medium);
+            box-shadow: var(--shadow-light);
+        }
+        [data-theme="dark"] .forecast-item:hover {
+            border-color: var(--secondary-blue);
         }
 
         .forecast-day {
-            font-weight: 700;
-            color: var(--primary-blue);
-            margin-bottom: 1rem;
-            font-size: 1.1rem;
+            font-weight: 600; /* Adjusted weight */
+            color: var(--dark-navy);
+             [data-theme="dark"] & { color: var(--dark-navy); }
+            margin-bottom: 0.8rem;
+            font-size: 1rem; /* Adjusted size */
+        }
+        [data-theme="dark"] .forecast-day {
+            color: var(--dark-navy); /* ensure text color for dark mode */
         }
 
+
         .forecast-icon {
-            font-size: 2.5rem; /* Adjusted icon size */
-            margin: 0.8rem 0; /* Adjusted margin */
+            font-size: 2.5rem; /* Adjusted size */
+            margin: 0.8rem 0;
+            color: var(--primary-blue);
+        }
+        [data-theme="dark"] .forecast-icon {
+            color: var(--secondary-blue);
         }
 
         .forecast-temps {
             display: flex;
-            justify-content: space-between;
-            margin: 0.8rem 0; /* Adjusted margin */
-            font-weight: 600;
+            justify-content: space-around; /* Adjusted justify */
+            margin: 0.8rem 0;
+            font-weight: 500; /* Adjusted weight */
+            font-size: 0.9rem;
+        }
+        [data-theme="dark"] .forecast-temps {
+             color: var(--dark-navy);
         }
 
         .forecast-high {
-            color: var(--danger-red);
+            color: var(--accent-orange);
         }
 
         .forecast-low {
-            color: var(--primary-blue);
+            color: var(--secondary-blue);
+        }
+        [data-theme="dark"] .forecast-low {
+            color: #93C5FD; /* Lighter blue for dark mode */
+        }
+
+        .simple-chart-container {
+            width: 100%;
+            overflow-x: auto;
+            padding: 10px 0;
+            background-color: var(--light-gray);
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+        [data-theme="dark"] .simple-chart-container {
+            background-color: #334155;
+        }
+
+        .simple-chart {
+            display: flex;
+            align-items: flex-end;
+            height: 150px; /* Adjust height as needed */
+            min-width: fit-content; /* Allows horizontal scrolling */
+        }
+
+        .chart-bar-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-right: 5px; /* Space between groups of bars */
+            padding: 0 5px;
         }
         
-        .hourly-chart-container {
-            height: 300px; /* Default height, can be adjusted */
-            margin-top: 1rem;
+        .chart-bar {
+            width: 12px; /* Width of each bar */
+            background-color: var(--primary-blue);
+            border-radius: 3px 3px 0 0;
+            transition: height 0.3s ease;
             position: relative;
         }
-        .chart-placeholder {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
+        [data-theme="dark"] .chart-bar {
+            background-color: var(--secondary-blue);
+        }
+
+        .chart-bar.temp { background-color: var(--accent-orange); }
+        .chart-bar.precip { background-color: var(--primary-blue); }
+
+        .bar-value {
+            position: absolute;
+            top: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7rem;
             color: var(--medium-gray);
-            font-style: italic;
+            white-space: nowrap;
+        }
+         [data-theme="dark"] .bar-value {
+            color: #A0AEC0;
+        }
+
+        .bar-time {
+            font-size: 0.7rem;
+            color: var(--medium-gray);
+            margin-top: 5px;
+            white-space: nowrap;
+        }
+        [data-theme="dark"] .bar-time {
+            color: #A0AEC0;
+        }
+
+
+        /* Responsive Design */
+        @media (max-width: 992px) { /* Boostrap lg breakpoint */
+             .weather-main {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            .weather-temp { order: -1; } /* Temp first on mobile */
+            .weather-icon-main { font-size: 4rem; }
+            .weather-temp { font-size: 3.5rem; }
+            .weather-location h2 { font-size: 1.8rem; }
+            .detail-card { padding: 1rem; }
+            .detail-value { font-size: 1.1rem; }
         }
 
 
         @media (max-width: 768px) {
             .header-content {
                 flex-direction: column;
-                gap: 1rem;
+                gap: 0.8rem;
                 text-align: center;
                 padding: 0 1rem;
             }
-             .header-controls {
-                flex-direction: column;
+            .header-controls {
                 width: 100%;
-            }
-            .theme-toggle, .location-btn, .refresh-btn {
-                width: 100%;
-                justify-content: center;
+                justify-content: space-around;
             }
 
             .search-section {
                 padding: 0 1rem;
-                margin: 2rem auto;
+                margin: 1.5rem auto;
             }
 
             .search-container {
-                padding: 1.5rem;
+                padding: 1.2rem;
             }
+             .search-header h2 { font-size: 1.5rem;}
+             .search-header p { font-size: 0.9rem;}
+             .search-input { padding: 0.8rem 1rem 0.8rem 2.5rem; font-size: 0.9rem;}
+             .search-icon { font-size: 1rem; left: 0.8rem;}
+
 
             .province-grid {
                 grid-template-columns: 1fr;
             }
 
-            .weather-main {
-                grid-template-columns: 1fr;
-                gap: 2rem;
-            }
-
-            .weather-temp {
-                font-size: 4rem;
-            }
-
             .weather-tabs {
-                flex-direction: column;
+                flex-wrap: wrap; /* Allow tabs to wrap */
             }
 
             .weather-tab {
+                flex-basis: 50%; /* Two tabs per row */
                 min-width: auto;
+                font-size: 0.85rem;
+                padding: 0.7rem 1rem;
             }
-            .weather-details-grid {
-                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            }
-             .detail-card {
-                padding: 1rem;
-            }
-            .detail-icon {
-                font-size: 1.5rem;
-                margin-bottom: 0.5rem;
-            }
-            .detail-value {
-                font-size: 1.1rem;
-            }
-            .detail-label {
-                font-size: 0.75rem;
-            }
+            .forecast-item { min-width: 130px; padding: 1rem; }
+            .forecast-icon { font-size: 2rem; }
         }
 
+         @media (max-width: 480px) {
+            .logo-text h1 { font-size: 1.3rem; }
+            .logo-text p { font-size: 0.7rem; }
+            .logo-icon { width: 40px; height: 40px; font-size: 1.2rem; border-radius: 10px;}
+
+            .theme-toggle, .location-btn, .refresh-btn, .quick-action-btn {
+                padding: 0.5rem 0.8rem;
+                font-size: 0.8rem;
+                gap: 0.3rem;
+                border-radius: 8px;
+            }
+            .quick-actions { gap: 0.5rem; }
+
+            .weather-location h2 { font-size: 1.5rem; }
+            .weather-icon-main { font-size: 3.5rem; }
+            .weather-temp { font-size: 3rem; }
+            .weather-desc h3 { font-size: 1.1rem; }
+            .weather-tabs { padding: 0.3rem; }
+            .weather-tab { flex-basis: 100%; } /* One tab per row on very small screens */
+
+         }
+
+
+        /* Utility Classes */
         .hidden {
             display: none !important;
         }
@@ -811,30 +1064,40 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
+        /* Scrollbar Styling */
         ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+            width: 6px; /* Thinner scrollbar */
+            height: 6px;
         }
 
         ::-webkit-scrollbar-track {
             background: var(--light-gray);
-            border-radius: 4px;
+            border-radius: 3px;
         }
-         [data-theme="dark"] ::-webkit-scrollbar-track {
-            background: #2a2f45;
+        [data-theme="dark"] ::-webkit-scrollbar-track {
+            background: #0F172A;
         }
 
         ::-webkit-scrollbar-thumb {
             background: var(--primary-blue);
-            border-radius: 4px;
+            border-radius: 3px;
         }
+        [data-theme="dark"] ::-webkit-scrollbar-thumb {
+            background: var(--secondary-blue);
+        }
+
 
         ::-webkit-scrollbar-thumb:hover {
             background: var(--secondary-blue);
         }
+         [data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+            background: #60A5FA;
+        }
+
     </style>
 </head>
 <body>
+    <!-- Enhanced Header -->
     <header class="header">
         <div class="header-content">
             <div class="logo-section">
@@ -843,129 +1106,143 @@
                 </div>
                 <div class="logo-text">
                     <h1>İnternetsiz HavaDurumuX</h1>
-                    <p>Çevrimdışı Hava Durumu Bilgileri</p>
+                    <p>Çevrimdışı Türkiye Hava Durumu</p>
                 </div>
             </div>
             <div class="header-controls">
-                <button class="location-btn" onclick="getCurrentUserLocation()">
+                <button class="location-btn" onclick="handleGetCurrentLocation()">
                     <i class="fas fa-location-arrow"></i>
                     Konumum
                 </button>
-                 <button class="refresh-btn" onclick="manualBulkUpdate()">
-                    <i class="fas fa-sync-alt"></i>
-                    Tüm Verileri Yenile
+                 <button class="refresh-btn" id="refreshAllDataBtn">
+                    <i class="fas fa-sync-alt"></i> Verileri Yenile
                 </button>
                 <button class="theme-toggle" onclick="toggleTheme()">
-                    <i class="fas fa-moon"></i>
+                    <i class="fas fa-moon" id="themeIcon"></i>
                     <span id="themeText">Koyu Tema</span>
                 </button>
             </div>
         </div>
     </header>
 
+    <!-- Enhanced Search Section -->
     <div class="search-section">
         <div class="search-container">
             <div class="search-header">
-                <h2>Türkiye'nin Her Yerinden Çevrimdışı Hava Durumu</h2>
-                <p>Veriler en son güncellendiğinde, internetsiz erişim sağlayın.</p>
+                <h2>Türkiye'nin Her Yerinden Anlık Hava Durumu</h2>
+                <p>Merkez ilçeler ve seçili özel konumlar için çevrimdışı tahminler.</p>
             </div>
             
             <div class="search-input-group">
                 <i class="fas fa-search search-icon"></i>
-                 <select class="search-input" id="provinceSelector" onchange="handleProvinceSelection(this.value)">
-                    <option value="">İl Seçin...</option>
-                 </select>
+                <input type="text" class="search-input" 
+                       placeholder="İl adını yazın (örn: Ankara, İstanbul)..." 
+                       id="searchInput" 
+                       onkeyup="searchProvinces()" 
+                       onfocus="showProvinceGrid()">
             </div>
 
             <div class="quick-actions">
-                <button class="quick-action-btn" onclick="selectLocation('İstanbul_Merkez', 'İstanbul')">
+                <button class="quick-action-btn" onclick="selectMajorCity('İstanbul')">
                     <i class="fas fa-city"></i>
                     İstanbul
                 </button>
-                <button class="quick-action-btn" onclick="selectLocation('Ankara_Merkez', 'Ankara')">
+                <button class="quick-action-btn" onclick="selectMajorCity('Ankara')">
                     <i class="fas fa-landmark"></i>
                     Ankara
                 </button>
-                <button class="quick-action-btn" onclick="selectLocation('İzmir_Merkez', 'İzmir')">
+                <button class="quick-action-btn" onclick="selectMajorCity('İzmir')">
                     <i class="fas fa-anchor"></i>
                     İzmir
                 </button>
-                <button class="quick-action-btn" onclick="selectLocation('Kütahya_Domaniç', 'Kütahya / Domaniç')">
-                    <i class="fas fa-mountain"></i>
+                 <button class="quick-action-btn" onclick="loadSpecialLocation('kutahya_domanic')">
+                    <i class="fas fa-map-pin"></i>
                     Domaniç
                 </button>
-                 <button class="quick-action-btn" onclick="selectLocation('Bursa_İnegöl', 'Bursa / İnegöl')">
-                    <i class="fas fa-industry"></i>
+                <button class="quick-action-btn" onclick="loadSpecialLocation('bursa_inegol')">
+                    <i class="fas fa-map-pin"></i>
                     İnegöl
                 </button>
             </div>
-            <div id="lastBulkUpdateTimeDisplay" style="text-align: center; margin-top: 1rem; color: var(--medium-gray); font-size: 0.9rem;">
-                <!-- Last bulk update time will be shown here -->
+
+            <!-- Enhanced Province Grid -->
+            <div class="province-grid-container hidden" id="provinceGrid">
+                <div class="province-grid-header">
+                    <h3 class="province-grid-title">Türkiye İlleri (Merkezler)</h3>
+                    <span class="province-count" id="provinceCountDisplay">81 İl</span>
+                </div>
+                
+                <div class="region-filters" id="regionFilters">
+                    {/* Filters will be populated by JavaScript */}
+                </div>
+                
+                <div class="province-grid" id="provinceList">
+                    {/* Province items will be populated by JavaScript */}
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- Loading Animation -->
     <div class="loading-container" id="loadingContainer">
         <div class="loading-spinner"></div>
-        <div class="loading-text" id="loadingTextMain">Hava durumu bilgileri yükleniyor...</div>
-        <div class="loading-subtext" id="loadingTextSub">Met Norway API'den gerçek veriler çekiliyor</div>
-        <div class="progress-bar-container">
-            <div class="progress-bar" id="loadingProgressBar">0%</div>
-        </div>
-        <p id="currentUpdateStatus" style="font-size: 0.85rem; color: var(--medium-gray); margin-top: 0.5rem;"></p>
+        <div class="loading-text" id="loadingText">Hava durumu bilgileri yükleniyor...</div>
+        <div class="loading-subtext" id="loadingSubtext">Met Norway API'den gerçek veriler çekiliyor</div>
+    </div>
+     <div id="overallStatus" class="hidden" style="text-align: center; padding: 10px; background-color: #e0e0e0; border-radius: 8px; margin: 10px auto; max-width: 600px;"></div>
+    <div id="progressBarContainer" class="hidden" style="width: 80%; margin: 10px auto; background-color: #ddd; border-radius: 5px; max-width: 600px;">
+        <div id="progressBar" style="width: 0%; height: 20px; background-color: var(--primary-blue); text-align: center; line-height: 20px; color: white; border-radius: 5px; transition: width 0.3s ease;">0%</div>
     </div>
 
+
+    <!-- Weather Display -->
     <div class="weather-display" id="weatherDisplay">
         <div class="current-weather">
             <div class="weather-location">
                 <i class="fas fa-map-marker-alt"></i>
-                <h2 id="currentCity">Seçili Konum</h2>
+                <h2 id="currentCity">Ankara</h2>
                 <span id="currentCountry">Türkiye</span>
             </div>
+            
             <div class="weather-main">
                 <div class="weather-icon-main" id="currentIcon">☀️</div>
-                <div class="weather-temp weather-temp-animation" id="currentTemp">--°</div>
+                <div class="weather-temp" id="currentTemp">22<sup>°C</sup></div>
                 <div class="weather-desc">
-                    <h3 id="currentDescription">Yükleniyor...</h3>
+                    <h3 id="currentDescription">Açık</h3>
                     <p id="currentDate"></p>
-                    <p id="dataLastUpdated" style="font-size: 0.8rem; opacity: 0.8; margin-top: 0.5rem;"></p>
                 </div>
             </div>
+            
             <div class="weather-details-grid">
                 <div class="detail-card">
                     <div class="detail-icon"><i class="fas fa-thermometer-half"></i></div>
-                    <div class="detail-value" id="feelsLike">--°</div>
+                    <div class="detail-value" id="feelsLike">N/A</div>
                     <div class="detail-label">Hissedilen</div>
                 </div>
                 <div class="detail-card">
                     <div class="detail-icon"><i class="fas fa-tint"></i></div>
-                    <div class="detail-value" id="humidity">--%</div>
+                    <div class="detail-value" id="humidity">N/A</div>
                     <div class="detail-label">Nem</div>
                 </div>
                 <div class="detail-card">
                     <div class="detail-icon"><i class="fas fa-wind"></i></div>
-                    <div class="detail-value" id="windSpeed">-- km/h</div>
+                    <div class="detail-value" id="windSpeed">N/A</div>
                     <div class="detail-label">Rüzgar</div>
-                </div>
-                 <div class="detail-card">
-                    <div class="detail-icon"><i class="fas fa-water"></i></div> <!-- Çiy Noktası için yeni ikon -->
-                    <div class="detail-value" id="dewPoint">--°</div>
-                    <div class="detail-label">Çiy Noktası</div>
                 </div>
                 <div class="detail-card">
                     <div class="detail-icon"><i class="fas fa-compress-arrows-alt"></i></div>
-                    <div class="detail-value" id="pressure">-- hPa</div>
+                    <div class="detail-value" id="pressure">N/A</div>
                     <div class="detail-label">Basınç</div>
                 </div>
                 <div class="detail-card">
-                    <div class="detail-icon"><i class="fas fa-eye"></i></div>
-                    <div class="detail-value" id="visibility">-- km</div>
-                    <div class="detail-label">Görüş</div>
-                </div>
-                 <div class="detail-card">
                     <div class="detail-icon"><i class="fas fa-cloud"></i></div>
-                    <div class="detail-value" id="cloudCover">--%</div>
+                    <div class="detail-value" id="cloudCover">N/A</div>
                     <div class="detail-label">Bulutluluk</div>
+                </div>
+                <div class="detail-card">
+                    <div class="detail-icon"><i class="fas fa-water"></i></div>
+                    <div class="detail-value" id="dewPoint">N/A</div>
+                    <div class="detail-label">Çiy Noktası</div>
                 </div>
             </div>
         </div>
@@ -979,170 +1256,57 @@
                 <i class="fas fa-calendar-week"></i>
                 Günlük
             </button>
-            <button class="weather-tab" onclick="showTab('details')">
+            <button class="weather-tab" onclick="showTab('charts')">
                 <i class="fas fa-chart-line"></i>
-                Detaylar
-            </button>
-             <button class="weather-tab" onclick="showTab('charts')">
-                <i class="fas fa-chart-bar"></i>
                 Grafikler
-            </button>
-            <button class="weather-tab" onclick="showTab('alerts')">
-                <i class="fas fa-exclamation-triangle"></i>
-                Uyarılar
             </button>
         </div>
 
         <div id="hourly" class="tab-content active">
-            <h3><i class="fas fa-clock"></i> Yaklaşık 3 Günlük Saatlik Tahmin</h3>
+            <h3><i class="fas fa-clock"></i> Saatlik Tahmin (İlk 24 Saat)</h3>
             <div class="forecast-scroll" id="hourlyContainer">
-                <p>Saatlik tahminler burada gösterilecek...</p>
+                {/* Hourly forecast items will be populated by JavaScript */}
             </div>
         </div>
 
         <div id="daily" class="tab-content">
-            <h3 id="dailyForecastTitle"><i class="fas fa-calendar-week"></i> Günlük Tahmin (Yaklaşık 3 Gün)</h3>
+            <h3 id="dailyForecastTitle"><i class="fas fa-calendar-week"></i> Günlük Tahmin (Mevcut Veriyle)</h3>
             <div class="forecast-scroll" id="dailyContainer">
-                <p>Günlük tahminler burada gösterilecek...</p>
+                {/* Daily forecast items will be populated by JavaScript */}
             </div>
         </div>
 
-        <div id="details" class="tab-content">
-            <h3><i class="fas fa-chart-line"></i> Detaylı Bilgiler</h3>
-            <div id="detailsContainer">
-                <p>Seçili konum için detaylı meteorolojik bilgiler burada gösterilecek.</p>
-            </div>
-        </div>
-        
         <div id="charts" class="tab-content">
-            <h3><i class="fas fa-chart-bar"></i> Hava Durumu Grafikleri</h3>
-            <div id="chartsContainer" class="hourly-chart-container">
-                <div class="chart-placeholder">Saatlik sıcaklık grafiği burada gösterilecek.</div>
-            </div>
-             <div id="precipitationChartContainer" class="hourly-chart-container">
-                <div class="chart-placeholder">Saatlik yağış ihtimali grafiği burada gösterilecek.</div>
-            </div>
-        </div>
-
-
-        <div id="alerts" class="tab-content">
-            <h3><i class="fas fa-exclamation-triangle"></i> Meteoroloji Uyarıları</h3>
-            <div id="alertsContainer">
-                 <div style="text-align: center; padding: 2rem; color: var(--medium-gray);">
-                    <i class="fas fa-shield-alt" style="font-size: 3rem; margin-bottom: 1rem;"></i>
-                    <h4>Aktif Uyarı Bulunmuyor</h4>
-                    <p>Seçili konum için meteoroloji uyarısı bulunmamaktadır.</p>
+            <h3><i class="fas fa-chart-line"></i> Saatlik Grafikler (İlk 24 Saat)</h3>
+            <div id="chartsContainer">
+                <h4>Sıcaklık (°C)</h4>
+                <div class="simple-chart-container">
+                    <div class="simple-chart" id="tempChart"></div>
+                </div>
+                <h4 style="margin-top: 1.5rem;">Yağış İhtimali (%)</h4>
+                 <div class="simple-chart-container">
+                    <div class="simple-chart" id="precipProbChart"></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
-        // --- START OF SCRIPT ---
+        const DB_NAME = 'HavaDurumuX_Offline_DB_v5';
+        const DB_VERSION = 1;
+        const STORE_NAME = 'illerWeatherData_v4';
+        const BULK_UPDATE_TIMESTAMP_KEY = 'lastBulkUpdateTime_v3';
+        const SIX_HOURS_MS = 6 * 60 * 60 * 1000;
+        const BULK_REQUEST_DELAY = 10000; // 10 seconds
+        const MET_NORWAY_USER_AGENT = 'HavaDurumuX/1.0 (domaniccamlicakoyu@gmail.com)';
 
-        // CONFIGURATION
-        const DB_NAME = 'HavaDurumuX_Offline_DB_v6';
-        const DB_VERSION = 1; // Increment if schema changes
-        const STORE_NAME = 'illerWeatherData_v5';
-        const MET_NORWAY_API_USER_AGENT = 'HavaDurumuX_Offline/1.1 (domaniccamlicakoyu@gmail.com)';
-        const BULK_UPDATE_INTERVAL_MS = 6 * 60 * 60 * 1000; // 6 hours
-        const SINGLE_LOCATION_UPDATE_INTERVAL_MS = 6 * 60 * 60 * 1000; // 6 hours for individual updates too
-        const BULK_REQUEST_DELAY = 15000; // 15 seconds between requests in bulk update
+        let db;
+        let currentSelectedLocation = null; // { dbKey, displayName, lat, lon }
+        let gradualTempInterval = null;
 
-        // Data for provinces and specific districts to fetch during bulk update
-        // IMPORTANT: Coordinates for "Merkez" districts are taken from the 'turkishProvinces' array below.
-        // Ensure those are accurate for province centers.
-        // For Domaniç and İnegöl, provide accurate lat/lon.
-        const locationsToFetchForBulkUpdate = [
-            { dbKey: 'Adana_Merkez', displayName: 'Adana', latKey: 'Adana', lonKey: 'Adana' },
-            { dbKey: 'Adıyaman_Merkez', displayName: 'Adıyaman', latKey: 'Adıyaman', lonKey: 'Adıyaman' },
-            { dbKey: 'Afyonkarahisar_Merkez', displayName: 'Afyonkarahisar', latKey: 'Afyonkarahisar', lonKey: 'Afyonkarahisar' },
-            { dbKey: 'Ağrı_Merkez', displayName: 'Ağrı', latKey: 'Ağrı', lonKey: 'Ağrı' },
-            { dbKey: 'Amasya_Merkez', displayName: 'Amasya', latKey: 'Amasya', lonKey: 'Amasya' },
-            { dbKey: 'Ankara_Merkez', displayName: 'Ankara', latKey: 'Ankara', lonKey: 'Ankara' },
-            { dbKey: 'Antalya_Merkez', displayName: 'Antalya', latKey: 'Antalya', lonKey: 'Antalya' },
-            { dbKey: 'Artvin_Merkez', displayName: 'Artvin', latKey: 'Artvin', lonKey: 'Artvin' },
-            { dbKey: 'Aydın_Merkez', displayName: 'Aydın', latKey: 'Aydın', lonKey: 'Aydın' },
-            { dbKey: 'Balıkesir_Merkez', displayName: 'Balıkesir', latKey: 'Balıkesir', lonKey: 'Balıkesir' },
-            { dbKey: 'Bilecik_Merkez', displayName: 'Bilecik', latKey: 'Bilecik', lonKey: 'Bilecik' },
-            { dbKey: 'Bingöl_Merkez', displayName: 'Bingöl', latKey: 'Bingöl', lonKey: 'Bingöl' },
-            { dbKey: 'Bitlis_Merkez', displayName: 'Bitlis', latKey: 'Bitlis', lonKey: 'Bitlis' },
-            { dbKey: 'Bolu_Merkez', displayName: 'Bolu', latKey: 'Bolu', lonKey: 'Bolu' },
-            { dbKey: 'Burdur_Merkez', displayName: 'Burdur', latKey: 'Burdur', lonKey: 'Burdur' },
-            { dbKey: 'Bursa_Merkez', displayName: 'Bursa', latKey: 'Bursa', lonKey: 'Bursa' },
-            { dbKey: 'Bursa_İnegöl', displayName: 'Bursa / İnegöl', lat: 40.0833, lon: 29.5167 }, // Specific district
-            { dbKey: 'Çanakkale_Merkez', displayName: 'Çanakkale', latKey: 'Çanakkale', lonKey: 'Çanakkale' },
-            { dbKey: 'Çankırı_Merkez', displayName: 'Çankırı', latKey: 'Çankırı', lonKey: 'Çankırı' },
-            { dbKey: 'Çorum_Merkez', displayName: 'Çorum', latKey: 'Çorum', lonKey: 'Çorum' },
-            { dbKey: 'Denizli_Merkez', displayName: 'Denizli', latKey: 'Denizli', lonKey: 'Denizli' },
-            { dbKey: 'Diyarbakır_Merkez', displayName: 'Diyarbakır', latKey: 'Diyarbakır', lonKey: 'Diyarbakır' },
-            { dbKey: 'Edirne_Merkez', displayName: 'Edirne', latKey: 'Edirne', lonKey: 'Edirne' },
-            { dbKey: 'Elazığ_Merkez', displayName: 'Elazığ', latKey: 'Elazığ', lonKey: 'Elazığ' },
-            { dbKey: 'Erzincan_Merkez', displayName: 'Erzincan', latKey: 'Erzincan', lonKey: 'Erzincan' },
-            { dbKey: 'Erzurum_Merkez', displayName: 'Erzurum', latKey: 'Erzurum', lonKey: 'Erzurum' },
-            { dbKey: 'Eskişehir_Merkez', displayName: 'Eskişehir', latKey: 'Eskişehir', lonKey: 'Eskişehir' },
-            { dbKey: 'Gaziantep_Merkez', displayName: 'Gaziantep', latKey: 'Gaziantep', lonKey: 'Gaziantep' },
-            { dbKey: 'Giresun_Merkez', displayName: 'Giresun', latKey: 'Giresun', lonKey: 'Giresun' },
-            { dbKey: 'Gümüşhane_Merkez', displayName: 'Gümüşhane', latKey: 'Gümüşhane', lonKey: 'Gümüşhane' },
-            { dbKey: 'Hakkâri_Merkez', displayName: 'Hakkâri', latKey: 'Hakkâri', lonKey: 'Hakkâri' },
-            { dbKey: 'Hatay_Merkez', displayName: 'Hatay', latKey: 'Hatay', lonKey: 'Hatay' },
-            { dbKey: 'Isparta_Merkez', displayName: 'Isparta', latKey: 'Isparta', lonKey: 'Isparta' },
-            { dbKey: 'Mersin_Merkez', displayName: 'Mersin', latKey: 'Mersin', lonKey: 'Mersin' },
-            { dbKey: 'İstanbul_Merkez', displayName: 'İstanbul', latKey: 'İstanbul', lonKey: 'İstanbul' },
-            { dbKey: 'İzmir_Merkez', displayName: 'İzmir', latKey: 'İzmir', lonKey: 'İzmir' },
-            { dbKey: 'Kars_Merkez', displayName: 'Kars', latKey: 'Kars', lonKey: 'Kars' },
-            { dbKey: 'Kastamonu_Merkez', displayName: 'Kastamonu', latKey: 'Kastamonu', lonKey: 'Kastamonu' },
-            { dbKey: 'Kayseri_Merkez', displayName: 'Kayseri', latKey: 'Kayseri', lonKey: 'Kayseri' },
-            { dbKey: 'Kırklareli_Merkez', displayName: 'Kırklareli', latKey: 'Kırklareli', lonKey: 'Kırklareli' },
-            { dbKey: 'Kırşehir_Merkez', displayName: 'Kırşehir', latKey: 'Kırşehir', lonKey: 'Kırşehir' },
-            { dbKey: 'Kocaeli_Merkez', displayName: 'Kocaeli', latKey: 'Kocaeli', lonKey: 'Kocaeli' },
-            { dbKey: 'Konya_Merkez', displayName: 'Konya', latKey: 'Konya', lonKey: 'Konya' },
-            { dbKey: 'Kütahya_Merkez', displayName: 'Kütahya', latKey: 'Kütahya', lonKey: 'Kütahya' },
-            { dbKey: 'Kütahya_Domaniç', displayName: 'Kütahya / Domaniç', lat: 39.8119, lon: 29.6078 }, // Specific district
-            { dbKey: 'Malatya_Merkez', displayName: 'Malatya', latKey: 'Malatya', lonKey: 'Malatya' },
-            { dbKey: 'Manisa_Merkez', displayName: 'Manisa', latKey: 'Manisa', lonKey: 'Manisa' },
-            { dbKey: 'Kahramanmaraş_Merkez', displayName: 'Kahramanmaraş', latKey: 'Kahramanmaraş', lonKey: 'Kahramanmaraş' },
-            { dbKey: 'Mardin_Merkez', displayName: 'Mardin', latKey: 'Mardin', lonKey: 'Mardin' },
-            { dbKey: 'Muğla_Merkez', displayName: 'Muğla', latKey: 'Muğla', lonKey: 'Muğla' },
-            { dbKey: 'Muş_Merkez', displayName: 'Muş', latKey: 'Muş', lonKey: 'Muş' },
-            { dbKey: 'Nevşehir_Merkez', displayName: 'Nevşehir', latKey: 'Nevşehir', lonKey: 'Nevşehir' },
-            { dbKey: 'Niğde_Merkez', displayName: 'Niğde', latKey: 'Niğde', lonKey: 'Niğde' },
-            { dbKey: 'Ordu_Merkez', displayName: 'Ordu', latKey: 'Ordu', lonKey: 'Ordu' },
-            { dbKey: 'Rize_Merkez', displayName: 'Rize', latKey: 'Rize', lonKey: 'Rize' },
-            { dbKey: 'Sakarya_Merkez', displayName: 'Sakarya', latKey: 'Sakarya', lonKey: 'Sakarya' },
-            { dbKey: 'Samsun_Merkez', displayName: 'Samsun', latKey: 'Samsun', lonKey: 'Samsun' },
-            { dbKey: 'Siirt_Merkez', displayName: 'Siirt', latKey: 'Siirt', lonKey: 'Siirt' },
-            { dbKey: 'Sinop_Merkez', displayName: 'Sinop', latKey: 'Sinop', lonKey: 'Sinop' },
-            { dbKey: 'Sivas_Merkez', displayName: 'Sivas', latKey: 'Sivas', lonKey: 'Sivas' },
-            { dbKey: 'Tekirdağ_Merkez', displayName: 'Tekirdağ', latKey: 'Tekirdağ', lonKey: 'Tekirdağ' },
-            { dbKey: 'Tokat_Merkez', displayName: 'Tokat', latKey: 'Tokat', lonKey: 'Tokat' },
-            { dbKey: 'Trabzon_Merkez', displayName: 'Trabzon', latKey: 'Trabzon', lonKey: 'Trabzon' },
-            { dbKey: 'Tunceli_Merkez', displayName: 'Tunceli', latKey: 'Tunceli', lonKey: 'Tunceli' },
-            { dbKey: 'Şanlıurfa_Merkez', displayName: 'Şanlıurfa', latKey: 'Şanlıurfa', lonKey: 'Şanlıurfa' },
-            { dbKey: 'Uşak_Merkez', displayName: 'Uşak', latKey: 'Uşak', lonKey: 'Uşak' },
-            { dbKey: 'Van_Merkez', displayName: 'Van', latKey: 'Van', lonKey: 'Van' },
-            { dbKey: 'Yozgat_Merkez', displayName: 'Yozgat', latKey: 'Yozgat', lonKey: 'Yozgat' },
-            { dbKey: 'Zonguldak_Merkez', displayName: 'Zonguldak', latKey: 'Zonguldak', lonKey: 'Zonguldak' },
-            { dbKey: 'Aksaray_Merkez', displayName: 'Aksaray', latKey: 'Aksaray', lonKey: 'Aksaray' },
-            { dbKey: 'Bayburt_Merkez', displayName: 'Bayburt', latKey: 'Bayburt', lonKey: 'Bayburt' },
-            { dbKey: 'Karaman_Merkez', displayName: 'Karaman', latKey: 'Karaman', lonKey: 'Karaman' },
-            { dbKey: 'Kırıkkale_Merkez', displayName: 'Kırıkkale', latKey: 'Kırıkkale', lonKey: 'Kırıkkale' },
-            { dbKey: 'Batman_Merkez', displayName: 'Batman', latKey: 'Batman', lonKey: 'Batman' },
-            { dbKey: 'Şırnak_Merkez', displayName: 'Şırnak', latKey: 'Şırnak', lonKey: 'Şırnak' },
-            { dbKey: 'Bartın_Merkez', displayName: 'Bartın', latKey: 'Bartın', lonKey: 'Bartın' },
-            { dbKey: 'Ardahan_Merkez', displayName: 'Ardahan', latKey: 'Ardahan', lonKey: 'Ardahan' },
-            { dbKey: 'Iğdır_Merkez', displayName: 'Iğdır', latKey: 'Iğdır', lonKey: 'Iğdır' },
-            { dbKey: 'Yalova_Merkez', displayName: 'Yalova', latKey: 'Yalova', lonKey: 'Yalova' },
-            { dbKey: 'Karabük_Merkez', displayName: 'Karabük', latKey: 'Karabük', lonKey: 'Karabük' },
-            { dbKey: 'Kilis_Merkez', displayName: 'Kilis', latKey: 'Kilis', lonKey: 'Kilis' },
-            { dbKey: 'Osmaniye_Merkez', displayName: 'Osmaniye', latKey: 'Osmaniye', lonKey: 'Osmaniye' },
-            { dbKey: 'Düzce_Merkez', displayName: 'Düzce', latKey: 'Düzce', lonKey: 'Düzce' }
-        ];
-        
-        // This is the province data from your HTML, used for coordinates of "Merkez" districts
         const turkishProvinces = [
-            { name: 'Adana', region: 'Akdeniz', plateCode: '01', population: '2.258.718', lat: 37.0, lon: 35.3213 },
+            // ... (Your existing turkishProvinces array) ...
+             { name: 'Adana', region: 'Akdeniz', plateCode: '01', population: '2.258.718', lat: 37.0, lon: 35.3213 },
             { name: 'Adıyaman', region: 'Güneydoğu Anadolu', plateCode: '02', population: '635.169', lat: 37.7648, lon: 38.2786 },
             { name: 'Afyonkarahisar', region: 'Ege', plateCode: '03', population: '747.555', lat: 38.7507, lon: 30.5567 },
             { name: 'Ağrı', region: 'Doğu Anadolu', plateCode: '04', population: '535.435', lat: 39.7191, lon: 43.0503 },
@@ -1154,7 +1318,7 @@
             { name: 'Balıkesir', region: 'Marmara', plateCode: '10', population: '1.257.590', lat: 39.6484, lon: 27.8826 },
             { name: 'Bilecik', region: 'Marmara', plateCode: '11', population: '228.673', lat: 40.1553, lon: 29.9833 },
             { name: 'Bingöl', region: 'Doğu Anadolu', plateCode: '12', population: '281.205', lat: 38.8849, lon: 40.4967 },
-            { name: 'Bitlis', region: 'Doğu Anadolu', plateCode: '13', population: '349.396', lat: 38.4000, lon: 42.1000 }, // Example coordinates
+            { name: 'Bitlis', region: 'Doğu Anadolu', plateCode: '13', population: '349.396', lat: 38.4089, lon: 42.1133 }, // Corrected Bitlis lat
             { name: 'Bolu', region: 'Karadeniz', plateCode: '14', population: '320.824', lat: 40.5760, lon: 31.5788 },
             { name: 'Burdur', region: 'Akdeniz', plateCode: '15', population: '270.283', lat: 37.7200, lon: 30.2900 },
             { name: 'Bursa', region: 'Marmara', plateCode: '16', population: '3.139.744', lat: 40.1826, lon: 29.0665 },
@@ -1225,6 +1389,40 @@
             { name: 'Düzce', region: 'Karadeniz', plateCode: '81', population: '405.614', lat: 40.8438, lon: 31.1565 }
         ];
 
+        const provincesToFetchForBulkUpdate = [];
+        turkishProvinces.forEach(p => {
+            // Handle potential missing lat/lon - default to something that MET.no might give a generic response for, or log error
+            let lat = p.lat;
+            let lon = p.lon;
+            if (lat === 0.0 && lon === 0.0) {
+                console.warn(`Uyarı: ${p.name} için koordinatlar (0,0) olarak ayarlı. API isteği başarısız olabilir veya hatalı veri dönebilir.`);
+                // Optionally skip these or use a very generic coordinate for MET.no (e.g., Ankara's)
+                // For now, we'll try with 0,0 but it's not ideal.
+            }
+            provincesToFetchForBulkUpdate.push({
+                displayName: p.name,
+                dbKey: `merkez_${p.name.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '').toLowerCase()}`,
+                lat: lat,
+                lon: lon,
+                isSpecial: false
+            });
+        });
+
+        provincesToFetchForBulkUpdate.push({
+            displayName: 'Kütahya / Domaniç',
+            dbKey: 'kutahya_domanic',
+            lat: 39.8119,
+            lon: 29.6078,
+            isSpecial: true
+        });
+        provincesToFetchForBulkUpdate.push({
+            displayName: 'Bursa / İnegöl',
+            dbKey: 'bursa_inegol',
+            lat: 40.0833,
+            lon: 29.5167,
+            isSpecial: true
+        });
+
 
         const weatherConditions = {
             'clearsky_day': { icon: '☀️', description: 'Açık' },
@@ -1235,78 +1433,88 @@
             'partlycloudy_night': { icon: '☁️', description: 'Parçalı Bulutlu (Gece)' },
             'cloudy': { icon: '☁️', description: 'Çok Bulutlu' },
             'rain': { icon: '🌧️', description: 'Yağmurlu' },
-            'lightrain': { icon: '🌦️', description: 'Hafif Yağmurlu' },
+            'lightrain': { icon: '🌦️', description: 'Hafif Yağmur' },
             'heavyrain': { icon: '🌧️', description: 'Şiddetli Yağmur' },
             'rainshowers_day': { icon: '🌦️', description: 'Sağanak Yağışlı' },
             'rainshowers_night': { icon: '🌧️', description: 'Sağanak Yağışlı (Gece)' },
-            'lightrainshowers_day': { icon: '🌦️', description: 'Hafif Sağanak Yağışlı' },
-            'lightrainshowers_night': { icon: '🌧️', description: 'Hafif Sağanak Yağışlı (Gece)' },
-            'heavyrainshowers_day': { icon: '🌧️', description: 'Şiddetli Sağanak Yağışlı' },
-            'heavyrainshowers_night': { icon: '🌧️', description: 'Şiddetli Sağanak Yağışlı (Gece)' },
-            'rainshowersandthunder_day': { icon: '⛈️', description: 'Gök Gürültülü Sağanak Yağışlı' },
-            'rainshowersandthunder_night': { icon: '⛈️', description: 'Gök Gürültülü Sağanak Yağışlı (Gece)' },
+            'lightrainshowers_day': {icon: '🌦️', description: 'Hafif Sağanak'},
+            'heavyrainshowers_day': {icon: '🌧️', description: 'Şiddetli Sağanak'},
+            'rainshowersandthunder_day': { icon: '⛈️', description: 'Gök Gürültülü Sağanak' },
+            'rainshowersandthunder_night': { icon: '⛈️', description: 'Gök Gürültülü Sağanak (Gece)' },
             'heavyrainandthunder': { icon: '⛈️', description: 'Şiddetli Gök Gürültülü Yağmur' },
             'sleet': { icon: '🌨️', description: 'Sulu Sepken' },
             'lightsleet': { icon: '🌨️', description: 'Hafif Sulu Sepken' },
             'heavysleet': { icon: '🌨️', description: 'Yoğun Sulu Sepken' },
-            'sleetshowers_day': { icon: '🌨️', description: 'Sulu Sepken Sağanağı' },
-            'sleetshowers_night': { icon: '🌨️', description: 'Sulu Sepken Sağanağı (Gece)' },
-            'lightsleetshowers_day': {icon: '🌨️', description: 'Hafif Sulu Sepken Sağanağı'},
-            'lightsleetshowers_night': {icon: '🌨️', description: 'Hafif Sulu Sepken Sağanağı (Gece)'},
-            'heavysleetshowers_day': {icon: '🌨️', description: 'Yoğun Sulu Sepken Sağanağı'},
-            'heavysleetshowers_night': {icon: '🌨️', description: 'Yoğun Sulu Sepken Sağanağı (Gece)'},
             'snow': { icon: '❄️', description: 'Karlı' },
-            'lightsnow': { icon: '❄️', description: 'Hafif Kar Yağışlı' },
-            'heavysnow': { icon: '❄️', description: 'Yoğun Kar Yağışlı' },
+            'lightsnow': { icon: '❄️', description: 'Hafif Kar' },
+            'heavysnow': { icon: '❄️', description: 'Yoğun Kar' },
             'snowshowers_day': { icon: '🌨️', description: 'Kar Sağanağı' },
             'snowshowers_night': { icon: '🌨️', description: 'Kar Sağanağı (Gece)' },
             'lightsnowshowers_day': {icon: '🌨️', description: 'Hafif Kar Sağanağı'},
-            'lightsnowshowers_night': {icon: '🌨️', description: 'Hafif Kar Sağanağı (Gece)'},
             'heavysnowshowers_day': {icon: '❄️', description: 'Yoğun Kar Sağanağı'},
-            'heavysnowshowers_night': {icon: '❄️', description: 'Yoğun Kar Sağanağı (Gece)'},
-            'snowandthunder': { icon: '🌨️⛈️', description: 'Gök Gürültülü Karlı' }, // Need combined icon or better single
             'fog': { icon: '🌫️', description: 'Sisli' },
-            // Default
-            'default': { icon: '❓', description: 'Bilinmiyor' }
+            // Add more as needed based on MET Norway symbol codes
         };
-
-        let db;
-        let currentSelectedLocationKey = 'Ankara_Merkez'; 
-        let currentSelectedDisplayName = 'Ankara';
-        let currentWeatherData = null;
-        let tempAnimationInterval = null;
-
-        // --- INITIALIZATION ---
-        document.addEventListener('DOMContentLoaded', function() {
-            initDB().then(() => {
-                populateProvinceSelector();
-                initializeAppUI();
-                checkAndPerformBulkUpdate();
-                loadAndDisplayWeather(currentSelectedLocationKey, currentSelectedDisplayName, true); // Load default on init
-            }).catch(error => {
-                console.error("DB Initialization failed:", error);
-                showErrorMessage("Çevrimdışı veritabanı başlatılamadı. Uygulama düzgün çalışmayabilir.");
-            });
-            updateCurrentDateTime();
-            setInterval(updateCurrentDateTime, 60000); // Update time every minute
-        });
-
-        function initializeAppUI() {
-            const defaultProvince = locationsToFetchForBulkUpdate.find(loc => loc.dbKey === currentSelectedLocationKey);
-            if (defaultProvince) {
-                document.getElementById('provinceSelector').value = defaultProvince.dbKey;
+        
+        function getMetWeatherCondition(symbolCode, time) {
+            const isNight = new Date(time).getHours() < 6 || new Date(time).getHours() >= 20;
+            let baseSymbol = symbolCode;
+            if (symbolCode && (symbolCode.endsWith("_day") || symbolCode.endsWith("_night"))) {
+                baseSymbol = symbolCode.substring(0, symbolCode.lastIndexOf("_"));
             }
-            updateLastBulkUpdateTimeDisplay();
+
+            let effectiveSymbol = symbolCode; // Default to the full symbol code
+            if (weatherConditions[symbolCode]) { // Exact match
+                 return weatherConditions[symbolCode];
+            }
+            
+            // Try base symbol with day/night suffix
+            if (isNight && weatherConditions[`${baseSymbol}_night`]) {
+                effectiveSymbol = `${baseSymbol}_night`;
+            } else if (!isNight && weatherConditions[`${baseSymbol}_day`]) {
+                effectiveSymbol = `${baseSymbol}_day`;
+            } else if (weatherConditions[baseSymbol]) { // Try base symbol alone
+                effectiveSymbol = baseSymbol;
+            }
+            
+            return weatherConditions[effectiveSymbol] || { icon: '❓', description: symbolCode || 'Bilinmiyor' };
         }
 
 
-        // --- INDEXEDDB FUNCTIONS ---
+        document.addEventListener('DOMContentLoaded', async function() {
+            await initDB();
+            populateProvinceGrid();
+            addRegionFilters();
+            updateCurrentDateDisplay();
+            
+            const defaultLocation = provincesToFetchForBulkUpdate.find(p => p.displayName === 'Ankara');
+            if (defaultLocation) {
+                currentSelectedLocation = defaultLocation;
+                document.getElementById('searchInput').value = defaultLocation.displayName;
+                 await loadWeatherDataForLocation(defaultLocation.dbKey, defaultLocation.displayName, defaultLocation.lat, defaultLocation.lon);
+            } else {
+                console.error("Ankara için varsayılan konum bulunamadı.");
+                // Fallback to first in list if Ankara is missing for some reason
+                if (provincesToFetchForBulkUpdate.length > 0) {
+                    const fallbackLocation = provincesToFetchForBulkUpdate[0];
+                    currentSelectedLocation = fallbackLocation;
+                    document.getElementById('searchInput').value = fallbackLocation.displayName;
+                    await loadWeatherDataForLocation(fallbackLocation.dbKey, fallbackLocation.displayName, fallbackLocation.lat, fallbackLocation.lon);
+                }
+            }
+
+            checkAndTriggerBulkUpdate(); // Check if bulk update is needed on load
+            
+            document.getElementById('refreshAllDataBtn').addEventListener('click', forceBulkUpdate);
+        });
+        
         function initDB() {
             return new Promise((resolve, reject) => {
                 const request = indexedDB.open(DB_NAME, DB_VERSION);
                 request.onerror = (event) => {
-                    console.error("IndexedDB error:", event.target.error);
-                    reject("IndexedDB açılamadı.");
+                    console.error("IndexedDB hatası:", event.target.error);
+                    showErrorMessage("Veritabanı açılamadı. Çevrimdışı özellikler çalışmayabilir.");
+                    reject(event.target.error);
                 };
                 request.onsuccess = (event) => {
                     db = event.target.result;
@@ -1314,756 +1522,779 @@
                     resolve(db);
                 };
                 request.onupgradeneeded = (event) => {
-                    console.log("IndexedDB upgrade needed.");
                     db = event.target.result;
                     if (!db.objectStoreNames.contains(STORE_NAME)) {
                         db.createObjectStore(STORE_NAME, { keyPath: 'dbKey' });
-                        console.log(`Object store '${STORE_NAME}' oluşturuldu.`);
+                        console.log("Object store oluşturuldu:", STORE_NAME);
                     }
                 };
             });
         }
 
-        function saveData(dbKey, displayName, dataToSave) {
-            if (!db) { console.error("DB not initialized for saveData"); return Promise.reject("DB not initialized"); }
+        async function saveData(dbKey, data, displayName) {
+            if (!db) {
+                console.error("Veritabanı mevcut değil.");
+                return;
+            }
             return new Promise((resolve, reject) => {
                 const transaction = db.transaction([STORE_NAME], 'readwrite');
                 const store = transaction.objectStore(STORE_NAME);
-                const request = store.put({ dbKey: dbKey, displayName: displayName, data: dataToSave, lastUpdated: Date.now() });
-                request.onsuccess = () => resolve();
+                const weatherObject = {
+                    dbKey: dbKey,
+                    displayName: displayName, // Store displayName along with data
+                    data: data, // This is the raw API response
+                    lastUpdated: Date.now()
+                };
+                const request = store.put(weatherObject);
+                request.onsuccess = () => {
+                    console.log(`${displayName} için veri başarıyla kaydedildi/güncellendi.`);
+                    resolve();
+                };
                 request.onerror = (event) => {
-                    console.error(`Veri kaydedilirken hata (${dbKey}):`, event.target.error);
+                    console.error(`${displayName} için veri kaydedilirken hata:`, event.target.error);
                     reject(event.target.error);
                 };
             });
         }
 
-        function getData(dbKey) {
-            if (!db) { console.error("DB not initialized for getData"); return Promise.reject("DB not initialized"); }
+        async function loadData(dbKey) {
+            if (!db) {
+                console.error("Veritabanı mevcut değil.");
+                return null;
+            }
             return new Promise((resolve, reject) => {
                 const transaction = db.transaction([STORE_NAME], 'readonly');
                 const store = transaction.objectStore(STORE_NAME);
                 const request = store.get(dbKey);
-                request.onsuccess = (event) => resolve(event.target.result);
+                request.onsuccess = (event) => {
+                    resolve(event.target.result);
+                };
                 request.onerror = (event) => {
-                    console.error(`Veri okunurken hata (${dbKey}):`, event.target.error);
+                    console.error(`${dbKey} için veri okunurken hata:`, event.target.error);
                     reject(event.target.error);
                 };
             });
         }
-
-        // --- DATA FETCHING & MANAGEMENT ---
-        async function fetchWeatherData(lat, lon) {
-            console.log(`Fetching data for lat: ${lat}, lon: ${lon}`);
-            if (lat == 0 && lon == 0) {
-                console.warn(`Invalid coordinates (0,0) for API request. Skipping.`);
-                return Promise.reject("Invalid coordinates");
-            }
-            const apiUrl = `https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${lon}`;
-            try {
-                const response = await fetch(apiUrl, {
-                    headers: { 'User-Agent': MET_NORWAY_API_USER_AGENT }
-                });
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error(`API Error ${response.status} for ${lat},${lon}: ${errorText}`);
-                    throw new Error(`API Hatası: ${response.status}`);
-                }
-                const data = await response.json();
-                if (!data.properties || !data.properties.timeseries || data.properties.timeseries.length === 0) {
-                    console.warn("API'den beklenen formatta veri gelmedi veya zaman serisi boş:", data);
-                    throw new Error("API'den eksik veya hatalı veri geldi.");
-                }
-                console.log(`Data fetched successfully for ${lat},${lon}`);
-                return data;
-            } catch (error) {
-                console.error(`fetchWeatherData error for ${lat},${lon}:`, error);
-                throw error;
-            }
+        
+        function updateOverallStatus(message, isLoading = false, isSuccess = false) {
+            const statusEl = document.getElementById('overallStatus');
+            statusEl.textContent = message;
+            statusEl.classList.remove('hidden');
+            statusEl.style.backgroundColor = isLoading ? '#f0f0f0' : (isSuccess ? '#d4edda' : '#f8d7da');
+            statusEl.style.color = isLoading ? '#333' : (isSuccess ? '#155724' : '#721c24');
         }
 
-        async function loadAndDisplayWeather(dbKey, displayName, forceUpdate = false) {
-            currentSelectedLocationKey = dbKey;
-            currentSelectedDisplayName = displayName;
-            document.getElementById('currentCity').textContent = displayName;
-            showLoading(displayName);
-            
-            try {
-                const storedData = await getData(dbKey);
-                if (storedData && !forceUpdate && (Date.now() - storedData.lastUpdated < SINGLE_LOCATION_UPDATE_INTERVAL_MS)) {
-                    console.log(`'${displayName}' için güncel yerel veri kullanılıyor.`);
-                    currentWeatherData = storedData.data;
-                    updateWeatherUI(displayName, currentWeatherData, storedData.lastUpdated);
-                } else {
-                    console.log(`'${displayName}' için API'den yeni veri çekiliyor. Force: ${forceUpdate}, Stored: ${storedData ? new Date(storedData.lastUpdated).toLocaleString() : 'Yok'}`);
-                    const locationConfig = getLocationConfig(dbKey);
-                    if (!locationConfig) {
-                        throw new Error(`'${dbKey}' için konum konfigürasyonu bulunamadı.`);
+        function updateProgressBar(processedCount, totalCount) {
+            const progressBar = document.getElementById('progressBar');
+            const percentage = totalCount > 0 ? Math.round((processedCount / totalCount) * 100) : 0;
+            progressBar.style.width = `${percentage}%`;
+            progressBar.textContent = `${percentage}%`;
+        }
+        
+        async function checkAndTriggerBulkUpdate() {
+            const now = Date.now();
+            const lastUpdateTime = parseInt(localStorage.getItem(BULK_UPDATE_TIMESTAMP_KEY) || '0');
+            if (now - lastUpdateTime > SIX_HOURS_MS) {
+                console.log("Toplu güncelleme zamanı geldi veya ilk çalıştırma.");
+                updateOverallStatus("Tüm konumlar için veriler güncelleniyor...", true);
+                document.getElementById('progressBarContainer').classList.remove('hidden');
+                await bulkUpdateAllProvincesData();
+            } else {
+                const remainingTime = SIX_HOURS_MS - (now - lastUpdateTime);
+                const hours = Math.floor(remainingTime / (1000 * 60 * 60));
+                const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
+                console.log(`Son toplu güncelleme ${new Date(lastUpdateTime).toLocaleString('tr-TR')}. Sonraki güncelleme yaklaşık ${hours} saat ${minutes} dakika sonra.`);
+                updateOverallStatus(`Veriler güncel. Sonraki toplu güncelleme yaklaşık ${hours}s ${minutes}dk sonra.`, false, true);
+                document.getElementById('progressBarContainer').classList.add('hidden');
+
+                // Update preview temperatures from stored data on initial load if not bulk updating
+                 if (currentSelectedLocation && currentSelectedLocation.dbKey) { // Check if a default location is set
+                    const storedData = await loadData(currentSelectedLocation.dbKey);
+                    if (storedData && storedData.data) {
+                         updateWeatherDisplay(currentSelectedLocation.displayName, storedData.data);
                     }
-                    currentWeatherData = await fetchWeatherData(locationConfig.lat, locationConfig.lon);
-                    await saveData(dbKey, displayName, currentWeatherData);
-                    updateWeatherUI(displayName, currentWeatherData, Date.now());
                 }
-            } catch (error) {
-                console.error(`'${displayName}' için hava durumu yüklenirken hata:`, error);
-                showErrorMessage(`'${displayName}' için hava durumu verileri yüklenemedi. Lütfen internet bağlantınızı kontrol edin veya daha sonra tekrar deneyin.`);
-                // Try to load old data if available, even if update failed
-                const storedData = await getData(dbKey);
-                if (storedData) {
-                    console.warn(`'${displayName}' için eski veri gösteriliyor (güncelleme başarısız).`);
-                    currentWeatherData = storedData.data;
-                    updateWeatherUI(displayName, currentWeatherData, storedData.lastUpdated, true); // Indicate it's stale
-                }
-            } finally {
-                hideLoading();
+                updateAllProvincePreviews(); // Update all previews on load
             }
         }
         
-        function getLocationConfig(dbKeyToFind) {
-            const provinceDataMap = {};
-            turkishProvinces.forEach(p => {
-                provinceDataMap[p.name] = { lat: p.lat, lon: p.lon };
-            });
-
-            const location = locationsToFetchForBulkUpdate.find(loc => loc.dbKey === dbKeyToFind);
-            if (location) {
-                if (location.latKey && location.lonKey) { // It's a "Merkez" type
-                    const coords = provinceDataMap[location.latKey];
-                    if (coords) {
-                        return { ...location, lat: coords.lat, lon: coords.lon };
-                    } else {
-                        console.error(`Koordinatlar bulunamadı: ${location.latKey}`);
-                        return { ...location, lat: 0, lon: 0 }; // Fallback, API will likely fail
-                    }
-                } else { // It's a specific district with its own lat/lon
-                    return location;
-                }
-            }
-            console.error(`Konum konfigürasyonu bulunamadı: ${dbKeyToFind}`);
-            return null;
+        async function forceBulkUpdate() {
+            console.log("Kullanıcı tarafından toplu güncelleme başlatıldı.");
+            localStorage.removeItem(BULK_UPDATE_TIMESTAMP_KEY); // Force update by removing timestamp
+            updateOverallStatus("Tüm konumlar için veriler güncelleniyor (manuel)...", true);
+            document.getElementById('progressBarContainer').classList.remove('hidden');
+            updateProgressBar(0, provincesToFetchForBulkUpdate.length);
+            await bulkUpdateAllProvincesData(true);
         }
 
-
-        async function checkAndPerformBulkUpdate() {
-            const lastBulkUpdateTime = localStorage.getItem('lastBulkUpdateTime_v3');
-            if (!lastBulkUpdateTime || (Date.now() - parseInt(lastBulkUpdateTime) > BULK_UPDATE_INTERVAL_MS)) {
-                console.log("Toplu güncelleme zamanı geldi veya ilk çalıştırma.");
-                manualBulkUpdate(); // Call manualBulkUpdate which handles UI
-            } else {
-                console.log("Son toplu güncelleme hala geçerli. Atlanıyor.");
-                updateLastBulkUpdateTimeDisplay();
-            }
-        }
-
-        async function manualBulkUpdate() {
-            showLoading(null, true); // Show bulk update loading
-            const progressBar = document.getElementById('loadingProgressBar');
-            const currentUpdateStatusEl = document.getElementById('currentUpdateStatus');
-            progressBar.style.width = '0%';
-            progressBar.textContent = '0%';
-            currentUpdateStatusEl.textContent = '';
-
+        async function bulkUpdateAllProvincesData(isManualRefresh = false) {
+            showLoadingState("Tüm konum verileri güncelleniyor...", "Lütfen bekleyin...");
             let successCount = 0;
-            let errorCount = 0;
+            let failCount = 0;
+            const totalToProcess = provincesToFetchForBulkUpdate.length;
+            document.getElementById('progressBarContainer').classList.remove('hidden');
 
-            for (let i = 0; i < locationsToFetchForBulkUpdate.length; i++) {
-                const location = locationsToFetchForBulkUpdate[i];
-                const locationConfig = getLocationConfig(location.dbKey);
+            for (let i = 0; i < totalToProcess; i++) {
+                const loc = provincesToFetchForBulkUpdate[i];
+                const progressText = `${i + 1}/${totalToProcess}: ${loc.displayName} çekiliyor...`;
+                console.log(progressText);
+                updateLoadingStateSubtext(progressText);
+                updateProgressBar(i, totalToProcess);
 
-                if (!locationConfig || (locationConfig.lat === 0 && locationConfig.lon === 0)) {
-                     console.warn(`Geçersiz koordinatlar veya bulunamayan yapılandırma: ${location.displayName}. Atlanıyor.`);
-                     errorCount++;
-                } else {
-                    currentUpdateStatusEl.textContent = `'${location.displayName}' için veri çekiliyor... (${i + 1}/${locationsToFetchForBulkUpdate.length})`;
-                    try {
-                        const weatherData = await fetchWeatherData(locationConfig.lat, locationConfig.lon);
-                        await saveData(location.dbKey, location.displayName, weatherData);
-                        successCount++;
-                        console.log(`'${location.displayName}' için veri başarıyla güncellendi ve kaydedildi.`);
-                    } catch (error) {
-                        errorCount++;
-                        console.error(`'${location.displayName}' için toplu güncelleme sırasında hata:`, error);
+                try {
+                    // Ensure lat/lon are numbers and not 0.0 if possible
+                    const lat = parseFloat(loc.lat);
+                    const lon = parseFloat(loc.lon);
+                    if (isNaN(lat) || isNaN(lon) || (lat === 0 && lon === 0 && !loc.displayName.includes("Oslo"))) { // Oslo can be 0,0 for test
+                        console.warn(`Geçersiz koordinatlar (${lat}, ${lon}) ${loc.displayName} için atlanıyor.`);
+                        failCount++;
+                        continue; // Skip if coordinates are invalid
                     }
-                }
-                
-                const progress = Math.round(((i + 1) / locationsToFetchForBulkUpdate.length) * 100);
-                progressBar.style.width = `${progress}%`;
-                progressBar.textContent = `${progress}%`;
 
-                if (i < locationsToFetchForBulkUpdate.length - 1) {
+                    const apiUrl = `https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${lon}`;
+                    const response = await fetch(apiUrl, { headers: { 'User-Agent': MET_NORWAY_USER_AGENT } });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                         if (data && data.properties && data.properties.timeseries) {
+                            await saveData(loc.dbKey, data, loc.displayName); // Save raw API response
+                            successCount++;
+                            console.log(`${loc.displayName} için veri başarıyla çekildi ve kaydedildi.`);
+                        } else {
+                            console.error(`${loc.displayName} için API yanıtı beklenen formatta değil.`);
+                            failCount++;
+                        }
+                    } else {
+                        console.error(`${loc.displayName} için API isteği başarısız: ${response.status} - ${response.statusText}`);
+                        const errorBody = await response.text();
+                        console.error("Hata Detayı: ", errorBody);
+                        failCount++;
+                    }
+                } catch (error) {
+                    console.error(`${loc.displayName} için veri çekme/kaydetme hatası:`, error);
+                    failCount++;
+                }
+                if (i < totalToProcess - 1) {
                     await new Promise(resolve => setTimeout(resolve, BULK_REQUEST_DELAY));
                 }
             }
+            updateProgressBar(totalToProcess, totalToProcess);
+            localStorage.setItem(BULK_UPDATE_TIMESTAMP_KEY, Date.now().toString());
+            hideLoadingState();
+            const summaryMessage = `Toplu güncelleme tamamlandı. Başarılı: ${successCount}, Başarısız: ${failCount}.`;
+            console.log(summaryMessage);
+            updateOverallStatus(summaryMessage, false, successCount > 0);
             
-            localStorage.setItem('lastBulkUpdateTime_v3', Date.now().toString());
-            updateLastBulkUpdateTimeDisplay();
-            hideLoading();
-            alert(`Toplu güncelleme tamamlandı.\nBaşarılı: ${successCount}\nHatalı: ${errorCount}`);
-            // Reload current view if it was part of the bulk update
-            if (locationsToFetchForBulkUpdate.some(loc => loc.dbKey === currentSelectedLocationKey)) {
-                loadAndDisplayWeather(currentSelectedLocationKey, currentSelectedDisplayName, true);
+            // After bulk update, if a location was selected, refresh its display
+            if (currentSelectedLocation) {
+                await loadWeatherDataForLocation(currentSelectedLocation.dbKey, currentSelectedLocation.displayName, currentSelectedLocation.lat, currentSelectedLocation.lon, true);
             }
+            updateAllProvincePreviews(); // Refresh all previews after bulk update
+        }
+
+        async function loadWeatherDataForLocation(dbKey, displayName, lat, lon, isManualRefresh = false) {
+            showLoadingState(`${displayName} için hava durumu yükleniyor...`);
+            let weatherData;
+            let source = "Önbellek (IndexedDB)";
+
+            const storedEntry = await loadData(dbKey);
+
+            if (storedEntry && storedEntry.data && (Date.now() - storedEntry.lastUpdated < SIX_HOURS_MS) && !isManualRefresh) {
+                weatherData = storedEntry.data; // Use raw API response
+                console.log(`${displayName} için önbellekten veri yüklendi.`);
+            } else {
+                console.log(`${displayName} için API'den veri çekiliyor (${isManualRefresh ? 'manuel' : 'süresi dolmuş veya yok'}).`);
+                try {
+                     const apiUrl = `https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${lon}`;
+                    const response = await fetch(apiUrl, { headers: { 'User-Agent': MET_NORWAY_USER_AGENT } });
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(`API Hatası: ${response.status} - ${errorText}`);
+                    }
+                    const apiData = await response.json();
+                    if (apiData && apiData.properties && apiData.properties.timeseries) {
+                        await saveData(dbKey, apiData, displayName);
+                        weatherData = apiData;
+                        source = "API (Yeni Veri)";
+                        console.log(`${displayName} için API'den veri başarıyla çekildi ve kaydedildi.`);
+                         if (dbKey.startsWith('merkez_')) { // Update preview only if it's a main province
+                            updateProvincePreview(displayName, apiData);
+                        }
+                    } else {
+                         throw new Error("API yanıtı beklenen formatta değil.");
+                    }
+                } catch (error) {
+                    console.error(`${displayName} için API'den veri çekme hatası:`, error);
+                    showErrorMessage(`${displayName} için hava durumu verileri yüklenemedi. (${error.message}). Önbellekteki veri (varsa) gösteriliyor.`);
+                    if (storedEntry && storedEntry.data) { // Fallback to stale cache if API fails
+                        weatherData = storedEntry.data;
+                        source = "Önbellek (Eski Veri - API Hatası)";
+                    } else {
+                        hideLoadingState();
+                        return; // No data to show
+                    }
+                }
+            }
+
+            if (weatherData) {
+                updateWeatherDisplay(displayName, weatherData, source); // Pass source to display
+            }
+            hideLoadingState();
         }
 
 
-        // --- UI UPDATE FUNCTIONS ---
-        function updateWeatherUI(displayName, weatherData, lastUpdatedTimestamp, isStale = false) {
-            if (!weatherData || !weatherData.properties || !weatherData.properties.timeseries || weatherData.properties.timeseries.length === 0) {
-                console.warn("updateWeatherUI: Geçersiz veya eksik hava durumu verisi.", weatherData);
-                showErrorMessage(`'${displayName}' için hava durumu verileri alınamadı veya eksik.`);
+        function updateWeatherDisplay(displayName, apiResponse, source = "") {
+            const weatherDisplayEl = document.getElementById('weatherDisplay');
+            if (!apiResponse || !apiResponse.properties || !apiResponse.properties.timeseries || apiResponse.properties.timeseries.length === 0) {
+                console.error("Geçersiz hava durumu verisi:", apiResponse);
+                showErrorMessage(`${displayName} için geçerli hava durumu verisi bulunamadı.`);
+                weatherDisplayEl.classList.remove('active');
                 return;
             }
-            const timeseries = weatherData.properties.timeseries;
-            const now = new Date();
-            
-            // Find the closest timeseries entry to the current time
-            let currentForecastEntry = timeseries[0];
-            for (let i = 0; i < timeseries.length; i++) {
-                const entryTime = new Date(timeseries[i].time);
-                if (entryTime <= now) {
-                    currentForecastEntry = timeseries[i];
-                } else {
-                    // If the first entry is in the future, use it. Otherwise, we found the closest past/current.
-                    if (i === 0) currentForecastEntry = timeseries[i];
-                    break; 
-                }
-            }
-            
-            const currentData = currentForecastEntry.data.instant.details;
-            const next1HourSummary = currentForecastEntry.data.next_1_hours?.summary;
-            const next6HoursSummary = currentForecastEntry.data.next_6_hours?.summary;
-            const next12HoursSummary = currentForecastEntry.data.next_12_hours?.summary;
 
-            // Determine symbol code: prefer 1h, then 6h, then 12h
-            let symbolCode = 'clearsky_day'; // Default
-            if (next1HourSummary?.symbol_code) {
-                symbolCode = next1HourSummary.symbol_code;
-            } else if (next6HoursSummary?.symbol_code) {
-                symbolCode = next6HoursSummary.symbol_code;
-            } else if (next12HoursSummary?.symbol_code) {
-                symbolCode = next12HoursSummary.symbol_code;
+            const timeseries = apiResponse.properties.timeseries;
+            const now = new Date();
+            let currentForecast = timeseries[0]; // Default to first entry
+
+            // Find the forecast entry closest to the current time
+            for (let i = 0; i < timeseries.length; i++) {
+                const forecastTime = new Date(timeseries[i].time);
+                if (forecastTime >= now) {
+                    currentForecast = timeseries[i];
+                    if (i > 0 && (forecastTime.getTime() - now.getTime() > (now.getTime() - new Date(timeseries[i-1].time).getTime()))) {
+                         // if previous hour is closer, use that one for "current"
+                        currentForecast = timeseries[i-1];
+                    }
+                    break;
+                }
+                if (i === timeseries.length - 1) currentForecast = timeseries[i]; // if all past, use last one
             }
             
-            const isDayTime = new Date(currentForecastEntry.time).getHours() >= 6 && new Date(currentForecastEntry.time).getHours() < 19;
-            const conditionKey = symbolCode.includes('_night') || symbolCode.includes('_day') ? symbolCode : (isDayTime ? `${symbolCode}_day` : `${symbolCode}_night`);
-            const condition = weatherConditions[conditionKey] || weatherConditions[symbolCode] || weatherConditions['default'];
+            const currentData = currentForecast.data.instant.details;
+            const next1HourSummary = currentForecast.data.next_1_hours?.summary;
+            const symbolCode = next1HourSummary?.symbol_code || currentForecast.data.next_6_hours?.summary?.symbol_code || 'clearsky_day';
+            const weatherCondition = getMetWeatherCondition(symbolCode, currentForecast.time);
 
             document.getElementById('currentCity').textContent = displayName;
-            document.getElementById('currentIcon').textContent = condition.icon;
-            document.getElementById('currentDescription').textContent = condition.description;
+            document.getElementById('currentDate').innerHTML = `${new Date(currentForecast.time).toLocaleString('tr-TR', { weekday: 'long', hour: '2-digit', minute: '2-digit' })} <small>(${source})</small>`;
             
-            const currentTemp = parseFloat(currentData.air_temperature);
-            document.getElementById('currentTemp').textContent = `${Math.round(currentTemp)}°`;
+            const currentTempElement = document.getElementById('currentTemp');
+            const targetTemp = Math.round(currentData.air_temperature);
+            currentTempElement.innerHTML = `${targetTemp}<sup>°C</sup>`; // Set initial before gradual change
 
-            // Gradual temperature animation setup
-            const currentHourIndex = timeseries.findIndex(ts => ts.time === currentForecastEntry.time);
-            let nextHourTemp = currentTemp; // Default to current if no next hour
-            if (currentHourIndex < timeseries.length - 1) {
-                const nextHourData = timeseries[currentHourIndex + 1].data.instant.details;
-                nextHourTemp = parseFloat(nextHourData.air_temperature);
-            }
-            animateTemperatureChange(currentTemp, nextHourTemp);
-
-
-            document.getElementById('feelsLike').textContent = `${Math.round(currentData.air_temperature)}°`; // MET Norway compact doesn't have apparent_temperature directly
-            document.getElementById('humidity').textContent = `${Math.round(currentData.relative_humidity ?? 0)}%`;
-            document.getElementById('windSpeed').textContent = `${Math.round((currentData.wind_speed ?? 0) * 3.6)} km/h ${getWindDirectionArrow(currentData.wind_from_direction)}`;
-            document.getElementById('pressure').textContent = `${Math.round(currentData.air_pressure_at_sea_level ?? 0)} hPa`;
-            document.getElementById('visibility').textContent = 'N/A'; // MET Norway compact doesn't provide visibility
-            document.getElementById('dewPoint').textContent = `${Math.round(currentData.dew_point_temperature ?? 0)}°`;
-            document.getElementById('cloudCover').textContent = `${Math.round(currentData.cloud_area_fraction ?? 0)}%`;
-
-
-            const lastUpdatedDate = new Date(lastUpdatedTimestamp);
-            document.getElementById('dataLastUpdated').textContent = `Veri Son Güncelleme: ${lastUpdatedDate.toLocaleString('tr-TR')} ${isStale ? '(Eski Veri)' : ''}`;
+            // Kademeli sıcaklık değişimi
+            if (gradualTempInterval) clearInterval(gradualTempInterval);
             
-            updateHourlyForecastUI(timeseries);
-            updateDailyForecastUI(timeseries);
-            updateDetailedInfoUI(currentData, currentForecastEntry.data); // Pass entire current entry data for more details
-            updateCharts(timeseries);
-
-            document.getElementById('weatherDisplay').classList.add('active');
-            document.getElementById('loadingContainer').classList.remove('active');
-             updateCurrentDateTime(); // Ensure current time display is also updated
-        }
-        
-        let temperatureAnimationId = null;
-
-        function animateTemperatureChange(startTemp, endTemp) {
-            if (temperatureAnimationId) {
-                clearInterval(temperatureAnimationId);
-            }
-
-            const tempElement = document.getElementById('currentTemp');
-            let currentAnimatedTemp = startTemp;
-            const difference = endTemp - startTemp;
-            const steps = Math.abs(difference) / 0.1; // Number of 0.1 degree steps
-            
-            // If no significant difference, just set and return
-            if (steps < 1) {
-                tempElement.textContent = `${Math.round(endTemp)}°`;
-                return;
-            }
-
-            const increment = difference / steps;
-            // Animate over approx 5-10 seconds for smoothness, regardless of hour duration
-            // Total duration for animation could be fixed, e.g., 10 seconds.
-            // Interval duration should be total_duration / steps.
-            // Let's aim for roughly 1 change per 200ms for a smoother look, up to 50 steps.
-            const animationDuration = Math.min(steps * 200, 10000); // Max 10 seconds animation
-            const intervalTime = animationDuration / steps;
-
-
-            tempElement.textContent = `${currentAnimatedTemp.toFixed(1)}°`;
-
-            let stepCount = 0;
-            temperatureAnimationId = setInterval(() => {
-                currentAnimatedTemp += increment;
-                stepCount++;
-                tempElement.textContent = `${currentAnimatedTemp.toFixed(1)}°`;
-                
-                if (stepCount >= steps) {
-                    clearInterval(temperatureAnimationId);
-                    tempElement.textContent = `${Math.round(endTemp)}°`; // Final rounded value
+            let nextHourForecast = null;
+            const currentHour = new Date(currentForecast.time).getHours();
+            for (let entry of timeseries) {
+                if (new Date(entry.time).getHours() === (currentHour + 1) % 24) {
+                     // Check if it's also on the same day or next day for wrapping around midnight
+                    if (new Date(entry.time) > new Date(currentForecast.time)) {
+                        nextHourForecast = entry;
+                        break;
+                    }
                 }
-            }, intervalTime);
+            }
+
+            if (nextHourForecast) {
+                const nextHourTemp = Math.round(nextHourForecast.data.instant.details.air_temperature);
+                let displayedTemp = targetTemp;
+                const diff = nextHourTemp - targetTemp;
+                const steps = Math.abs(diff) / 0.1; // Kaç adımda 0.1'lik değişim olacak
+                const intervalTime = (60 * 60 * 1000) / (steps || 1); // 1 saat / adım sayısı
+
+                if (steps > 0) {
+                    gradualTempInterval = setInterval(() => {
+                        if (targetTemp < nextHourTemp) { // Artıyorsa
+                            displayedTemp = Math.min(nextHourTemp, displayedTemp + 0.1);
+                        } else if (targetTemp > nextHourTemp) { // Azalıyorsa
+                            displayedTemp = Math.max(nextHourTemp, displayedTemp - 0.1);
+                        }
+                        currentTempElement.innerHTML = `${displayedTemp.toFixed(1)}<sup>°C</sup>`;
+                        if (Math.abs(displayedTemp - nextHourTemp) < 0.05) {
+                            clearInterval(gradualTempInterval);
+                            currentTempElement.innerHTML = `${nextHourTemp}<sup>°C</sup>`;
+                        }
+                    }, Math.max(intervalTime, 500)); // Minimum 500ms'de bir güncelle
+                }
+            }
+
+
+            document.getElementById('currentIcon').textContent = weatherCondition.icon;
+            document.getElementById('currentDescription').textContent = weatherCondition.description;
+
+            // Details - MET Norway provides these directly in `instant.details`
+            document.getElementById('feelsLike').textContent = currentData.air_temperature_equivalent ? `${Math.round(currentData.air_temperature_equivalent)}°C` : `${Math.round(currentData.air_temperature)}°C`; // Fallback if air_temperature_equivalent not available
+            document.getElementById('humidity').textContent = `${Math.round(currentData.relative_humidity)}%`;
+            document.getElementById('windSpeed').textContent = `${Math.round(currentData.wind_speed * 3.6)} km/h (${currentData.wind_from_direction}°)`
+            document.getElementById('pressure').textContent = `${Math.round(currentData.air_pressure_at_sea_level)} hPa`;
+            document.getElementById('cloudCover').textContent = currentData.cloud_area_fraction !== undefined ? `${Math.round(currentData.cloud_area_fraction)}%` : 'N/A';
+            document.getElementById('dewPoint').textContent = currentData.dew_point_temperature !== undefined ? `${Math.round(currentData.dew_point_temperature)}°C` : 'N/A';
+
+            updateHourlyForecastDisplay(timeseries);
+            updateDailyForecastDisplay(timeseries);
+            updateCharts(timeseries);
+            // updateDetailedInfo(currentData); // Placeholder, more details can be added
+            // updateAlerts(); // Placeholder
+
+            weatherDisplayEl.classList.add('active');
         }
 
-
-        function updateHourlyForecastUI(timeseries) {
+        function updateHourlyForecastDisplay(timeseries) {
             const container = document.getElementById('hourlyContainer');
-            container.innerHTML = ''; // Clear previous items
-            
+            container.innerHTML = '';
             const now = new Date();
             let startIndex = timeseries.findIndex(item => new Date(item.time) >= now);
-            if (startIndex === -1) startIndex = 0; // If all past, show from beginning
+            if (startIndex === -1) startIndex = Math.max(0, timeseries.length - 24); // If all past, show last 24
+            else startIndex = Math.max(0, startIndex -1); // Show one past hour for context
 
-            const hourlyDataToShow = timeseries.slice(startIndex, startIndex + 24);
+            const hourlyData = timeseries.slice(startIndex, startIndex + 24);
 
-            hourlyDataToShow.forEach((item) => {
+            hourlyData.forEach(item => {
                 const time = new Date(item.time);
                 const details = item.data.instant.details;
-                const next1HourSummary = item.data.next_1_hours?.summary;
-                const precipitationAmount = item.data.next_1_hours?.details?.precipitation_amount ?? 0;
+                const symbolCode = item.data.next_1_hours?.summary?.symbol_code || item.data.next_6_hours?.summary?.symbol_code || 'clearsky_day';
+                const condition = getMetWeatherCondition(symbolCode, item.time);
+                const precipAmount = item.data.next_1_hours?.details?.precipitation_amount;
 
-                let symbolCode = 'clearsky_day';
-                 if (next1HourSummary?.symbol_code) {
-                    symbolCode = next1HourSummary.symbol_code;
-                } else if (item.data.next_6_hours?.summary?.symbol_code) {
-                    symbolCode = item.data.next_6_hours.summary.symbol_code;
-                }
-
-                const isDayTime = time.getHours() >= 6 && time.getHours() < 19;
-                const conditionKey = symbolCode.includes('_night') || symbolCode.includes('_day') ? symbolCode : (isDayTime ? `${symbolCode}_day` : `${symbolCode}_night`);
-                const condition = weatherConditions[conditionKey] || weatherConditions[symbolCode] || weatherConditions['default'];
-                
                 const hourItem = document.createElement('div');
                 hourItem.className = 'forecast-item';
                 hourItem.innerHTML = `
                     <div class="forecast-day">${time.getHours().toString().padStart(2, '0')}:00</div>
                     <div class="forecast-icon">${condition.icon}</div>
                     <div class="forecast-temps">
-                        <span class="forecast-high">${Math.round(details.air_temperature ?? 0)}°</span>
+                        <span>${Math.round(details.air_temperature)}°</span>
                     </div>
-                    <div style="font-size: 0.8rem; color: var(--medium-gray); margin-top: 0.5rem; min-height: 2.4em; line-height: 1.2em;">
+                    <div style="font-size: 0.8rem; color: var(--medium-gray); margin-top: 0.5rem; min-height: 2.4em; display: flex; align-items: center; justify-content: center;">
                         ${condition.description}
                     </div>
-                    ${precipitationAmount > 0 ? 
+                    ${precipAmount !== undefined && precipAmount > 0 ? 
                         `<div style="font-size: 0.8rem; color: var(--primary-blue); margin-top: 0.3rem;">
-                            <i class="fas fa-tint"></i> ${precipitationAmount.toFixed(1)} mm
-                        </div>` : ''
+                            <i class="fas fa-tint"></i> ${precipAmount.toFixed(1)} mm
+                        </div>` : 
+                        `<div style="font-size: 0.8rem; color: transparent; margin-top: 0.3rem; visibility: hidden;">&nbsp;</div>`
                     }
                 `;
                 container.appendChild(hourItem);
             });
         }
 
-        function updateDailyForecastUI(timeseries) {
+        function updateDailyForecastDisplay(timeseries) {
             const container = document.getElementById('dailyContainer');
             container.innerHTML = '';
-            const dailyAggregates = {};
-            const daysOfWeek = ['Pazar', 'Pzt', 'Salı', 'Çrş', 'Prş', 'Cuma', 'Cmt'];
-
+            const dailyAggregated = {};
+            const daysOfWeek = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
+            
             timeseries.forEach(item => {
                 const date = new Date(item.time);
                 const dayKey = date.toISOString().split('T')[0];
-                if (!dailyAggregates[dayKey]) {
-                    dailyAggregates[dayKey] = {
+                if (!dailyAggregated[dayKey]) {
+                    dailyAggregated[dayKey] = {
                         temps: [],
-                        precipitations: [],
+                        precipAmounts: [],
                         symbols: [],
                         dateObj: date
                     };
                 }
-                dailyAggregates[dayKey].temps.push(item.data.instant.details.air_temperature);
-                dailyAggregates[dayKey].precipitations.push(item.data.next_1_hours?.details?.precipitation_amount ?? 0);
-                
-                let symbolCode = 'clearsky_day';
-                if (item.data.next_1_hours?.summary?.symbol_code) {
-                    symbolCode = item.data.next_1_hours.summary.symbol_code;
-                } else if (item.data.next_6_hours?.summary?.symbol_code) { // Check 6h if 1h is not available
-                    symbolCode = item.data.next_6_hours.summary.symbol_code;
-                } else if (item.data.next_12_hours?.summary?.symbol_code) { // Check 12h if 6h is not available
-                    symbolCode = item.data.next_12_hours.summary.symbol_code;
+                dailyAggregated[dayKey].temps.push(item.data.instant.details.air_temperature);
+                if (item.data.next_1_hours?.details?.precipitation_amount !== undefined) {
+                     dailyAggregated[dayKey].precipAmounts.push(item.data.next_1_hours.details.precipitation_amount);
                 }
-                dailyAggregates[dayKey].symbols.push(symbolCode);
+                // For daily icon, try to get a representative one (e.g., midday)
+                if (date.getHours() >= 12 && date.getHours() <= 15) {
+                     dailyAggregated[dayKey].symbols.push(item.data.next_1_hours?.summary?.symbol_code || item.data.next_6_hours?.summary?.symbol_code || 'clearsky_day');
+                }
             });
 
-            const todayKey = new Date().toISOString().split('T')[0];
-            let dayCount = 0;
+            const displayDays = Math.min(Object.keys(dailyAggregated).length, 7); // Show up to 7 distinct days
+            document.getElementById('dailyForecastTitle').textContent = `Günlük Tahmin (Yaklaşık ${Math.ceil(timeseries.length/24)} Gün)`;
 
-            for (const dayKey in dailyAggregates) {
-                if (dayCount >= 7) break; // Limit to 7 days if data is extensive (though MET.no is usually ~3 days)
+
+            Object.keys(dailyAggregated).sort().slice(0, displayDays).forEach(dayKey => {
+                const dayData = dailyAggregated[dayKey];
+                if (dayData.temps.length === 0) return;
+
+                const minTemp = Math.round(Math.min(...dayData.temps));
+                const maxTemp = Math.round(Math.max(...dayData.temps));
+                const totalPrecip = dayData.precipAmounts.reduce((sum, p) => sum + p, 0);
                 
-                const dayData = dailyAggregates[dayKey];
-                const dayDate = dayData.dateObj;
-                const dayName = (dayKey === todayKey) ? "Bugün" : daysOfWeek[dayDate.getDay()];
+                // Determine dominant symbol for the day
+                const symbolCounts = {};
+                let dominantSymbol = dayData.symbols[0] || 'clearsky_day';
+                let maxCount = 0;
+                dayData.symbols.forEach(s => {
+                    symbolCounts[s] = (symbolCounts[s] || 0) + 1;
+                    if (symbolCounts[s] > maxCount) {
+                        maxCount = symbolCounts[s];
+                        dominantSymbol = s;
+                    }
+                });
+                if(dayData.symbols.length === 0 && dayData.temps.length > 0){ //fallback if no midday symbols
+                    const midIndex = Math.floor(timeseries.filter(ts => ts.time.startsWith(dayKey)).length / 2);
+                    const midDayEntry = timeseries.filter(ts => ts.time.startsWith(dayKey))[midIndex];
+                    dominantSymbol = midDayEntry?.data.next_1_hours?.summary?.symbol_code || midDayEntry?.data.next_6_hours?.summary?.symbol_code || 'clearsky_day';
+                }
+
+                const condition = getMetWeatherCondition(dominantSymbol, dayData.dateObj.toISOString());
                 
-                const highTemp = Math.round(Math.max(...dayData.temps.filter(t => t !== null && t !== undefined)));
-                const lowTemp = Math.round(Math.min(...dayData.temps.filter(t => t !== null && t !== undefined)));
-                const totalPrecipitation = dayData.precipitations.reduce((sum, p) => sum + p, 0);
-
-                // Determine dominant symbol for the day (e.g., midday or most frequent)
-                const middaySymbol = dayData.symbols[Math.floor(dayData.symbols.length / 2)] || 'clearsky_day';
-                const isDayTime = true; // Assume day for daily forecast icon simplicity
-                const conditionKey = middaySymbol.includes('_night') || middaySymbol.includes('_day') ? middaySymbol : (isDayTime ? `${middaySymbol}_day` : `${middaySymbol}_night`);
-                const condition = weatherConditions[conditionKey] || weatherConditions[middaySymbol] || weatherConditions['default'];
-
-
                 const dayItem = document.createElement('div');
                 dayItem.className = 'forecast-item';
                 dayItem.innerHTML = `
-                    <div class="forecast-day">${dayName} <small>(${dayDate.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })})</small></div>
+                    <div class="forecast-day">${daysOfWeek[dayData.dateObj.getDay()]}</div>
+                    <small style="font-size:0.7rem; color:var(--medium-gray);">${dayData.dateObj.toLocaleDateString('tr-TR', {day:'2-digit', month:'short'})}</small>
                     <div class="forecast-icon">${condition.icon}</div>
                     <div class="forecast-temps">
-                        <span class="forecast-high">${highTemp}°</span>
-                        <span class="forecast-low">${lowTemp}°</span>
+                        <span class="forecast-high">${maxTemp}°</span>
+                        <span class="forecast-low">${minTemp}°</span>
                     </div>
-                    <div style="font-size: 0.8rem; color: var(--medium-gray); margin-top: 0.5rem; min-height: 2.4em; line-height: 1.2em;">
-                        ${condition.description}
+                    <div style="font-size: 0.8rem; color: var(--medium-gray); margin-top: 0.5rem; min-height: 1.6em; display: flex; align-items: center; justify-content: center;">
+                         ${condition.description}
                     </div>
-                    ${totalPrecipitation > 0 ? 
+                     ${totalPrecip > 0 ? 
                         `<div style="font-size: 0.8rem; color: var(--primary-blue); margin-top: 0.3rem;">
-                            <i class="fas fa-tint"></i> ${totalPrecipitation.toFixed(1)} mm
-                        </div>` : ''
+                            <i class="fas fa-tint"></i> ${totalPrecip.toFixed(1)} mm
+                        </div>` : 
+                        `<div style="font-size: 0.8rem; color: transparent; margin-top: 0.3rem; visibility: hidden;">&nbsp;</div>`
                     }
                 `;
                 container.appendChild(dayItem);
-                dayCount++;
-            }
-            document.getElementById('dailyForecastTitle').textContent = `Günlük Tahmin (Yaklaşık ${dayCount} Gün)`;
+            });
         }
 
-        function updateDetailedInfoUI(currentInstantDetails, currentFullDataEntry) {
-            const container = document.getElementById('detailsContainer');
-            const airTemperature = currentInstantDetails.air_temperature ?? 'N/A';
-            const dewPoint = currentInstantDetails.dew_point_temperature ?? 'N/A';
-            const windSpeed = (currentInstantDetails.wind_speed ?? 'N/A') !== 'N/A' ? Math.round(currentInstantDetails.wind_speed * 3.6) : 'N/A';
-            const windDirection = currentInstantDetails.wind_from_direction ?? 'N/A';
-            const relativeHumidity = currentInstantDetails.relative_humidity ?? 'N/A';
-            const pressure = currentInstantDetails.air_pressure_at_sea_level ?? 'N/A';
-            const cloudFraction = currentInstantDetails.cloud_area_fraction ?? 'N/A';
-            const fogFraction = currentInstantDetails.fog_area_fraction ?? 'N/A';
-            const solarIrradiance = currentFullDataEntry?.instant?.details?.ultraviolet_index_clear_sky ?? 'N/A'; // Using this as a proxy for solar irradiance, MET.no compact doesn't have direct solar_irradiance. UV is related.
-
-            container.innerHTML = `
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
-                    <div class="detail-card">
-                        <h4><i class="fas fa-thermometer-half"></i> Sıcaklık Detayları</h4>
-                        <p><strong>Mevcut:</strong> ${airTemperature}°C</p>
-                        <p><strong>Hissedilen (Yaklaşık):</strong> ${airTemperature}°C</p>
-                        <p><strong>Çiy Noktası:</strong> ${dewPoint}°C</p>
-                    </div>
-                    <div class="detail-card">
-                        <h4><i class="fas fa-wind"></i> Rüzgar Bilgileri</h4>
-                        <p><strong>Hız:</strong> ${windSpeed} km/h</p>
-                        <p><strong>Yön:</strong> ${windDirection}° (${getWindDirectionArrow(windDirection)})</p>
-                    </div>
-                    <div class="detail-card">
-                        <h4><i class="fas fa-tint"></i> Nem ve Basınç</h4>
-                        <p><strong>Bağıl Nem:</strong> ${relativeHumidity}%</p>
-                        <p><strong>Deniz Seviyesi Basıncı:</strong> ${pressure} hPa</p>
-                    </div>
-                    <div class="detail-card">
-                        <h4><i class="fas fa-cloud"></i> Bulut & Sis Durumu</h4>
-                        <p><strong>Bulut Örtüsü:</strong> ${cloudFraction}%</p>
-                        <p><strong>Sis Örtüsü:</strong> ${fogFraction}%</p>
-                    </div>
-                     <div class="detail-card">
-                        <h4><i class="fas fa-sun"></i> Güneş Işınımı (Yaklaşık)</h4>
-                        <p><strong>UV İndeksi (Açık Hava):</strong> ${solarIrradiance}</p>
-                        <small>(MET Norway verisi UV İndeksini içerir, bu yaklaşık bir göstergedir)</small>
-                    </div>
-                </div>
-            `;
-        }
-        
         function updateCharts(timeseries) {
-            const tempChartContainer = document.getElementById('chartsContainer');
-            const precipChartContainer = document.getElementById('precipitationChartContainer');
-            tempChartContainer.innerHTML = '<div class="chart-placeholder">Sıcaklık grafiği oluşturuluyor...</div>';
-            precipChartContainer.innerHTML = '<div class="chart-placeholder">Yağış grafiği oluşturuluyor...</div>';
+            const tempChartEl = document.getElementById('tempChart');
+            const precipProbChartEl = document.getElementById('precipProbChart');
+            tempChartEl.innerHTML = '';
+            precipProbChartEl.innerHTML = '';
 
             const now = new Date();
             let startIndex = timeseries.findIndex(item => new Date(item.time) >= now);
-            if (startIndex === -1) startIndex = 0;
-            const chartData = timeseries.slice(startIndex, startIndex + 24).map(item => ({
-                time: new Date(item.time).getHours() + ':00',
-                temperature: item.data.instant.details.air_temperature,
-                precipitation_probability: item.data.next_1_hours?.details?.precipitation_probability ?? // MET.no Compact doesn't have prob.
-                                           (item.data.next_1_hours?.details?.precipitation_amount > 0 ? 50 : 0) // Basic assumption if precipitating
-            }));
+            if (startIndex === -1) startIndex = Math.max(0, timeseries.length - 24);
+            else startIndex = Math.max(0, startIndex -1);
 
-            if (chartData.length > 0) {
-                tempChartContainer.innerHTML = ''; // Clear placeholder
-                createBarChart(tempChartContainer, chartData, 'time', 'temperature', 'Sıcaklık (°C)', 'var(--primary-blue)');
-                
-                precipChartContainer.innerHTML = ''; // Clear placeholder
-                createBarChart(precipChartContainer, chartData, 'time', 'precipitation_probability', 'Yağış İhtimali (%)', 'var(--secondary-blue)', 100);
-            } else {
-                tempChartContainer.innerHTML = '<div class="chart-placeholder">Sıcaklık grafiği için veri yok.</div>';
-                precipChartContainer.innerHTML = '<div class="chart-placeholder">Yağış grafiği için veri yok.</div>';
-            }
-        }
+            const chartData = timeseries.slice(startIndex, startIndex + 24);
 
-        function createBarChart(container, data, xKey, yKey, yLabel, barColor, yMax = null) {
-            const svgNS = "http://www.w3.org/2000/svg";
-            const svg = document.createElementNS(svgNS, "svg");
-            const padding = { top: 20, right: 20, bottom: 30, left: 40 };
-            const containerWidth = container.clientWidth;
-            const containerHeight = container.clientHeight || 300;
-            
-            svg.setAttribute("width", "100%");
-            svg.setAttribute("height", "100%");
-            svg.setAttribute("viewBox", `0 0 ${containerWidth} ${containerHeight}`);
-            svg.style.display = "block"; // Ensure SVG takes block space
+            const temps = chartData.map(item => item.data.instant.details.air_temperature);
+            const precipProbs = chartData.map(item => item.data.next_1_hours?.details?.probability_of_precipitation ?? 0); // MET.no doesn't directly give prob. Use amount as proxy or assume 0.
 
-            const dataValues = data.map(d => d[yKey]).filter(v => v !== null && v !== undefined);
-            if (dataValues.length === 0) {
-                container.innerHTML = `<div class="chart-placeholder">${yLabel} için veri yok.</div>`;
-                return;
-            }
+            const maxTemp = Math.max(...temps, 0); // ensure not negative for height calc
+            const minTemp = Math.min(...temps, 0);
+            const tempRange = Math.max(1, maxTemp - minTemp); // Avoid division by zero
 
-            const minYValue = Math.min(0, ...dataValues); // Ensure Y axis starts at 0 or below if negative temps
-            const maxYValue = yMax !== null ? yMax : Math.max(...dataValues);
-            
-            const chartWidth = containerWidth - padding.left - padding.right;
-            const chartHeight = containerHeight - padding.top - padding.bottom;
-            
-            const barWidth = chartWidth / data.length * 0.8;
-            const spacing = chartWidth / data.length * 0.2;
+            const maxPrecipProb = Math.max(...precipProbs, 1); // ensure not zero for height calc
 
-            // Y axis
-            const yAxis = document.createElementNS(svgNS, "line");
-            yAxis.setAttribute("x1", padding.left);
-            yAxis.setAttribute("y1", padding.top);
-            yAxis.setAttribute("x2", padding.left);
-            yAxis.setAttribute("y2", padding.top + chartHeight);
-            yAxis.setAttribute("stroke", "var(--medium-gray)");
-            svg.appendChild(yAxis);
+            chartData.forEach((item, index) => {
+                const time = new Date(item.time);
+                const temp = item.data.instant.details.air_temperature;
+                const precipProb = item.data.next_1_hours?.details?.probability_of_precipitation ?? (item.data.next_1_hours?.details?.precipitation_amount > 0 ? 50 : 0) ; // Mock probability based on amount
 
-            // X axis
-            const xAxis = document.createElementNS(svgNS, "line");
-            xAxis.setAttribute("x1", padding.left);
-            xAxis.setAttribute("y1", padding.top + chartHeight);
-            xAxis.setAttribute("x2", padding.left + chartWidth);
-            xAxis.setAttribute("y2", padding.top + chartHeight);
-            xAxis.setAttribute("stroke", "var(--medium-gray)");
-            svg.appendChild(xAxis);
+                // Temperature Bar
+                const tempBarGroup = document.createElement('div');
+                tempBarGroup.className = 'chart-bar-group';
+                const tempBar = document.createElement('div');
+                tempBar.className = 'chart-bar temp';
+                const tempHeight = ((temp - minTemp) / tempRange) * 100;
+                tempBar.style.height = `${Math.max(5, tempHeight)}%`; // Min height 5%
+                tempBar.innerHTML = `<span class="bar-value">${Math.round(temp)}°</span>`;
+                const tempTimeLabel = document.createElement('span');
+                tempTimeLabel.className = 'bar-time';
+                tempTimeLabel.textContent = `${time.getHours().toString().padStart(2, '0')}`;
+                tempBarGroup.appendChild(tempBar);
+                tempBarGroup.appendChild(tempTimeLabel);
+                tempChartEl.appendChild(tempBarGroup);
 
-            // Y-axis labels (simple example, can be improved)
-            for (let i = 0; i <= 4; i++) {
-                const val = minYValue + (i/4) * (maxYValue - minYValue);
-                const yPos = padding.top + chartHeight - ( (val - minYValue) / (maxYValue - minYValue) * chartHeight );
-                
-                const yLabelText = document.createElementNS(svgNS, "text");
-                yLabelText.setAttribute("x", padding.left - 5);
-                yLabelText.setAttribute("y", yPos + 4); // adjust for text alignment
-                yLabelText.setAttribute("fill", "var(--medium-gray)");
-                yLabelText.setAttribute("font-size", "10");
-                yLabelText.setAttribute("text-anchor", "end");
-                yLabelText.textContent = Math.round(val);
-                svg.appendChild(yLabelText);
-            }
-
-            data.forEach((d, i) => {
-                const x = padding.left + i * (barWidth + spacing) + spacing / 2;
-                const value = d[yKey] ?? 0;
-                const barHeight = Math.max(0, ( (value - minYValue) / (maxYValue - minYValue) ) * chartHeight);
-                const y = padding.top + chartHeight - barHeight;
-
-                const rect = document.createElementNS(svgNS, "rect");
-                rect.setAttribute("x", x);
-                rect.setAttribute("y", y);
-                rect.setAttribute("width", barWidth);
-                rect.setAttribute("height", barHeight);
-                rect.setAttribute("fill", barColor);
-                svg.appendChild(rect);
-
-                // X-axis labels
-                if (i % Math.max(1, Math.floor(data.length / 8)) === 0) { // Show fewer labels if many bars
-                    const xLabelText = document.createElementNS(svgNS, "text");
-                    xLabelText.setAttribute("x", x + barWidth / 2);
-                    xLabelText.setAttribute("y", containerHeight - padding.bottom + 15);
-                    xLabelText.setAttribute("fill", "var(--medium-gray)");
-                    xLabelText.setAttribute("font-size", "10");
-                    xLabelText.setAttribute("text-anchor", "middle");
-                    xLabelText.textContent = d[xKey];
-                    svg.appendChild(xLabelText);
-                }
+                // Precipitation Probability Bar
+                const precipBarGroup = document.createElement('div');
+                precipBarGroup.className = 'chart-bar-group';
+                const precipBar = document.createElement('div');
+                precipBar.className = 'chart-bar precip';
+                const precipHeight = (precipProb / maxPrecipProb) * 100;
+                precipBar.style.height = `${Math.max(5, precipHeight)}%`;
+                precipBar.innerHTML = `<span class="bar-value">${Math.round(precipProb)}%</span>`;
+                const precipTimeLabel = document.createElement('span');
+                precipTimeLabel.className = 'bar-time';
+                precipTimeLabel.textContent = `${time.getHours().toString().padStart(2, '0')}`;
+                precipBarGroup.appendChild(precipBar);
+                precipBarGroup.appendChild(precipTimeLabel);
+                precipProbChartEl.appendChild(precipBarGroup);
             });
-            container.appendChild(svg);
-        }
-
-
-
-        // --- UI INTERACTION ---
-        function populateProvinceSelector() {
-            const selector = document.getElementById('provinceSelector');
-            selector.innerHTML = '<option value="">İl Seçin...</option>'; // Clear and add placeholder
-            
-            const sortedLocations = [...locationsToFetchForBulkUpdate].sort((a, b) => a.displayName.localeCompare(b.displayName, 'tr'));
-
-            sortedLocations.forEach(loc => {
-                const option = document.createElement('option');
-                option.value = loc.dbKey;
-                option.textContent = loc.displayName;
-                selector.appendChild(option);
-            });
-        }
-
-        function handleProvinceSelection(dbKey) {
-            if (dbKey) {
-                const location = locationsToFetchForBulkUpdate.find(loc => loc.dbKey === dbKey);
-                if (location) {
-                    loadAndDisplayWeather(location.dbKey, location.displayName);
-                }
-            }
         }
         
-        function selectLocation(dbKey, displayName) { // Used by quick action buttons
-            document.getElementById('provinceSelector').value = dbKey;
-            loadAndDisplayWeather(dbKey, displayName);
+        // UI Interaction Functions from user's HTML (adapted slightly)
+        function populateProvinceGrid() {
+            const grid = document.getElementById('provinceList');
+            const provinceCountDisplay = document.getElementById('provinceCountDisplay');
+            grid.innerHTML = '';
+            
+            const provincesForGrid = turkishProvinces.filter(p => {
+                const loc = provincesToFetchForBulkUpdate.find(l => l.displayName === p.name && !l.isSpecial);
+                return loc && (loc.lat !== 0 || loc.lon !== 0); // Only show if valid coords for its center
+            });
+
+            provinceCountDisplay.textContent = `${provincesForGrid.length} İl`;
+
+            provincesForGrid.sort((a, b) => a.name.localeCompare(b.name, 'tr')).forEach(province => {
+                const item = document.createElement('div');
+                item.className = 'province-item';
+                item.setAttribute('data-region', province.region);
+                item.innerHTML = `
+                    <div class="province-header">
+                        <h4 class="province-name">${province.name}</h4>
+                        <span class="province-plate">${province.plateCode}</span>
+                    </div>
+                    <div class="province-info">
+                        <div class="info-item"><i class="fas fa-map-pin"></i> <span>${province.region}</span></div>
+                    </div>
+                    <div class="province-stats">
+                        <div class="weather-preview">
+                            <i class="fas fa-thermometer-empty"></i> <!-- Placeholder icon -->
+                            <span id="preview-temp-${province.name.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '').toLowerCase()}">--°C</span>
+                        </div>
+                    </div>
+                `;
+                item.onclick = () => selectProvince(province.name);
+                grid.appendChild(item);
+            });
+             updateAllProvincePreviews(); // Try to update previews after populating
+        }
+
+        async function updateProvincePreview(provinceName, apiResponse) {
+            const previewElId = `preview-temp-${provinceName.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '').toLowerCase()}`;
+            const previewEl = document.getElementById(previewElId);
+            if (previewEl && apiResponse && apiResponse.properties && apiResponse.properties.timeseries && apiResponse.properties.timeseries.length > 0) {
+                const currentTemp = apiResponse.properties.timeseries[0].data.instant.details.air_temperature;
+                previewEl.innerHTML = `${Math.round(currentTemp)}°C <i class="fas fa-cloud-sun" style="margin-left: 5px; color: #FFD23F;"></i>`; // Example icon
+            } else if (previewEl) {
+                previewEl.textContent = 'N/A';
+            }
+        }
+
+        async function updateAllProvincePreviews() {
+            console.log("Tüm il önizlemeleri güncelleniyor...");
+            const provincesForGrid = turkishProvinces.filter(p => {
+                const loc = provincesToFetchForBulkUpdate.find(l => l.displayName === p.name && !l.isSpecial);
+                return loc && (loc.lat !== 0 || loc.lon !== 0);
+            });
+
+            for (const province of provincesForGrid) {
+                const locConfig = provincesToFetchForBulkUpdate.find(l => l.displayName === province.name && !l.isSpecial);
+                if (locConfig) {
+                    const storedData = await loadData(locConfig.dbKey);
+                    if (storedData && storedData.data) {
+                        updateProvincePreview(province.name, storedData.data);
+                    } else {
+                         const previewElId = `preview-temp-${province.name.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '').toLowerCase()}`;
+                         const previewEl = document.getElementById(previewElId);
+                         if(previewEl) previewEl.textContent = 'N/A';
+                    }
+                }
+            }
         }
 
 
-        function showLoading(locationName = null, isBulk = false) {
-            const loadingContainer = document.getElementById('loadingContainer');
-            const mainText = document.getElementById('loadingTextMain');
-            const subText = document.getElementById('loadingTextSub');
-            const progressBarContainer = document.querySelector('.progress-bar-container');
-            const currentStatusEl = document.getElementById('currentUpdateStatus');
+        function addRegionFilters() {
+            const regions = [...new Set(turkishProvinces.map(p => p.region))].sort((a,b) => a.localeCompare(b, 'tr'));
+            const filterContainer = document.getElementById('regionFilters');
+            filterContainer.innerHTML = ''; 
+            
+            const allFilter = document.createElement('button');
+            allFilter.textContent = 'Tümü';
+            allFilter.className = 'region-filter active';
+            allFilter.onclick = (e) => filterByRegion('all', e.currentTarget);
+            filterContainer.appendChild(allFilter);
+            
+            regions.forEach(region => {
+                const filter = document.createElement('button');
+                filter.textContent = region;
+                filter.className = 'region-filter';
+                filter.onclick = (e) => filterByRegion(region, e.currentTarget);
+                filterContainer.appendChild(filter);
+            });
+        }
 
+        function filterByRegion(region, clickedFilter) {
+            document.querySelectorAll('.region-filter').forEach(f => f.classList.remove('active'));
+            clickedFilter.classList.add('active');
+            
+            const provinceItems = document.querySelectorAll('.province-item');
+            provinceItems.forEach(item => {
+                item.style.display = (region === 'all' || item.getAttribute('data-region') === region) ? 'block' : 'none';
+            });
+        }
 
-            if (isBulk) {
-                mainText.textContent = "Tüm Konumlar İçin Veriler Güncelleniyor...";
-                subText.textContent = "Bu işlem birkaç dakika sürebilir. Lütfen bekleyin.";
-                progressBarContainer.style.display = 'block';
-                currentStatusEl.style.display = 'block';
-            } else {
-                mainText.textContent = `'${locationName || currentSelectedDisplayName}' için hava durumu yükleniyor...`;
-                subText.textContent = "Met Norway API'den gerçek zamanlı veriler çekiliyor.";
-                progressBarContainer.style.display = 'none';
-                currentStatusEl.style.display = 'none';
+        function searchProvinces() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            const provinceItems = document.querySelectorAll('.province-item');
+            let activeFilterRegion = document.querySelector('.region-filter.active')?.textContent;
+            if (activeFilterRegion === 'Tümü') activeFilterRegion = 'all';
+
+            provinceItems.forEach(item => {
+                const provinceName = item.querySelector('.province-name').textContent.toLowerCase();
+                const itemRegion = item.getAttribute('data-region');
+                const matchesSearch = provinceName.includes(searchTerm) || searchTerm === '';
+                const matchesRegion = (activeFilterRegion === 'all' || itemRegion === activeFilterRegion);
+
+                item.style.display = (matchesSearch && matchesRegion) ? 'block' : 'none';
+            });
+            if (searchTerm) showProvinceGrid();
+        }
+
+        function showProvinceGrid() {
+            document.getElementById('provinceGrid').classList.remove('hidden');
+        }
+
+        document.addEventListener('click', function(e) {
+            const searchContainer = document.querySelector('.search-container');
+            if (searchContainer && !searchContainer.contains(e.target) && e.target.id !== 'searchInput') {
+                document.getElementById('provinceGrid').classList.add('hidden');
             }
-            loadingContainer.classList.add('active');
+        });
+
+        async function selectProvince(provinceName) {
+            const provinceData = provincesToFetchForBulkUpdate.find(p => p.displayName === provinceName && !p.isSpecial);
+            if (provinceData) {
+                currentSelectedLocation = provinceData;
+                document.getElementById('searchInput').value = provinceName;
+                document.getElementById('provinceGrid').classList.add('hidden');
+                await loadWeatherDataForLocation(provinceData.dbKey, provinceData.displayName, provinceData.lat, provinceData.lon);
+            } else {
+                 showErrorMessage(`${provinceName} için merkez konumu bulunamadı veya koordinatları geçersiz.`);
+            }
+        }
+        async function selectMajorCity(cityName) {
+            await selectProvince(cityName);
+        }
+        async function loadSpecialLocation(dbKey) {
+            const locationToLoad = provincesToFetchForBulkUpdate.find(p => p.dbKey === dbKey);
+            if (locationToLoad) {
+                currentSelectedLocation = locationToLoad;
+                document.getElementById('searchInput').value = locationToLoad.displayName;
+                document.getElementById('provinceGrid').classList.add('hidden');
+                await loadWeatherDataForLocation(locationToLoad.dbKey, locationToLoad.displayName, locationToLoad.lat, locationToLoad.lon);
+            } else {
+                showErrorMessage(`Özel konum '${dbKey}' bulunamadı.`);
+            }
+        }
+
+
+        function showLoadingState(mainText = "Yükleniyor...", subText = "") {
+            document.getElementById('loadingText').textContent = mainText;
+            document.getElementById('loadingSubtext').textContent = subText;
+            document.getElementById('loadingContainer').classList.add('active');
             document.getElementById('weatherDisplay').classList.remove('active');
         }
+        function updateLoadingStateSubtext(subText) {
+            document.getElementById('loadingSubtext').textContent = subText;
+        }
 
-        function hideLoading() {
+        function hideLoadingState() {
             document.getElementById('loadingContainer').classList.remove('active');
         }
 
         function showErrorMessage(message) {
             const container = document.getElementById('loadingContainer');
+             hideLoadingState(); // Hide regular loading
             container.innerHTML = `
                 <div style="text-align: center; padding: 2rem;">
-                    <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--danger-red); margin-bottom: 1rem;"></i>
-                    <h3 style="color: var(--danger-red); margin-bottom: 1rem;">Hata</h3>
-                    <p style="color: var(--medium-gray); margin-bottom: 2rem;">${message}</p>
-                    <button onclick="loadAndDisplayWeather(currentSelectedLocationKey, currentSelectedDisplayName, true)" style="background: var(--primary-blue); color: white; border: none; padding: 0.8rem 2rem; border-radius: 8px; cursor: pointer;">
-                        Tekrar Dene (${currentSelectedDisplayName})
-                    </button>
-                     <button onclick="manualBulkUpdate()" style="background: var(--secondary-blue); color: white; border: none; padding: 0.8rem 2rem; border-radius: 8px; cursor: pointer; margin-left:10px;">
-                        Tüm Verileri Yenile
+                    <i class="fas fa-exclamation-triangle" style="font-size: 2.5rem; color: var(--danger-red); margin-bottom: 1rem;"></i>
+                    <h3 style="color: var(--danger-red); margin-bottom: 1rem; font-size:1.2rem;">Hata Oluştu</h3>
+                    <p style="color: var(--medium-gray); margin-bottom: 1.5rem; font-size:0.9rem;">${message}</p>
+                    <button onclick="retryLastOperation()" class="quick-action-btn" style="background: var(--primary-blue); color: white;">
+                        Tekrar Dene
                     </button>
                 </div>
             `;
             container.classList.add('active');
-            document.getElementById('weatherDisplay').classList.remove('active');
         }
+        async function retryLastOperation() {
+            hideLoadingState(); // Clear error message
+            if (currentSelectedLocation) {
+                await loadWeatherDataForLocation(currentSelectedLocation.dbKey, currentSelectedLocation.displayName, currentSelectedLocation.lat, currentSelectedLocation.lon, true);
+            } else {
+                await checkAndTriggerBulkUpdate(); // Or trigger a full bulk update if no specific location was active
+            }
+        }
+
 
         function showTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
             document.querySelectorAll('.weather-tab').forEach(tab => tab.classList.remove('active'));
             document.getElementById(tabName).classList.add('active');
-            event.currentTarget.classList.add('active'); // Use event.currentTarget
+            event.currentTarget.classList.add('active');
         }
 
         function toggleTheme() {
             const body = document.body;
             const themeText = document.getElementById('themeText');
+            const themeIcon = document.getElementById('themeIcon');
             const currentTheme = body.getAttribute('data-theme');
+            
             if (currentTheme === 'dark') {
                 body.removeAttribute('data-theme');
                 themeText.textContent = 'Koyu Tema';
-                localStorage.setItem('havadurumuxOfflineTheme', 'light');
+                themeIcon.className = 'fas fa-moon';
+                localStorage.setItem('offlineTheme', 'light');
             } else {
                 body.setAttribute('data-theme', 'dark');
                 themeText.textContent = 'Açık Tema';
-                localStorage.setItem('havadurumuxOfflineTheme', 'dark');
+                themeIcon.className = 'fas fa-sun';
+                localStorage.setItem('offlineTheme', 'dark');
             }
         }
-        // Load saved theme
-        const savedTheme = localStorage.getItem('havadurumuxOfflineTheme');
+         // Load theme preference
+        const savedTheme = localStorage.getItem('offlineTheme');
         if (savedTheme === 'dark') {
             document.body.setAttribute('data-theme', 'dark');
             document.getElementById('themeText').textContent = 'Açık Tema';
+            document.getElementById('themeIcon').className = 'fas fa-sun';
         }
 
 
-        function getCurrentUserLocation() {
+        async function handleGetCurrentLocation() {
             if ("geolocation" in navigator) {
-                showLoading("Konumunuz belirleniyor");
-                navigator.geolocation.getCurrentPosition(
-                    async function(position) {
-                        const lat = position.coords.latitude;
-                        const lon = position.coords.longitude;
-                        
-                        let closestLocation = null;
-                        let minDistance = Infinity;
-                        
-                        locationsToFetchForBulkUpdate.forEach(locDef => {
-                            const locConfig = getLocationConfig(locDef.dbKey);
-                            if (locConfig && locConfig.lat !== 0 && locConfig.lon !== 0) {
-                                const distance = getDistanceHaversine(lat, lon, locConfig.lat, locConfig.lon);
-                                if (distance < minDistance) {
-                                    minDistance = distance;
-                                    closestLocation = locConfig;
-                                }
-                            }
-                        });
-                        
-                        if (closestLocation) {
-                            document.getElementById('provinceSelector').value = closestLocation.dbKey;
-                            loadAndDisplayWeather(closestLocation.dbKey, closestLocation.displayName, true);
-                        } else {
-                             showErrorMessage('Yakınınızda bilinen bir konum bulunamadı. Lütfen listeden seçin.');
+                showLoadingState("Konumunuz alınıyor...");
+                try {
+                    const position = await new Promise((resolve, reject) => 
+                        navigator.geolocation.getCurrentPosition(resolve, reject, {timeout:10000})
+                    );
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    
+                    let closestLocation = null;
+                    let minDistance = Infinity;
+                    
+                    provincesToFetchForBulkUpdate.forEach(loc => { // Search in the list we actually fetch
+                        const distance = getDistance(lat, lon, loc.lat, loc.lon);
+                        if (distance < minDistance) {
+                            minDistance = distance;
+                            closestLocation = loc;
                         }
-                    },
-                    function(error) {
-                        hideLoading();
-                        showErrorMessage('Konum bilgisine erişilemedi. Hata: ' + error.message + '. Lütfen manuel olarak il seçin.');
-                    },
-                    { timeout: 10000, maximumAge: 60000, enableHighAccuracy: false }
-                );
+                    });
+                    
+                    if (closestLocation) {
+                        currentSelectedLocation = closestLocation;
+                        document.getElementById('searchInput').value = closestLocation.displayName;
+                        await loadWeatherDataForLocation(closestLocation.dbKey, closestLocation.displayName, closestLocation.lat, closestLocation.lon);
+                    } else {
+                        showErrorMessage('En yakın bilinen konum bulunamadı. Lütfen manuel olarak seçin.');
+                    }
+
+                } catch (error) {
+                    hideLoadingState();
+                    let errorMsg = 'Konum bilgisine erişilemedi.';
+                    if (error.code === 1) errorMsg = 'Konum izni reddedildi.';
+                    else if (error.code === 2) errorMsg = 'Konum bilgisi alınamadı (network/uydu sorunu).';
+                    else if (error.code === 3) errorMsg = 'Konum alma zaman aşımına uğradı.';
+                    showErrorMessage(`${errorMsg} Lütfen manuel olarak il seçin.`);
+                }
             } else {
                 showErrorMessage('Tarayıcınız konum özelliğini desteklemiyor.');
             }
         }
 
-        function getDistanceHaversine(lat1, lon1, lat2, lon2) {
-            const R = 6371; // Earth's radius in km
+        function getDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; 
             const dLat = (lat2 - lat1) * Math.PI / 180;
             const dLon = (lon2 - lon1) * Math.PI / 180;
             const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
@@ -2072,43 +2303,19 @@
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
             return R * c;
         }
-        
-        function getWindDirectionArrow(degrees) {
-            if (degrees === null || degrees === undefined || isNaN(degrees)) return '';
-            const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
-            const index = Math.round((degrees % 360) / 22.5) % 16;
-            const arrows = ['↓', '↙', '↙', '↙', '←', '↖', '↖', '↖', '↑', '↗', '↗', '↗', '→', '↘', '↘', '↘'];
-            // Correcting arrow logic for N, E, S, W
-            if (degrees >= 337.5 || degrees < 22.5) return `↓ (${directions[0]})`; // N
-            if (degrees >= 67.5 && degrees < 112.5) return `← (${directions[4]})`; // E
-            if (degrees >= 157.5 && degrees < 202.5) return `↑ (${directions[8]})`; // S
-            if (degrees >= 247.5 && degrees < 292.5) return `→ (${directions[12]})`;// W
-            return `${arrows[index]} (${directions[index]})`;
-        }
 
-
-        function updateCurrentDateTime() {
+        function updateCurrentDateDisplay() {
             const now = new Date();
             const options = { 
-                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+                weekday: 'long', month: 'long', day: 'numeric',
                 hour: '2-digit', minute: '2-digit'
             };
-            const dateString = now.toLocaleDateString('tr-TR', options);
-            const el = document.getElementById('currentDate');
-            if (el) el.textContent = dateString;
+            // This element is part of current weather, will be updated there
+            // document.getElementById('currentDate').textContent = now.toLocaleDateString('tr-TR', options);
         }
-        
-        function updateLastBulkUpdateTimeDisplay() {
-            const lastBulkUpdateTime = localStorage.getItem('lastBulkUpdateTime_v3');
-            const displayEl = document.getElementById('lastBulkUpdateTimeDisplay');
-            if (lastBulkUpdateTime) {
-                displayEl.textContent = `Tüm veriler en son ${new Date(parseInt(lastBulkUpdateTime)).toLocaleString('tr-TR')} tarihinde güncellendi.`;
-            } else {
-                displayEl.textContent = 'Veriler henüz toplu olarak güncellenmedi. İlk güncelleme için "Tüm Verileri Yenile" butonunu kullanın.';
-            }
-        }
+        setInterval(updateCurrentDateDisplay, 60000);
+        updateCurrentDateDisplay();
 
-        // --- END OF SCRIPT ---
     </script>
 </body>
 </html>
