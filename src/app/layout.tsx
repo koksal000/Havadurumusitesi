@@ -98,7 +98,7 @@ export default function RootLayout({
                     </SidebarMenuItem>
                     <SidebarMenuItem>
                       <SidebarMenuButton asChild className="w-full justify-start text-base py-2.5">
-                        <a href="/havadurumux-offline.html" download="havadurumux-offline-surumu.html">
+                        <a href={`/havadurumux-offline.html?t=${new Date().getTime()}`} download="havadurumux-offline-surumu.html">
                            <Download className="mr-2 h-5 w-5" />İnternetsiz Sürümü İndir (Konsept)
                         </a>
                       </SidebarMenuButton>

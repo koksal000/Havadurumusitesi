@@ -56,7 +56,7 @@ export default function LandingPage() {
               </Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="text-lg py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition-shadow">
-              <a href="/havadurumux-offline.html" download="havadurumux-offline-surumu.html">
+              <a href={`/havadurumux-offline.html?t=${new Date().getTime()}`} download="havadurumux-offline-surumu.html">
                 <Download className="mr-2 h-6 w-6" />
                 İnternetsiz Sürümü İndir (Konsept)
               </a>
