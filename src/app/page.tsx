@@ -1,13 +1,56 @@
 
-'use client';
+'use client'; // Add this directive
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { CloudSun, MapPin, Radar, Compass, Info, Mail, BarChart3, Download } from 'lucide-react'; // Added Download
+import { CloudSun, MapPin, Radar, Compass, Info, Mail, BarChart3, Download } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useToast } from "@/components/ui/use-toast";
 
 export default function LandingPage() {
+  const { toast } = useToast();
+
+  const handleDownloadOfflineVersion = async () => {
+    try {
+      // Append a timestamp to the URL to try and bypass cache/service worker for the HTML file itself
+      const response = await fetch('/havadurumux-offline.html?t=' + new Date().getTime());
+      if (!response.ok) {
+        throw new Error(`Dosya indirilemedi: ${response.statusText} (${response.status})`);
+      }
+      const fileContent = await response.text();
+      
+      // Create a Blob from the file content
+      const blob = new Blob([fileContent], { type: 'text/html' });
+      
+      // Create an object URL for the Blob
+      const url = URL.createObjectURL(blob);
+      
+      // Create a temporary anchor element and trigger download
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'havadurumux-offline-surumu.html'; // Desired filename
+      document.body.appendChild(a);
+      a.click();
+      
+      // Clean up: remove anchor and revoke object URL
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      toast({
+        title: "İndirme Başarılı",
+        description: "HavaDurumuX çevrimdışı sürümü indirildi.",
+      });
+    } catch (error) {
+      console.error("Çevrimdışı sürüm indirilirken hata:", error);
+      toast({
+        title: "İndirme Başarısız",
+        description: `Çevrimdışı sürüm indirilirken bir sorun oluştu. ${error instanceof Error ? error.message : String(error)}`,
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="space-y-12">
       <Card className="shadow-xl rounded-xl overflow-hidden">
@@ -48,18 +91,21 @@ export default function LandingPage() {
             />
           </div>
           
-          <div className="text-center mt-10 space-y-4 sm:space-y-0 sm:space-x-4">
-            <Button asChild size="lg" className="text-lg py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition-shadow">
+          <div className="text-center mt-10 space-y-4 sm:space-y-0 sm:flex sm:justify-center sm:items-center sm:space-x-4">
+            <Button asChild size="lg" className="text-lg py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition-shadow w-full sm:w-auto mb-3 sm:mb-0">
               <Link href="/kesfet">
                 <Compass className="mr-2 h-6 w-6" />
                 Hava Durumunu Keşfetmeye Başla
               </Link>
             </Button>
-            <Button asChild size="lg" variant="outline" className="text-lg py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition-shadow">
-              <a href={`/havadurumux-offline.html?t=${new Date().getTime()}`} download="havadurumux-offline-surumu.html">
-                <Download className="mr-2 h-6 w-6" />
-                İnternetsiz Sürümü İndir (Konsept)
-              </a>
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className="text-lg py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition-shadow w-full sm:w-auto"
+              onClick={handleDownloadOfflineVersion} // Changed to onClick
+            >
+              <Download className="mr-2 h-6 w-6" />
+              İnternetsiz Sürümü İndir
             </Button>
           </div>
         </CardContent>
