@@ -1,8 +1,6 @@
 
-"use client"; // Add this directive
+"use client"; 
 
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { Navbar } from '@/components/layout/Navbar';
@@ -23,21 +21,21 @@ import { CloudSun, Search, Map, Radar, Heart, Settings, Info, Mail, Home, Zap, B
 import { SoundProvider } from '@/contexts/SoundContext';
 import ClientSideWeatherInitializer from '@/components/layout/ClientSideWeatherInitializer';
 import { useToast } from "@/components/ui/use-toast"; 
-import { toast as globalToast } from "@/components/ui/use-toast";
+import { toast as globalToast } from "@/components/ui/use-toast"; // Renamed to avoid conflict
+import { Inter } from 'next/font/google'; // Moved Inter import here
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
-// Metadata cannot be exported from a Client Component.
-// It should be defined in Server Components or at the page level.
-// We are removing this static export.
 
 const RootLayoutClientContent = ({ children }: { children: React.ReactNode }) => {
+  const { toast: localToast } = useToast(); // Use a different name if there's a conflict, or ensure it's correctly scoped
+
   const handleDownloadOfflineVersion = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault(); 
     try {
       const response = await fetch('/havadurumux-offline.html?t=' + new Date().getTime());
       if (!response.ok) {
-        throw new Error(`Dosya indirilemedi: ${response.statusText}`);
+        throw new Error(`Dosya indirilemedi: ${response.statusText} (${response.status})`);
       }
       const fileContent = await response.text();
       const blob = new Blob([fileContent], { type: 'text/html' });
@@ -49,7 +47,7 @@ const RootLayoutClientContent = ({ children }: { children: React.ReactNode }) =>
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      globalToast({ 
+      globalToast({ // Assuming globalToast is what you intend for this application-wide notification
         title: "İndirme Başarılı",
         description: "HavaDurumuX çevrimdışı sürümü indirildi.",
       });
@@ -110,7 +108,7 @@ const RootLayoutClientContent = ({ children }: { children: React.ReactNode }) =>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton 
+               <SidebarMenuButton 
                 onClick={handleDownloadOfflineVersion} 
                 className="w-full justify-start text-base py-2.5"
               >
@@ -147,7 +145,7 @@ const RootLayoutClientContent = ({ children }: { children: React.ReactNode }) =>
       <SidebarInset>
         <div className="flex flex-col min-h-screen">
           <Navbar />
-          <main className="flex-grow container mx-auto px-4 py-8 overflow-auto">
+          <main className="flex-grow container mx-auto px-4 py-8 overflow-y-auto overflow-x-hidden">
             {children}
           </main>
           <Toaster />
@@ -167,7 +165,13 @@ export default function RootLayout({
   return (
     <html lang="tr" suppressHydrationWarning>
       <head>
-        {/* You can add title and meta description directly here if needed for the root layout */}
+        {/* 
+          Metadata cannot be exported from a Client Component.
+          It should be defined in Server Components or at the page level if layout is client.
+          Since layout is now client, we'll keep it here but be mindful for more complex scenarios.
+          For a production app, consider moving to a Server Component or using dynamic metadata generation
+          if this layout truly needs to be a client component.
+        */}
         <title>HavaDurumuX - Türkiye Hava Durumu</title>
         <meta name="description" content="Türkiye için detaylı hava durumu, tahminler ve radar haritası." />
       </head>
