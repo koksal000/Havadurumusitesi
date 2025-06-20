@@ -36,7 +36,7 @@ export default function RadarPage() {
   }, []);
 
   return (
-    <div className="space-y-8 h-[calc(100vh-10rem)] flex flex-col">
+    <div className="h-[calc(100vh-10rem)] flex flex-col">
       <Card className="shadow-xl rounded-xl flex-grow flex flex-col">
         <CardHeader className="flex-shrink-0">
           <CardTitle>Canlı Yağış ve Bulut Takibi (RainViewer)</CardTitle>
