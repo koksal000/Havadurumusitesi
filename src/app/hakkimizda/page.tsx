@@ -65,7 +65,7 @@ export default function HakkimizdaPage() {
             alt="HavaDurumuX Banner" 
             width={800} 
             height={200} 
-            className="rounded-lg shadow-md mx-auto"
+            className="rounded-lg shadow-md mx-auto w-full h-auto"
             data-ai-hint="weather app banner"
             />
         <p className="text-sm text-muted-foreground mt-4">HavaDurumuX ile her zaman bir adım önde olun.</p>

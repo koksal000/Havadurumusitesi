@@ -49,7 +49,7 @@ export default function IletisimPage() {
             alt="HavaDurumuX Banner İletişim" 
             width={700} 
             height={175} 
-            className="rounded-lg shadow-md mx-auto"
+            className="rounded-lg shadow-md mx-auto w-full h-auto"
             data-ai-hint="weather app banner contact"
             />
       </div>

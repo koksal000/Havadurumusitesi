@@ -133,7 +133,7 @@ export default function LandingPage() {
             alt="HavaDurumuX Banner" 
             width={1200} 
             height={300} 
-            className="rounded-lg shadow-md mx-auto"
+            className="rounded-lg shadow-md mx-auto w-full h-auto"
             data-ai-hint="weather app banner"
             priority
             />
